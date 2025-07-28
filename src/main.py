@@ -2,19 +2,16 @@
 import json
 import math
 from pathlib import Path
-from typing import Dict, List, Optional, NamedTuple
-from collections import defaultdict
+from typing import NamedTuple, Optional
 from functools import lru_cache
 import re
-import bisect
 from faster_whisper import WhisperModel
 import time
 from time import perf_counter
-import threading
 
 import numpy as np
 import soundfile as sf
-from rapidfuzz import fuzz, process
+from rapidfuzz import fuzz
 from scipy.signal import resample_poly
 import unicodedata
 import subprocess
@@ -100,31 +97,12 @@ class ArabicTextProcessor:
 
 # ============================ Quran Database =================================
 class QuranDatabase:
-    def __init__(self, json_dir: Path):
+    def __init__(self, json_path: Path):
         self.verses: list[VerseInfo] = []
         self.verse_normalized: list[str] = []
-        self._load_qul_data(json_dir)
+        self._load_data(json_path)
 
-    def _load_old_data(self, json_dir: Path) -> None:
-        for p in sorted(json_dir.glob("*.json")):
-            try:
-                with p.open(encoding="utf-8") as f:
-                    data = json.load(f)
-
-                surah_name = data.get("englishName", p.stem)
-                for idx, ayah in enumerate(data.get("ayahs", []), start=1):
-                    if isinstance(ayah, dict) and ayah.get("text", "").strip():
-                        self._add_verse(
-                            surah_name=surah_name,
-                            ayah_number=idx,
-                            original_text=ayah["text"].strip(),
-                        )
-            except Exception as e:
-                print(f"Warning: {p.name}: {e}")
-
-        print(f"Loaded {len(self.verses)} verses from {json_dir}")
-
-    def _load_qul_data(self, json_file: Path) -> None:
+    def _load_data(self, json_file: Path) -> None:
         try:
             with json_file.open(encoding="utf-8") as f:
                 data = json.load(f)
@@ -252,12 +230,10 @@ class AudioManager:
 # ============================ ASR Engine =====================================
 class ASREngine:
     def __init__(self, model_path: str):
-        # device = "cuda" if torch.cuda.is_available() else "cpu"
         device = "cpu"
         compute_type = "float16" if device == "cuda" else "int8"
         self.model = WhisperModel(model_path, device=device, compute_type=compute_type)
-        # self.model = whisperx.load_model(model_path, device, compute_type=compute_type)
-        print(f"ASR model loaded on {device}")
+        print(f"ASR model loaded.")
 
     def transcribe_chunk(self, audio_chunk: np.ndarray) -> str:
         """Transcribe a single audio chunk."""
@@ -269,39 +245,32 @@ class ASREngine:
             without_timestamps=True,
         )
         return "".join(seg.text for seg in segments).strip()
-        # result = self.model.transcribe(audio_chunk,
-        #                                batch_size=1,
-        #                                language="ar")
-        # return "".join(seg["text"] for seg in result["segments"]).strip()
-
 # ============================ Real-time Recognizer ===========================
 class RealTimeQuranASR:
-    def __init__(self, json_dir: str, model_path: str):
+    def __init__(self, json_path: str, model_path: str, audio_path: Path):
         print("Initializing...")
-        self.quran_db = QuranDatabase(Path(json_dir))
-        self.asr = ASREngine(model_path)
-        self.audio_manager = None
-        self.last_verse_key = None
-        self.last_emit_time = 0
-        self.start_time = None
-        self.is_playing = False
+        self.quran_db      = QuranDatabase(Path(json_path))
+        self.asr           = ASREngine(model_path)
+        self.audio_manager = AudioManager(audio_path)
+
+        self.audio_path = audio_path
+
+        self.start_time    = None
+        self.is_playing    = False
+        self.current_time  = 0
         print("Initialization done.\n")
 
-    def load_audio(self, audio_path: Path):
-        """Load audio file for processing."""
-        self.audio_manager = AudioManager(audio_path)
-        print(f"Audio ready: {self.audio_manager.total_duration:.1f}s")
-
-    def process_current_time(self, current_time: float) -> Optional[dict]:
+    def process_current_time(self) -> Optional[dict]:
         """
         Process audio at the current playback time and return verse if found.
         This is the main function you'd call in real-time.
         """
+        t = self.current_time
         if not self.audio_manager:
             return None
 
         # Get current audio chunk
-        chunk = self.audio_manager.get_current_chunk(current_time)
+        chunk = self.audio_manager.get_current_chunk(t)
         if chunk is None:
             return None
 
@@ -320,14 +289,9 @@ class RealTimeQuranASR:
         if not match:
             return None
 
-        # Debounce - avoid repeating same verse too quickly
-        verse_key = (match.verse_info.surah_name, match.verse_info.ayah_number)
-        self.last_verse_key = verse_key
-        self.last_emit_time = current_time
-
         # Return result
         result = {
-            'timestamp': current_time,
+            'timestamp': t,
             'surah': match.verse_info.surah_name,
             'ayah': match.verse_info.ayah_number,
             'arabic_text': match.verse_info.text,
@@ -339,60 +303,18 @@ class RealTimeQuranASR:
 
         return result
 
-    def synchronized_prediction(self, audio_path: Path, start_time: float = 0):
-        print(f"Synchronized Prediction")
-        print("-" * 60)
-        print("Run the model as fast as we can predicting on wherever we are in the audio")
-        print("print to stdout")
-        print("-" * 60)
+    def synchronized_prediction(self):
+        print("Starting main thread video thread")
 
-        self.load_audio(audio_path)
-
-        mpv_cmd = ["mpv", "--force-window", "--quiet", str(audio_path)]
-        if start_time > 0:
-            mpv_cmd.extend([f"--start={start_time}"])
+        mpv_cmd = ["mpv", "--force-window", "--quiet", str(self.audio_path)]
 
         try:
-            # Start mpv process
             mpv_process = subprocess.Popen(mpv_cmd)
 
-            self.start_time = perf_counter() - start_time
-            self.is_playing = True
-
-
-            while self.is_playing:
-                # Check if mpv is still running
-                if mpv_process.poll() is not None:
-                    break
-
-                # Get current playback time
-                current_time = perf_counter() - self.start_time
-
-                # Stop if we've exceeded the audio duration
-                if current_time > self.audio_manager.total_duration:
-                    break
-
-                # Process current time
-                result = self.process_current_time(current_time)
-                if result:
-                    print(f"{result['timestamp']:6.1f}s | {result['surah']:20} - Ayah {result['ayah']:03d} | C: {result['confidence']:.2f} | TT: {result['tt']:.2f} | TM: {result['tm']:.2f}")
-
-                # Small sleep to prevent excessive CPU usage
-                time.sleep(0.01)
-
+            start_time = perf_counter()
+            while True:
+                if mpv_process.poll() is not None: break
+                self.current_time = perf_counter() - start_time
+                time.sleep(1)
         except KeyboardInterrupt:
             print("\nStopped by user")
-
-def main():
-    # Initialize the system
-    recognizer = RealTimeQuranASR(
-        json_dir="uthmani.json",
-       model_path="OdyAsh/faster-whisper-base-ar-quran"
-    )
-
-    audio_path = Path("/home/upgrade/Android/Quran/Surah_Taha_Jamal_AbdiNasir_QUALITY_QALOON_Taraweeh_Recitation_Masjid_al_Humera_رواية_قالون_سورة_طه.mp3")
-
-    if audio_path.exists():
-        recognizer.synchronized_prediction(audio_path)
-if __name__ == "__main__":
-    main()
