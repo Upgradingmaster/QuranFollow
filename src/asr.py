@@ -8,13 +8,9 @@ import re
 from faster_whisper import WhisperModel
 import time
 from time import perf_counter
-
 import numpy as np
-import soundfile as sf
 from rapidfuzz import fuzz
-from scipy.signal import resample_poly
 import unicodedata
-import subprocess
 
 
 SURAH_NAMES = {
@@ -180,54 +176,6 @@ class QuranDatabase:
                 )
 
         return best_match
-
-# ============================ Audio Manager ==================================
-class AudioManager:
-    def __init__(self, audio_path: Path):
-        self.audio_path = audio_path
-        self.audio_data = None
-        self.sample_rate = Config.SAMPLE_RATE
-        self.total_duration = 0.0
-        self._load_audio()
-
-    def _load_audio(self):
-        data, sr = sf.read(str(self.audio_path), dtype="float32", always_2d=False)
-
-        if data.ndim == 2:
-            data = data.mean(axis=1)
-
-        if sr != Config.SAMPLE_RATE:
-            g = math.gcd(sr, Config.SAMPLE_RATE)
-            up = Config.SAMPLE_RATE // g
-            down = sr // g
-            data = resample_poly(data, up, down)
-
-        self.audio_data = data.astype(np.float32, copy=False)
-        self.total_duration = len(self.audio_data) / Config.SAMPLE_RATE
-        print(f"Audio loaded: {self.total_duration:.1f}s")
-
-    def get_current_chunk(self, current_time: float) -> Optional[np.ndarray]:
-        """Get audio chunk at current playback time."""
-        start_sample = max(0,                    int(current_time - Config.CHUNK_DURATION_BACKWARD) * self.sample_rate)
-        end_sample   = min(len(self.audio_data), int(current_time + Config.CHUNK_DURATION_FORWARD)  * self.sample_rate)
-
-        if start_sample >= len(self.audio_data):
-            return None
-
-        chunk = self.audio_data[start_sample:end_sample]
-
-        # Check energy threshold
-        if self._get_rms(chunk) < Config.ENERGY_THRESHOLD:
-            return None
-
-        return chunk
-
-    @staticmethod
-    def _get_rms(audio: np.ndarray) -> float:
-        if audio.size == 0:
-            return 0.0
-        return float(np.sqrt(np.mean(np.square(audio))))
-
 # ============================ ASR Engine =====================================
 class ASREngine:
     def __init__(self, model_path: str):
@@ -248,88 +196,61 @@ class ASREngine:
         return "".join(seg.text for seg in segments).strip()
 # ============================ Real-time Recognizer ===========================
 class RealTimeQuranASR:
-    def __init__(self, json_path: str, model_path: str, audio_path: Path):
+    def __init__(self, json_path: str, model_path: str):
         print("Initializing...")
         self.quran_db      = QuranDatabase(Path(json_path))
         self.asr           = ASREngine(model_path)
-        self.audio_manager = AudioManager(audio_path)
-
-        self.audio_path = audio_path
-
-        self.start_time    = None
-        self.is_playing    = False
-        self.current_time  = 0
         print("Initialization done.\n")
 
-    # def preprocess(self, audio: np.ndarray, sr: int) -> np.ndarray:
-    #     """Mono-ise and resample *in-memory* to Config.SAMPLE_RATE."""
-    #     if audio.ndim == 2:                       # stereo → mono
-    #         audio = audio.mean(axis=1)
-
-    #     if sr != Config.SAMPLE_RATE:
-    #         g   = math.gcd(sr, Config.SAMPLE_RATE)
-    #         up  = Config.SAMPLE_RATE // g
-    #         down= sr // g
-    #         audio = resample_poly(audio, up, down)
-
-    #     return audio.astype(np.float32, copy=False)
-
-    def process_chunk(self, chunk: np.ndarray) -> Optional[dict]:
-        if chunk.size == 0:
-            return None
-
-        # preprocess(chunk, sr)
-
-        t0 = perf_counter()
-        transcription = self.asr.transcribe_chunk(chunk)
-        transcription_time = perf_counter() - t0
-        if not transcription:
-            return None
-
-        t0 = perf_counter()
-        match = self.quran_db.find_best_match(transcription)
-        match_time = perf_counter() - t0
-        if not match:
-            return None
-
-        return {
-            "surah":       match.verse_info.surah_name,
-            "ayah":        match.verse_info.ayah_number,
-            "arabic_text": match.verse_info.text,
-            "confidence":  match.confidence,
-            "transcript":  transcription,
-            'tt': transcription_time,
-            'tm': match_time,
+    def process_chunk(self, chunk: np.ndarray):
+        """
+        Try to (1) transcribe `chunk` and then (2) match it to a verse.
+        Even when either step fails we still return a dictionary with
+        everything we know so far plus a `status` key describing the outcome.
+        """
+        # --- template for the result ---------------------------------------
+        result = {
+            "status":       "ok",        # will be overwritten if we bail
+            "surah":        None,
+            "ayah":         None,
+            "arabic_text":  None,
+            "confidence":   None,
+            "transcript":   None,
+            "tt":           None,        # transcription time
+            "tm":           None,        # matching time
         }
 
-    def process_current_time(self) -> Optional[dict]:
-        """
-        Process audio at the current playback time and return verse if found.
-        This is the main function you'd call in real-time.
-        """
-        t = self.current_time
-        if not self.audio_manager:
-            return None
+        # --- sanity check ---------------------------------------------------
+        if chunk.size == 0:
+            result["status"] = "empty-chunk"
+            return result
 
-        # Get current audio chunk
-        chunk = self.audio_manager.get_current_chunk(t)
-        if chunk is None:
-            return None
+        # --- 1) ASR ---------------------------------------------------------
+        t0 = perf_counter()
+        transcription = self.asr.transcribe_chunk(chunk)
+        result["tt"] = perf_counter() - t0
+        result["transcript"] = transcription
 
-        return process_chunk(chunk)
+        if not transcription:
+            result["status"] = "no-transcription"
+            return result
 
-    def play_audio_blocking(self):
-        print("Playing audio...")
-        mpv_cmd = ["mpv", "--force-window", "--quiet", str(self.audio_path)]
+        # --- 2) Match against Qurʾān DB ------------------------------------
+        t0 = perf_counter()
+        match = self.quran_db.find_best_match(transcription)
+        result["tm"] = perf_counter() - t0
 
-        try:
-            mpv_process = subprocess.Popen(mpv_cmd)
+        if not match:
+            result["status"] = "no-match"
+            return result
 
-            start_time = perf_counter()
-            while True:
-                if mpv_process.poll() is not None: break
-                self.current_time = perf_counter() - start_time
-                time.sleep(1)
+        # --- success --------------------------------------------------------
+        result.update(
+            status       = "matched",
+            surah        = match.verse_info.surah_name,
+            ayah         = match.verse_info.ayah_number,
+            arabic_text  = match.verse_info.text,
+            confidence   = match.confidence,
+        )
 
-        except KeyboardInterrupt:
-            print("\nStopped by user")
+        return result

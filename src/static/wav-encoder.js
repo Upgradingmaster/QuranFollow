@@ -195,3 +195,5 @@ function createWriter(dataView) {
     }
   };
 }
+
+export { encodeSync }
