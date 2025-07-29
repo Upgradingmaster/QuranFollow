@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
-"""
-Start with:
-    pip install flask flask_cors   # tiny deps
-    python server.py
-Browse to http://127.0.0.1:5000
-"""
 from pathlib import Path
 import threading
 
+import io
+import soundfile as sf
 from flask import Flask, jsonify, send_from_directory, request
-from flask_cors import CORS          # lets you open the page straight from a file:// URL
-from main import RealTimeQuranASR     # your long file
+from flask_cors import CORS
+from main import RealTimeQuranASR
+
 # ---------------------------------------------------------------------------
 
 JSON_PATH    = "uthmani.json"
@@ -20,10 +17,9 @@ AUDIO_PATH   = Path("/home/upgrade/Android/Quran/Surah_Taha_Jamal_AbdiNasir_QUAL
 app = Flask(__name__, static_folder="static")
 CORS(app)  # simple open CORS policy
 
-print("Bootstrapping recognizer … (takes a few seconds the first time)")
+print("Bootstrapping recognizer (takes a few seconds the first time)")
 recognizer = RealTimeQuranASR(json_path=JSON_PATH, model_path=MODEL_PATH, audio_path=AUDIO_PATH)
-t = threading.Thread(target=recognizer.synchronized_prediction, daemon=True)
-t.start()
+# threading.Thread(target=recognizer.play_audio_blocking, daemon=True).start()
 print("Ready ✔")
 
 # ---------------------------------------------------------------------------
@@ -31,12 +27,24 @@ print("Ready ✔")
 def index():
     return send_from_directory("static", "index.html")
 
-@app.post("/process")      # POST /process  -- returns JSON
-def process_current_second():
-    # Optionally allow client to override the timestamp via JSON body
-    result = recognizer.process_current_time()
-    return jsonify(result or {"status": "no-match"})
+@app.post('/process_chunk')
+def process_chunk():
+    """
+    Expects multipart/form-data with a file field named 'chunk'
+    containing mono-16 kHz little-endian WAV.
+    """
+    file = request.files.get('chunk')
+    if not file:
+        return jsonify({"error":"no file"}), 400
+
+    # read bytes into numpy float32
+    data, sr = sf.read(io.BytesIO(file.read()), dtype='float32')
+    if sr != 16000: # TODO:
+        return jsonify({"error":f"sample-rate {sr} ≠ 16000"}), 400
+
+    result = recognizer.process_chunk(data)
+    return jsonify(result or {"status":"no-match"})
 
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
-    app.run(debug=True, use_reloader=False, port=5000)
+    app.run(debug=True, port=5000)

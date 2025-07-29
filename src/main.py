@@ -54,6 +54,7 @@ SURAH_NAMES = {
     110: "An-Naṣr", 111: "Al-Masad", 112: "Al-Ikhlāṣ",
     113: "Al-Falāq", 114: "An-Nās",
 }
+
 # ============================ Data Structures ================================
 class VerseInfo(NamedTuple):
     surah_name: str
@@ -260,6 +261,47 @@ class RealTimeQuranASR:
         self.current_time  = 0
         print("Initialization done.\n")
 
+    # def preprocess(self, audio: np.ndarray, sr: int) -> np.ndarray:
+    #     """Mono-ise and resample *in-memory* to Config.SAMPLE_RATE."""
+    #     if audio.ndim == 2:                       # stereo → mono
+    #         audio = audio.mean(axis=1)
+
+    #     if sr != Config.SAMPLE_RATE:
+    #         g   = math.gcd(sr, Config.SAMPLE_RATE)
+    #         up  = Config.SAMPLE_RATE // g
+    #         down= sr // g
+    #         audio = resample_poly(audio, up, down)
+
+    #     return audio.astype(np.float32, copy=False)
+
+    def process_chunk(self, chunk: np.ndarray) -> Optional[dict]:
+        if chunk.size == 0:
+            return None
+
+        # preprocess(chunk, sr)
+
+        t0 = perf_counter()
+        transcription = self.asr.transcribe_chunk(chunk)
+        transcription_time = perf_counter() - t0
+        if not transcription:
+            return None
+
+        t0 = perf_counter()
+        match = self.quran_db.find_best_match(transcription)
+        match_time = perf_counter() - t0
+        if not match:
+            return None
+
+        return {
+            "surah":       match.verse_info.surah_name,
+            "ayah":        match.verse_info.ayah_number,
+            "arabic_text": match.verse_info.text,
+            "confidence":  match.confidence,
+            "transcript":  transcription,
+            'tt': transcription_time,
+            'tm': match_time,
+        }
+
     def process_current_time(self) -> Optional[dict]:
         """
         Process audio at the current playback time and return verse if found.
@@ -274,38 +316,10 @@ class RealTimeQuranASR:
         if chunk is None:
             return None
 
-        # Transcribe the chunk
-        t0 = perf_counter()
-        transcription = self.asr.transcribe_chunk(chunk)
-        transcription_time = perf_counter() - t0
+        return process_chunk(chunk)
 
-        if not transcription:
-            return None
-
-        # Find matching verse
-        t0 = perf_counter()
-        match = self.quran_db.find_best_match(transcription)
-        match_time = perf_counter() - t0
-        if not match:
-            return None
-
-        # Return result
-        result = {
-            'timestamp': t,
-            'surah': match.verse_info.surah_name,
-            'ayah': match.verse_info.ayah_number,
-            'arabic_text': match.verse_info.text,
-            'confidence': match.confidence,
-            'transcription': transcription,
-            'tt': transcription_time,
-            'tm': match_time,
-        }
-
-        return result
-
-    def synchronized_prediction(self):
-        print("Starting main thread video thread")
-
+    def play_audio_blocking(self):
+        print("Playing audio...")
         mpv_cmd = ["mpv", "--force-window", "--quiet", str(self.audio_path)]
 
         try:
@@ -316,5 +330,6 @@ class RealTimeQuranASR:
                 if mpv_process.poll() is not None: break
                 self.current_time = perf_counter() - start_time
                 time.sleep(1)
+
         except KeyboardInterrupt:
             print("\nStopped by user")
