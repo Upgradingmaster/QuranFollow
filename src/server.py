@@ -11,8 +11,9 @@ from asr import Config
 
 # ---------------------------------------------------------------------------
 
-JSON_PATH    = "../res/uthmani.json"
+JSON_PATH    = "./static/res/uthmani-aba.json"
 MODEL_PATH   = "OdyAsh/faster-whisper-base-ar-quran"
+AUDIO_PATH   = Path("/home/upgrade/Android/Quran/Surah_Taha_Jamal_AbdiNasir_QUALITY_QALOON_Taraweeh_Recitation_Masjid_al_Humera_رواية_قالون_سورة_طه.mp3")
 
 app = Flask(__name__, static_folder="static")
 CORS(app)  # simple open CORS policy

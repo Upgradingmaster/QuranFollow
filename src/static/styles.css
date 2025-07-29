@@ -1,0 +1,10 @@
+@font-face {
+    font-family : 'qpc-hafs';
+    src : url('/static/res/qpc-hafs/uthmanic-hafs.woff2') format('woff2');
+    font-display: swap;
+}
+
+#current-verse {
+    font-family: qpc-hafs;
+    font-size: 2em;
+}
