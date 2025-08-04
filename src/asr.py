@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import sqlite3
 import math
 from pathlib import Path
 from typing import NamedTuple, Optional
@@ -74,32 +75,93 @@ class Config:
     ENERGY_THRESHOLD = 0.002
 
 # ============================ Text Processing ================================
+# TODO: Currently Normalizing to match between QUL databases, but we need to normalized for the model to be optimized
 class ArabicTextProcessor:
-    DIACRITICS = re.compile(r'[\u064B-\u065F\u0670\u0640]')
-    NORMALIZE_CHARS = {
-        'أ': 'ا', 'إ': 'ا', 'آ': 'ا',
-        'ة': 'ه', 'ى': 'ي',
-    }
+    # harakat + tatweel + superscript alef
+    _RE_HARAKAT = re.compile(r'[\u064B-\u065F\u0670\u0640]')
 
-    @classmethod
-    @lru_cache(maxsize=10000)
-    def normalize(cls, text: str) -> str:
+    # Qur'anic annotation marks (stop signs, small high signs, etc.)
+    _RE_QURAN_ANN = re.compile(r'[\u06D6-\u06ED\u08E4-\u08FF]')
+
+    # Bidi / zero-width / BOM controls to strip
+    _RE_CTRL = re.compile(r'[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]')
+
+    _RE_WS = re.compile(r'\s+')
+
+    _RE_AYAH_NUM = re.compile(
+        r"""
+        [\u06DD\u06DE\uFD3E\uFD3F\uFDFD]?   # ۝, ۞, ornate parens
+        \s*
+        [\(\[\{﴾⟬⟮]?\s*                   # opening bracket
+        [\d\u0660-\u0669]+                # Western or Arabic-Indic digits
+        \s*[\)\]\}﴿⟭⟯]?                   # closing bracket
+        """,
+        re.VERBOSE,
+    )
+
+    # Letter maps
+    _MAP_BASE = str.maketrans({
+        'أ': 'ا', 'إ': 'ا', 'آ': 'ا', 'ٱ': 'ا',
+    })
+
+    _MAP_LENIENT = str.maketrans({
+        'أ': 'ا', 'إ': 'ا', 'آ': 'ا', 'ٱ': 'ا',
+        'ة': 'ه',
+        'ى': 'ي',
+    })
+
+    @staticmethod
+    @lru_cache(maxsize=20000)
+    def normalize(text: str,
+                  *,
+                  remove_harakat: bool           = True,
+                  remove_quran_annotations: bool = True,
+                  remove_controls: bool          = True,
+                  remove_ayah_numbers: bool      = True,
+                  collapse_space: bool           = True,
+                  lenient_letters: bool          = False ) -> str:
         if not text:
             return ""
-        t = cls.DIACRITICS.sub('', text)
-        t = unicodedata.normalize('NFKC', t)
-        for old_char, new_char in cls.NORMALIZE_CHARS.items():
-            t = t.replace(old_char, new_char)
-        return ' '.join(t.split()).strip()
+
+        # Decompose → strip marks → recompose (safer than raw NFKC)
+        t = unicodedata.normalize('NFKD', text)
+        if remove_quran_annotations:
+            t = ArabicTextProcessor._RE_QURAN_ANN.sub('', t)
+        if remove_harakat:
+            t = ArabicTextProcessor._RE_HARAKAT.sub('', t)
+        if remove_controls:
+            t = ArabicTextProcessor._RE_CTRL.sub('', t)
+        if remove_ayah_numbers:
+            t = ArabicTextProcessor._RE_AYAH_NUM.sub(' ', t)
+
+
+        t = unicodedata.normalize('NFC', t)
+
+        t = t.translate(ArabicTextProcessor._MAP_LENIENT if lenient_letters
+                        else ArabicTextProcessor._MAP_BASE)
+        if collapse_space:
+            t = ArabicTextProcessor._RE_WS.sub(' ', t).strip()
+
+        return t
+
+    # @staticmethod
+    # def is_ayah_number(tok: str) -> bool:
+    #     return tok == "۝" or bool(re.fullmatch(r"[\d\u0660-\u0669]+", tok))
+
 
 # ============================ Quran Database =================================
 class QuranDatabase:
-    def __init__(self, json_path: Path):
+    def __init__(self, db_path: Path):
         self.verses: list[VerseInfo] = []
         self.verse_normalized: list[str] = []
-        self._load_data(json_path)
+        if db_path.name.endswith("aba.db"):
+            self._load_from_sqlite_aba(db_path)
+        elif db_path.name.endswith("wbw.db"):
+            self._load_from_sqlite_wbw(db_path)
+        else:
+            self._load_from_json(db_path)
 
-    def _load_data(self, json_file: Path) -> None:
+    def _load_from_json(self, json_file: Path) -> None:
         try:
             with json_file.open(encoding="utf-8") as f:
                 data = json.load(f)
@@ -126,6 +188,74 @@ class QuranDatabase:
             )
 
         print(f"Loaded {len(self.verses)} verses from {json_file.name}")
+
+
+    def _load_from_sqlite_aba(self, db_file: Path) -> None:
+        try:
+            con = sqlite3.connect(db_file)
+            cur = con.cursor()
+            cur.execute(
+                "SELECT verse_key, surah, ayah, text "
+                "FROM verses ORDER BY surah, ayah"
+            )
+        except Exception as e:
+            print(f"Error reading {db_file}: {e}")
+            return
+
+        # for surah, ayah, word_idx, txt in cur:
+        for verse_key, surah, ayah, txt in cur:
+            self._add_verse(
+                surah_name    = SURAH_NAMES.get(surah, f"Foo: {verse_key}"),
+                ayah_number   = ayah,
+                original_text = txt
+            )
+
+        con.close()
+        print(f"Loaded {len(self.verses)} verses from {db_file.name}")
+
+    def _load_from_sqlite_wbw(self, db_file: Path) -> None:
+        """
+        Build one text string per āyah from the qpc-hafs-word-by-word DB.
+        Table must have: surah, ayah, word, text  (order is controlled below).
+        """
+        try:
+            con = sqlite3.connect(db_file)
+            cur = con.cursor()
+            cur.execute(
+                "SELECT surah, ayah, word, text "
+                "FROM words ORDER BY surah, ayah, word"
+            )
+        except Exception as e:
+            print(f"Error reading {db_file}: {e}")
+            return
+
+        current_key: tuple[int,int]|None = None
+        buf: list[str] = []
+
+        for surah, ayah, word_idx, txt in cur:
+            # if ArabicTextProcessor.is_ayah_number(txt.strip()):
+            #     continue
+            key = (surah, ayah)
+            if current_key and key != current_key:
+                self._add_verse(
+                    surah_name = SURAH_NAMES.get(current_key[0], f"Surah {current_key[0]}"),
+                    ayah_number= current_key[1],
+                    original_text = " ".join(buf)
+                )
+                buf = []
+            buf.append(txt.strip())
+            current_key = key
+
+        # flush last āyah
+        if current_key:
+            self._add_verse(
+                surah_name = SURAH_NAMES.get(current_key[0], f"Surah {current_key[0]}"),
+                ayah_number= current_key[1],
+                original_text = " ".join(buf)
+            )
+
+        con.close()
+        print(f"Loaded {len(self.verses)} verses from {db_file.name}")
 
     def _add_verse(self, *, surah_name: str, ayah_number: int, original_text: str) -> None:
         norm_text = ArabicTextProcessor.normalize(original_text)
@@ -178,7 +308,7 @@ class QuranDatabase:
         return best_match
 # ============================ ASR Engine =====================================
 class ASREngine:
-    def __init__(self, model_path: str):
+    def __init__(self, model_path: Path):
         device = "cpu"
         compute_type = "float16" if device == "cuda" else "int8"
         self.model = WhisperModel(model_path, device=device, compute_type=compute_type)
@@ -196,9 +326,9 @@ class ASREngine:
         return "".join(seg.text for seg in segments).strip()
 # ============================ Real-time Recognizer ===========================
 class RealTimeQuranASR:
-    def __init__(self, json_path: str, model_path: str):
+    def __init__(self, json_path: Path, model_path: Path):
         print("Initializing...")
-        self.quran_db      = QuranDatabase(Path(json_path))
+        self.quran_db      = QuranDatabase(json_path)
         self.asr           = ASREngine(model_path)
         print("Initialization done.\n")
 
@@ -252,5 +382,4 @@ class RealTimeQuranASR:
             arabic_text  = match.verse_info.text,
             confidence   = match.confidence,
         )
-
         return result
