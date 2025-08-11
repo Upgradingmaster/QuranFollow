@@ -71,7 +71,6 @@ async function predictCurrentPosition() {
     updateCurrentVerse(js);
 }
 
-
 // variables
 const CHUNK_BACK = 4.0, CHUNK_FWD = 4.0, TARGET_SR = 16_000;
 const picker = document.getElementById('pick');
@@ -81,8 +80,6 @@ const ctx    = new AudioContext();
 
 let   audioBuf   = null;
 let   decodeToken = 0;
-
-loadAudio();
 
 // Handlers
 picker.onchange = async () => {
@@ -96,3 +93,4 @@ picker.onchange = async () => {
 };
 btn.onclick = predictCurrentPosition;
 
+loadAudio();

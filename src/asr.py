@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 import json
 import sqlite3
-import math
 from pathlib import Path
 from typing import NamedTuple, Optional
 from functools import lru_cache
 import re
 from faster_whisper import WhisperModel
-import time
 from time import perf_counter
 import numpy as np
 from rapidfuzz import fuzz
@@ -306,13 +304,16 @@ class QuranDatabase:
                 )
 
         return best_match
+
 # ============================ ASR Engine =====================================
 class ASREngine:
-    def __init__(self, model_path: Path):
+    def __init__(self, model_name: str):
         device = "cpu"
         compute_type = "float16" if device == "cuda" else "int8"
-        self.model = WhisperModel(model_path, device=device, compute_type=compute_type)
-        print(f"ASR model loaded.")
+
+        print(f"Loading model: {model_name}")
+        self.model = WhisperModel(model_name, device=device, compute_type=compute_type)
+        print("ASR model loaded.")
 
     def transcribe_chunk(self, audio_chunk: np.ndarray) -> str:
         """Transcribe a single audio chunk."""
@@ -326,10 +327,10 @@ class ASREngine:
         return "".join(seg.text for seg in segments).strip()
 # ============================ Real-time Recognizer ===========================
 class RealTimeQuranASR:
-    def __init__(self, json_path: Path, model_path: Path):
+    def __init__(self, json_path: Path, model_name: str):
         print("Initializing...")
         self.quran_db      = QuranDatabase(json_path)
-        self.asr           = ASREngine(model_path)
+        self.asr           = ASREngine(model_name)
         print("Initialization done.\n")
 
     def process_chunk(self, chunk: np.ndarray):
