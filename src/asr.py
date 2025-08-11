@@ -149,22 +149,22 @@ class ArabicTextProcessor:
 
 # ============================ Quran Database =================================
 class QuranDatabase:
-    def __init__(self, db_path: Path):
+    def __init__(self, script_db: Path):
         self.verses: list[VerseInfo] = []
         self.verse_normalized: list[str] = []
-        if db_path.name.endswith("aba.db"):
-            self._load_from_sqlite_aba(db_path)
-        elif db_path.name.endswith("wbw.db"):
-            self._load_from_sqlite_wbw(db_path)
+        if script_db.name.endswith("aba.db"):
+            self._load_from_sqlite_aba(script_db)
+        elif script_db.name.endswith("wbw.db"):
+            self._load_from_sqlite_wbw(script_db)
         else:
-            self._load_from_json(db_path)
+            self._load_from_json(script_db)
 
     def _load_from_json(self, json_file: Path) -> None:
         try:
             with json_file.open(encoding="utf-8") as f:
                 data = json.load(f)
         except Exception as e:
-            print(f"Error reading {json_file}: {e}")
+            print(f"Error reading json db {json_file}: {e}")
             return
 
         for key, verse in data.items():
@@ -197,7 +197,7 @@ class QuranDatabase:
                 "FROM verses ORDER BY surah, ayah"
             )
         except Exception as e:
-            print(f"Error reading {db_file}: {e}")
+            print(f"Error reading sqlite aba db {db_file}: {e}")
             return
 
         # for surah, ayah, word_idx, txt in cur:
@@ -224,7 +224,7 @@ class QuranDatabase:
                 "FROM words ORDER BY surah, ayah, word"
             )
         except Exception as e:
-            print(f"Error reading {db_file}: {e}")
+            print(f"Error reading sqlite wbw db {db_file}: {e}")
             return
 
         current_key: tuple[int,int]|None = None
@@ -327,9 +327,9 @@ class ASREngine:
         return "".join(seg.text for seg in segments).strip()
 # ============================ Real-time Recognizer ===========================
 class RealTimeQuranASR:
-    def __init__(self, json_path: Path, model_name: str):
+    def __init__(self, script_db: Path, model_name: str):
         print("Initializing...")
-        self.quran_db      = QuranDatabase(json_path)
+        self.quran_db      = QuranDatabase(script_db)
         self.asr           = ASREngine(model_name)
         print("Initialization done.\n")
 

@@ -4,11 +4,10 @@ import io
 import soundfile as sf
 from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
-from asr import RealTimeQuranASR
-from asr import Config
+from asr import RealTimeQuranASR, Config
 
 # ---------------------------------------------------------------------------
-JSON_PATH     =  Path("./static/res/scripts/uthmani-wbw.db")
+SCRIPT_DB     =  Path("./src/static/res/scripts/uthmani-wbw.db")
 MODEL_NAME    = "OdyAsh/faster-whisper-base-ar-quran"
 # MODEL_NAME    = "tarteel-ai/whisper-base-ar-quran"
 # TODO: try the normal whisper models
@@ -17,7 +16,7 @@ app = Flask(__name__, static_folder="static")
 CORS(app)  # simple open CORS policy
 
 print("Bootstrapping recognizer (takes a few seconds the first time)")
-recognizer = RealTimeQuranASR(json_path=JSON_PATH, model_name=MODEL_NAME)
+recognizer = RealTimeQuranASR(script_db=SCRIPT_DB, model_name=MODEL_NAME)
 print("Ready ✔")
 
 # ---------------------------------------------------------------------------

@@ -6,13 +6,6 @@
 <meta charset="utf-8">
 <title>Qurʾān Locator</title>
 
-<style>
-*{box-sizing:border-box}body{font-family:sans-serif;margin:2rem}
-audio{width:100%;margin:1rem 0}
-button{padding:.6rem 1rem;font-size:1rem}
-#log{margin-top:1rem;background:#111;color:#0f0;padding:1rem;height:260px;
-      overflow-y:auto;font-family:monospace;white-space:pre-wrap}
-</style>
 
 <h2>Qurʾān Locator</h2>
 
@@ -23,7 +16,14 @@ button{padding:.6rem 1rem;font-size:1rem}
 <!-- 2️⃣  Button sends the 8 s window around currentTime to the backend -->
 <button id="analyse">Analyse current position</button>
 
-<div id="current-verse"></div>
+<!-- Page Navigation -->
+<div id="page-controls">
+  <label for="page-input">Page:</label>
+  <input type="number" id="page-input" min="1" max="604" value="1" />
+  <button id="load-page">Load Page</button>
+</div>
+
+<div id="quran"></div>
 <pre id="log"></pre>
 
 <script type="module" src="/static/app.js"></script>

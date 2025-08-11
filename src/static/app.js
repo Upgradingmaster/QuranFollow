@@ -1,4 +1,5 @@
 import * as WavEncoder from './wav-encoder.js'
+import * as QuranRenderer from './quran-renderer.js'
 
 async function decodeArrayBuffer(ab, token) {
     try {
@@ -20,15 +21,33 @@ async function loadAudio() {
 }
 
 function log(msg) {
-    const el=document.getElementById('log');
-    el.textContent+=msg+"\n"; el.scrollTop=el.scrollHeight;
+    logel.textContent+=msg+"\n"; logel.scrollTop=logel.scrollHeight;
 }
 
 function updateCurrentVerse(json) {
-    const el=document.getElementById('current-verse');
     if (json.status == 'matched') {
         const msg = `${json.surah} : ${json.ayah}\n${json.arabic_text}`;
-        el.textContent = msg;
+        quran.textContent = msg;
+    }
+}
+
+async function loadQuranPage() {
+    const pageNumber = parseInt(pageInput.value);
+    
+    if (pageNumber < 1 || pageNumber > 604) {
+        log(`❌ Invalid page number: ${pageNumber}. Please enter 1-604.`);
+        return;
+    }
+    
+    try {
+        loadPageBtn.disabled = true;
+        log(`📖 Loading page ${pageNumber}...`);
+        await QuranRenderer.renderPageToElement(pageNumber, quran);
+        log(`✔ Page ${pageNumber} loaded successfully`);
+    } catch (error) {
+        log(`❌ Failed to load page ${pageNumber}: ${error.message}`);
+    } finally {
+        loadPageBtn.disabled = false;
     }
 }
 
@@ -76,7 +95,11 @@ const CHUNK_BACK = 4.0, CHUNK_FWD = 4.0, TARGET_SR = 16_000;
 const picker = document.getElementById('pick');
 const player = document.getElementById('player');
 const btn    = document.getElementById('analyse');
+const quran  = document.getElementById('quran');
+const logel  = document.getElementById('log');
 const ctx    = new AudioContext();
+const pageInput = document.getElementById('page-input');
+const loadPageBtn = document.getElementById('load-page');
 
 let   audioBuf   = null;
 let   decodeToken = 0;
@@ -92,5 +115,16 @@ picker.onchange = async () => {
     loadAudio();
 };
 btn.onclick = predictCurrentPosition;
+loadPageBtn.onclick = loadQuranPage;
+
+// Allow Enter key to load page
+pageInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        loadQuranPage();
+    }
+});
 
 loadAudio();
+
+QuranRenderer.initializeQuranRenderer();
+QuranRenderer.renderPageToElement(1, quran)
