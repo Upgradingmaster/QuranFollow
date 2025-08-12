@@ -170,9 +170,22 @@ function generateVerseWithContextHTML(surahNumber, verseNumber, contextBefore = 
     // Render each verse
     versesToRender.forEach(verse => {
         const cssClass = verse.isTarget ? 'verse target-verse' : 'verse context-verse';
+        const verseKey = `${verse.surah}:${verse.ayah}`;
+        const translationVerse = translationData ? translationData[verseKey] : null;
+        
         html += `<div class="${cssClass}" data-surah="${verse.surah}" data-ayah="${verse.ayah}">`;
+        html += `<div class="verse-metadata">`;
         html += `<div class="verse-number">${verse.surah}:${verse.ayah}</div>`;
+        html += `</div>`;
+        html += `<div class="verse-content">`;
         html += `<div class="arabic-text">${verse.text}</div>`;
+        
+        // Add translation if available
+        if (translationVerse && translationVerse.text) {
+            html += `<div class="translation-text">${translationVerse.text}</div>`;
+        }
+        
+        html += `</div>`;
         html += '</div>';
     });
     
@@ -191,16 +204,16 @@ function updateVerseContextDOM(html, targetElementId = 'quran') {
     if (quranContainer) {
         quranContainer.innerHTML = html;
         
-        // // Scroll the target verse into view
-        // setTimeout(() => {
-        //     const targetElement = quranContainer.querySelector('.target-verse');
-        //     if (targetElement) {
-        //         targetElement.scrollIntoView({
-        //             behavior: 'smooth',
-        //             block: 'center'
-        //         });
-        //     }
-        // }, 100);
+        // Scroll the target verse into view
+        setTimeout(() => {
+            const targetElement = quranContainer.querySelector('.target-verse');
+            if (targetElement) {
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }
+        }, 100);
     }
 }
 
@@ -227,13 +240,14 @@ async function renderVerseWithContext(surahNumber, verseNumber, contextBefore = 
 const verses_path      = '/static/res/scripts/uthmani-aba.json'
 const words_path       = '/static/res/scripts/uthmani-wbw.json'
 const layout_path      = '/static/res/layouts/uthmani.json'
-const translation_path = '/static/res/tranlations/sahih-international.json'
+const translation_path = '/static/res/translations/si-simple.json'
 
 // Global data stores
 let wordsData = null;
 let layoutData = null;
 let surahNames = null;
 let versesData = null;
+let translationData = null;
 
 // Surah names in Arabic
 const SURAH_NAMES = {
@@ -265,7 +279,8 @@ async function initializeQuranRenderer() {
         await Promise.all([
             loadWordsData(),
             loadLayoutData(),
-            loadVersesData()
+            loadVersesData(),
+            loadTranslationData()
         ]);
         console.log('Quran Renderer initialized successfully ✓');
     } catch (error) {
@@ -323,6 +338,23 @@ async function loadVersesData() {
         return versesData;
     } catch (error) {
         console.error('Failed to load verses data:', error);
+        throw error;
+    }
+}
+
+/**
+ * Loads translation data from the JSON file
+ * @returns {Promise<Object>} Translation data indexed by verse reference (surah:ayah)
+ */
+async function loadTranslationData() {
+    if (translationData) return translationData;
+    try {
+        const response = await fetch(translation_path);
+        translationData = await response.json();
+        console.log(`Loaded ${Object.keys(translationData).length} translations from si-simple.json`);
+        return translationData;
+    } catch (error) {
+        console.error('Failed to load translation data:', error);
         throw error;
     }
 }

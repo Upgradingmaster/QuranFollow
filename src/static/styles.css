@@ -233,14 +233,30 @@ audio {
     gap: 1rem;
 }
 
+.verse-metadata {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    min-width: 80px;
+}
+
+.verse-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+}
+
 .verse-number {
     color: var(--sepia-text);
     padding: 0.25rem 0.5rem;
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: 600;
-    flex-shrink: 0;
-    margin-top: 0.25rem;
     white-space: nowrap;
+    background: rgba(139, 115, 85, 0.1);
+    border-radius: 4px;
+    text-align: center;
 }
 
 .arabic-text {
@@ -250,6 +266,18 @@ audio {
     direction: rtl;
     color: var(--sepia-text);
     flex: 1;
+}
+
+.translation-text {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--sepia-text);
+    font-style: italic;
+    margin-top: 0.5rem;
+    padding-left: 1rem;
+    border-left: 2px solid rgba(139, 115, 85, 0.3);
+    opacity: 0.9;
 }
 
 .target-verse {
