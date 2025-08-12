@@ -24,26 +24,39 @@ function log(msg) {
     logel.textContent+=msg+"\n"; logel.scrollTop=logel.scrollHeight;
 }
 
-let current_loc = {"verse": 1, "chapter": 1}
-
 async function updateCurrentVerse(json) {
     if (json.status == 'matched') {
         const surahNumber = parseInt(json.surah);
         const ayahNumber = parseInt(json.ayah);
-        log(`✔ Found verse: ${surahNumber}:${ayahNumber}`);
 
-        // if (surahNumber != current_loc.chapter) { // new surah
-        if (true) { // new surah
+        log(`✔ Found verse: ${surahNumber}:${ayahNumber}`);
+        const currentState = QuranRenderer.getCurrentRenderingState();
+
+        if (!currentState.mode || currentState.surah !== surahNumber) { // new surah
             try {
                 await QuranRenderer.renderSurah(surahNumber, ayahNumber);
-                current_loc = {"verse": ayahNumber, "chapter": surahNumber}
+                log(`📖 Loaded surah ${surahNumber} with verse ${ayahNumber} highlighted`);
             } catch (error) {
-                log(`❌ Failed to load verse with context : ${error.message}`);
+                log(`❌ Failed to load surah ${surahNumber}: ${error.message}`);
                 return;
             }
-        } else {
-            //TODO:
         }
+        else { // same surah
+            if (currentState.targetVerse !== ayahNumber) { // new ayah
+                const success = QuranRenderer.setTargetVerse(ayahNumber);
+                if (success) {
+                    log(`🎯 Switched to verse ${ayahNumber} in current surah`);
+                } else {
+                    log(`❌ Failed to switch to verse ${ayahNumber}`);
+                }
+            } else {// same ayah
+                QuranRenderer.scrollToTargetVerse();
+                log(`📍 Scrolled to current verse ${surahNumber}:${ayahNumber}`);
+            }
+        }
+    }
+    else {
+        log("❌ Analysis failed")
     }
 }
 
@@ -155,7 +168,7 @@ async function predictCurrentPosition() {
     const r  = await fetch('/process_chunk', {method:'POST', body:fd});
     const js = await r.json();
 
-    log(JSON.stringify(js, null, 2));
+    // log(JSON.stringify(js, null, 2));
     await updateCurrentVerse(js);
 }
 
@@ -229,7 +242,7 @@ loadAudio();
 await QuranRenderer.initializeQuranRenderer();
 // QuranRenderer.renderVerseWithContext(20, 3);
 // QuranRenderer.renderMushafPage(1);
-QuranRenderer.renderSurah(18, 1);
+QuranRenderer.renderSurah(18);
 
 
 // TODO: don't redraw all the html each time, current surah etc.

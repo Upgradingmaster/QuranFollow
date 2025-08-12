@@ -65,11 +65,13 @@ function generateMushafPageHTML(pageNumber, options = {}) {
  * @param {string} html - HTML string to insert
  * @param {string} targetElementId - ID of the container element (default: 'quran')
  */
-function updateMushafPageDOM(html, targetElementId = 'quran') {
+function updateMushafPageDOM(html, pageNumber, targetElementId = 'quran') {
     const quranContainer = document.getElementById(targetElementId);
     if (quranContainer) {
         quranContainer.innerHTML = html;
-
+        
+        // Update state
+        RenderingState.setMushafState(pageNumber, quranContainer);
 
         setupVerseHighlighting(quranContainer);
     }
@@ -83,7 +85,7 @@ function updateMushafPageDOM(html, targetElementId = 'quran') {
  */
 async function renderMushafPage(pageNumber, options = {}, targetElementId = 'quran') {
     const html = await generateMushafPageHTML(pageNumber, options);
-    updateMushafPageDOM(html, targetElementId);
+    updateMushafPageDOM(html, pageNumber, targetElementId);
 }
 
 /**
@@ -206,23 +208,20 @@ function generateVerseWithContextHTML(surahNumber, verseNumber, contextBefore = 
 /**
  * Updates DOM with verse context HTML and handles scrolling
  * @param {string} html - HTML string to insert
+ * @param {number} surahNumber - Surah number for state tracking
+ * @param {number} targetVerse - Target verse number for state tracking
  * @param {string} targetElementId - ID of the container element (default: 'quran')
  */
-function updateVerseContextDOM(html, targetElementId = 'quran') {
+function updateVerseContextDOM(html, surahNumber, targetVerse, contextBefore, contextAfter, targetElementId = 'quran') {
     const quranContainer = document.getElementById(targetElementId);
     if (quranContainer) {
         quranContainer.innerHTML = html;
         
-        // Scroll the target verse into view
-        setTimeout(() => {
-            const targetElement = quranContainer.querySelector('.target-verse');
-            if (targetElement) {
-                targetElement.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
-                });
-            }
-        }, 100);
+        // Update state
+        RenderingState.setContextState(surahNumber, targetVerse, contextBefore, contextAfter, quranContainer);
+        
+        // Scroll to target verse
+        scrollToTargetVerse();
     }
 }
 
@@ -237,7 +236,7 @@ function updateVerseContextDOM(html, targetElementId = 'quran') {
  */
 async function renderVerseWithContext(surahNumber, verseNumber, contextBefore = 4, contextAfter = 4, options = {}, targetElementId = 'quran') {
     const html = generateVerseWithContextHTML(surahNumber, verseNumber, contextBefore, contextAfter, options);
-    updateVerseContextDOM(html, targetElementId);
+    updateVerseContextDOM(html, surahNumber, verseNumber, contextBefore, contextAfter, targetElementId);
 }
 
 
@@ -305,23 +304,20 @@ function generateSurahHTML(surahNumber, targetVerse = null, options = {}) {
 /**
  * Updates DOM with surah HTML and handles scrolling to target verse
  * @param {string} html - HTML string to insert
+ * @param {number} surahNumber - Surah number for state tracking
+ * @param {number} targetVerse - Target verse number for state tracking
  * @param {string} targetElementId - ID of the container element (default: 'quran')
  */
-function updateSurahDOM(html, targetElementId = 'quran') {
+function updateSurahDOM(html, surahNumber, targetVerse, targetElementId = 'quran') {
     const quranContainer = document.getElementById(targetElementId);
     if (quranContainer) {
         quranContainer.innerHTML = html;
         
-        // Scroll the target verse into view
-        setTimeout(() => {
-            const targetElement = quranContainer.querySelector('.target-verse');
-            if (targetElement) {
-                targetElement.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
-                });
-            }
-        }, 100);
+        // Update state
+        RenderingState.setSurahState(surahNumber, targetVerse, quranContainer);
+        
+        // Scroll to target verse
+        scrollToTargetVerse();
     }
 }
 
@@ -334,7 +330,7 @@ function updateSurahDOM(html, targetElementId = 'quran') {
  */
 async function renderSurah(surahNumber, targetVerse = null, options = {}, targetElementId = 'quran') {
     const html = generateSurahHTML(surahNumber, targetVerse, options);
-    updateSurahDOM(html, targetElementId);
+    updateSurahDOM(html, surahNumber, targetVerse, targetElementId);
 }
 
 // ============================================================================
@@ -353,6 +349,165 @@ let layoutData = null;
 let surahNames = null;
 let versesData = null;
 let translationData = null;
+
+// Rendering state management
+const RenderingState = {
+    // Private state
+    _state: {
+        mode: null, // 'mushaf', 'context', 'surah'
+        surah: null,
+        targetVerse: null,
+        containerElement: null,
+        pageNumber: null, // for mushaf mode
+        contextBefore: null, // for context mode
+        contextAfter: null, // for context mode
+        lastUpdated: null
+    },
+
+    // Getters
+    getMode() { return this._state.mode; },
+    getSurah() { return this._state.surah; },
+    getTargetVerse() { return this._state.targetVerse; },
+    getContainerElement() { return this._state.containerElement; },
+    getPageNumber() { return this._state.pageNumber; },
+    getContextRange() { 
+        return { 
+            before: this._state.contextBefore, 
+            after: this._state.contextAfter 
+        }; 
+    },
+    getLastUpdated() { return this._state.lastUpdated; },
+
+    // Get complete state (immutable copy)
+    getState() {
+        return {
+            mode: this._state.mode,
+            surah: this._state.surah,
+            targetVerse: this._state.targetVerse,
+            pageNumber: this._state.pageNumber,
+            contextBefore: this._state.contextBefore,
+            contextAfter: this._state.contextAfter,
+            lastUpdated: this._state.lastUpdated,
+            hasContainer: !!this._state.containerElement
+        };
+    },
+
+    // Validation
+    isValidMode(mode) {
+        return ['mushaf', 'context', 'surah'].includes(mode);
+    },
+
+    isValidSurah(surah) {
+        return surah === null || (Number.isInteger(surah) && surah >= 1 && surah <= 114);
+    },
+
+    isValidVerse(verse) {
+        return verse === null || (Number.isInteger(verse) && verse >= 1);
+    },
+
+    isValidPage(page) {
+        return page === null || (Number.isInteger(page) && page >= 1 && page <= 604);
+    },
+
+    // State setters with validation
+    setMushafState(pageNumber, containerElement) {
+        if (!this.isValidPage(pageNumber)) {
+            throw new Error(`Invalid page number: ${pageNumber}`);
+        }
+        if (!containerElement) {
+            throw new Error('Container element is required');
+        }
+
+        this._state.mode = 'mushaf';
+        this._state.surah = null;
+        this._state.targetVerse = null;
+        this._state.pageNumber = pageNumber;
+        this._state.contextBefore = null;
+        this._state.contextAfter = null;
+        this._state.containerElement = containerElement;
+        this._state.lastUpdated = Date.now();
+    },
+
+    setContextState(surah, targetVerse, contextBefore, contextAfter, containerElement) {
+        if (!this.isValidSurah(surah)) {
+            throw new Error(`Invalid surah number: ${surah}`);
+        }
+        if (!this.isValidVerse(targetVerse)) {
+            throw new Error(`Invalid target verse: ${targetVerse}`);
+        }
+        if (!containerElement) {
+            throw new Error('Container element is required');
+        }
+
+        this._state.mode = 'context';
+        this._state.surah = surah;
+        this._state.targetVerse = targetVerse;
+        this._state.pageNumber = null;
+        this._state.contextBefore = contextBefore;
+        this._state.contextAfter = contextAfter;
+        this._state.containerElement = containerElement;
+        this._state.lastUpdated = Date.now();
+    },
+
+    setSurahState(surah, targetVerse, containerElement) {
+        if (!this.isValidSurah(surah)) {
+            throw new Error(`Invalid surah number: ${surah}`);
+        }
+        if (!this.isValidVerse(targetVerse)) {
+            throw new Error(`Invalid target verse: ${targetVerse}`);
+        }
+        if (!containerElement) {
+            throw new Error('Container element is required');
+        }
+
+        this._state.mode = 'surah';
+        this._state.surah = surah;
+        this._state.targetVerse = targetVerse;
+        this._state.pageNumber = null;
+        this._state.contextBefore = null;
+        this._state.contextAfter = null;
+        this._state.containerElement = containerElement;
+        this._state.lastUpdated = Date.now();
+    },
+
+    // Update only target verse (for dynamic changes)
+    setTargetVerse(targetVerse) {
+        if (!this.isValidVerse(targetVerse)) {
+            throw new Error(`Invalid target verse: ${targetVerse}`);
+        }
+        if (this._state.mode === 'mushaf') {
+            throw new Error('Cannot set target verse in mushaf mode');
+        }
+        if (!this._state.containerElement) {
+            throw new Error('No container element available');
+        }
+
+        this._state.targetVerse = targetVerse;
+        this._state.lastUpdated = Date.now();
+    },
+
+    // Check if state is ready for operations
+    isReady() {
+        return !!(this._state.mode && this._state.containerElement);
+    },
+
+    // Check if mode supports target verses
+    supportsTargetVerse() {
+        return this._state.mode === 'context' || this._state.mode === 'surah';
+    },
+
+    // Clear state
+    clear() {
+        this._state.mode = null;
+        this._state.surah = null;
+        this._state.targetVerse = null;
+        this._state.containerElement = null;
+        this._state.pageNumber = null;
+        this._state.contextBefore = null;
+        this._state.contextAfter = null;
+        this._state.lastUpdated = Date.now();
+    }
+};
 
 // Surah names in Arabic
 const SURAH_NAMES = {
@@ -465,6 +620,173 @@ async function loadTranslationData() {
 }
 
 // ============================================================================
+// TARGET VERSE
+// ============================================================================
+
+/**
+ * Dynamically changes the target verse without re-rendering
+ * @param {number} newTargetVerse - New verse number to highlight (null to clear)
+ * @param {boolean} scrollIntoView - Whether to scroll to the new target verse (default: true)
+ */
+function setTargetVerse(newTargetVerse, scrollIntoView = true) {
+    try {
+        if (!RenderingState.isReady()) {
+            console.error('Rendering state not ready. Render content first.');
+            return false;
+        }
+        
+        if (!RenderingState.supportsTargetVerse()) {
+            console.error(`Current mode '${RenderingState.getMode()}' does not support target verses.`);
+            return false;
+        }
+        
+        const currentSurah = RenderingState.getSurah();
+        const currentTargetVerse = RenderingState.getTargetVerse();
+        
+        // Remove existing target verse styling
+        if (currentTargetVerse !== null) {
+            findTargetVerseElement().classList.remove('target-verse');
+        }
+        
+        // Add new target verse styling
+        if (newTargetVerse !== null) {
+            findVerseElements(currentSurah, newTargetVerse).classList.add('target-verse');
+
+            // Scroll to the new target verse
+            if (scrollIntoView) {
+                scrollToTargetVerse(true, 100);
+            }
+        }
+        
+        // Update state
+        RenderingState.setTargetVerse(newTargetVerse);
+        return true;
+    } catch (error) {
+        console.error('Error setting target verse:', error.message);
+        return false;
+    }
+}
+
+/**
+ * Gets the current target verse
+ * @returns {number|null} Current target verse number or null
+ */
+function getCurrentTargetVerse() {
+    return RenderingState.getTargetVerse();
+}
+
+/**
+ * Gets the current rendering state
+ * @returns {Object} Current rendering state
+ */
+function getCurrentRenderingState() {
+    return RenderingState.getState();
+}
+
+// ============================================================================
+// SCROLLING UTILITIES
+// ============================================================================
+
+/**
+ * Scrolls to the target verse in the current container
+ * @param {boolean} scrollIntoView - Whether to scroll (default: true)
+ * @param {number} delay - Delay before scrolling in ms (default: 100)
+ */
+function scrollToTargetVerse(scrollIntoView = true, delay = 100) {
+    if (!scrollIntoView || !RenderingState.isReady()) {
+        return;
+    }
+    
+    setTimeout(() => {
+        const targetElement = findTargetVerseElement();
+        if (targetElement) {
+            targetElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+    }, delay);
+}
+
+/**
+ * Scrolls to a specific verse by surah and ayah numbers
+ * @param {number} surah - Surah number
+ * @param {number} ayah - Ayah number
+ * @param {boolean} scrollIntoView - Whether to scroll (default: true)
+ * @param {number} delay - Delay before scrolling in ms (default: 100)
+ */
+function scrollToVerse(surah, ayah, scrollIntoView = true, delay = 100) {
+    if (!scrollIntoView || !RenderingState.isReady()) {
+        return;
+    }
+    
+    setTimeout(() => {
+        const verseElement = findVerseElements(surah, ayah, false);
+        if (verseElement) {
+            verseElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+    }, delay);
+}
+
+// ============================================================================
+// DOM QUERY UTILITIES
+// ============================================================================
+
+/**
+ * Finds verse elements by surah and ayah numbers in the current container
+ * @param {number} surah - Surah number
+ * @param {number} ayah - Ayah number
+ * @param {boolean} all - Whether to return all matches or just the first (default: true)
+ * @returns {NodeList|Element|null} Matching elements or null if not found
+ */
+function findVerseElements(surah, ayah, all = false) {
+    if (!RenderingState.isReady()) {
+        return all ? [] : null;
+    }
+    
+    const containerElement = RenderingState.getContainerElement();
+    const selector = `[data-surah="${surah}"][data-ayah="${ayah}"]`;
+    
+    if (all) {
+        return containerElement.querySelectorAll(selector);
+    } else {
+        return containerElement.querySelector(selector);
+    }
+}
+
+/**
+ * Finds the current target verse element
+ * @returns {Element|null} Target verse element or null if not found
+ */
+function findTargetVerseElement() {
+    if (!RenderingState.isReady()) {
+        return null;
+    }
+    
+    const containerElement = RenderingState.getContainerElement();
+    return containerElement.querySelector('.target-verse');
+}
+
+/**
+ * Finds verse elements for the current target verse
+ * @param {boolean} all - Whether to return all matches or just the first (default: true)
+ * @returns {NodeList|Element|null} Target verse elements or null
+ */
+function findCurrentTargetVerseElements(all = true) {
+    const targetVerse = RenderingState.getTargetVerse();
+    const surah = RenderingState.getSurah();
+    
+    if (targetVerse === null || surah === null) {
+        return all ? [] : null;
+    }
+    
+    return findVerseElements(surah, targetVerse, all);
+}
+
+// ============================================================================
 // UTIL
 // ============================================================================
 
@@ -519,6 +841,20 @@ export {
     renderMushafPage,
     renderVerseWithContext,
     renderSurah,
+
+    // target verse functions
+    setTargetVerse,
+    getCurrentTargetVerse,
+    getCurrentRenderingState,
+    
+    // Scrolling utilities
+    scrollToTargetVerse,
+    scrollToVerse,
+    
+    // DOM query utilities
+    findVerseElements,
+    findTargetVerseElement,
+    findCurrentTargetVerseElements,
 
     // HTML generation functions (for advanced usage)
     generateMushafPageHTML,
