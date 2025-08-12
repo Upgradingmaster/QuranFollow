@@ -223,6 +223,12 @@ async function renderVerseWithContext(surahNumber, verseNumber, contextBefore = 
 // DATABASE AND GLOBAL DATA
 // ============================================================================
 
+
+const verses_path      = '/static/res/scripts/uthmani-aba.json'
+const words_path       = '/static/res/scripts/uthmani-wbw.json'
+const layout_path      = '/static/res/layouts/uthmani.json'
+const translation_path = '/static/res/tranlations/sahih-international.json'
+
 // Global data stores
 let wordsData = null;
 let layoutData = null;
@@ -271,22 +277,15 @@ async function initializeQuranRenderer() {
 
 /**
  * Loads words data from the SQLite database
- * @returns {Promise<Array>} Words data indexed by ID
+ * @returns {Promise<Object>} Words data indexed by ID
  */
 async function loadWordsData() {
     if (wordsData) return wordsData;
 
     try {
-        const response = await fetch('/static/res/scripts/uthmani-wbw.json');
-        const words    = await response.json();
-
-        wordsData = [];
-        Object.values(words).forEach(word => {
-            wordsData[word.id] = word;
-        });
-
-        console.log(`Loaded ${Object.keys(words).length} words from database`);
-        return wordsData;
+        const response = await fetch(words_path);
+        wordsData      = await response.json();
+        console.log(`Loaded ${Object.keys(wordsData).length} words from database`);
     } catch (error) {
         console.error('Failed to load words data:', error);
         throw error;
@@ -301,20 +300,9 @@ async function loadLayoutData() {
     if (layoutData) return layoutData;
 
     try {
-        const response = await fetch('/static/res/layouts/uthmani-15-lines.json');
-        const pages = await response.json();
-
-        // Index layout by page number
-        layoutData = {};
-        pages.forEach(page => {
-            if (!layoutData[page.page_number]) {
-                layoutData[page.page_number] = [];
-            }
-            layoutData[page.page_number].push(page);
-        });
-
+        const response = await fetch(layout_path);
+        layoutData     = await response.json();
         console.log(`Loaded layout data for ${Object.keys(layoutData).length} pages`);
-        return layoutData;
     } catch (error) {
         console.error('Failed to load layout data:', error);
         throw error;
@@ -329,9 +317,8 @@ async function loadVersesData() {
     if (versesData) return versesData;
 
     try {
-        const response = await fetch('/static/res/scripts/uthmani.json');
-        versesData = await response.json();
-
+        const response = await fetch(verses_path);
+        versesData     = await response.json();
         console.log(`Loaded ${Object.keys(versesData).length} verses from uthmani.json`);
         return versesData;
     } catch (error) {
@@ -339,7 +326,6 @@ async function loadVersesData() {
         throw error;
     }
 }
-
 
 // ============================================================================
 // UTIL
@@ -383,7 +369,7 @@ function getWords(firstWordId, lastWordId) {
  */
 function getPageLayout(pageNumber) {
     if (!layoutData) {
-        console.error('Layout data not loaded');
+        console.error(`Layout data not loaded`);
         return [];
     }
 

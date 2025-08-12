@@ -7,7 +7,7 @@ from flask_cors import CORS
 from asr import RealTimeQuranASR, Config
 
 # ---------------------------------------------------------------------------
-SCRIPT_DB     =  Path("./src/static/res/scripts/uthmani-wbw.db")
+SCRIPT_DB     =  Path("./src/static/res/scripts/db/uthmani-wbw.db")
 MODEL_NAME    = "OdyAsh/faster-whisper-base-ar-quran"
 # MODEL_NAME    = "tarteel-ai/whisper-base-ar-quran"
 # TODO: try the normal whisper models

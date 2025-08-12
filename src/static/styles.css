@@ -4,7 +4,6 @@
     font-display: swap;
 }
 
-/* Modern Sepia Theme */
 :root {
     --sepia-bg: #f4f1e8;
     --sepia-paper: #faf8f1;
@@ -39,9 +38,6 @@ h2 {
     text-shadow: 0 2px 4px var(--sepia-shadow);
 }
 
-
-/* Input and Button Styling */
-
 input[type="number"] {
     background: var(--sepia-paper);
     border: 2px solid var(--sepia-border);
@@ -60,7 +56,7 @@ input[type="number"]:focus {
     box-shadow: 0 0 0 3px rgba(139, 115, 85, 0.1);
 }
 
-button {
+button, .file-input-label {
     background: linear-gradient(135deg, var(--sepia-button) 0%, var(--sepia-accent) 100%);
     color: white;
     border: none;
@@ -73,9 +69,11 @@ button {
     font-family: inherit;
     font-weight: 500;
     margin: 0.25rem;
+    display: block;
+    text-align: center;
 }
 
-button:hover {
+button:hover, .file-input-label:hover {
     background: linear-gradient(135deg, var(--sepia-button-hover) 0%, #7a6347 100%);
     box-shadow: 0 4px 12px var(--sepia-dark-shadow);
     transform: translateY(-1px);
@@ -92,7 +90,6 @@ button:disabled {
     box-shadow: none;
 }
 
-/* Control Panel */
 #control-panel {
     background: var(--sepia-paper);
     border-radius: 12px;
@@ -104,8 +101,6 @@ button:disabled {
 
 .control-row {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0;
 }
 
 .control-section {
@@ -129,14 +124,6 @@ button:disabled {
 
 .file-input-wrapper {
     position: relative;
-    display: inline-block;
-    margin: 0.5rem 0;
-    width: 100%;
-}
-
-#analyse {
-    position: relative;
-    display: inline-block;
     margin: 0.5rem 0;
     width: 100%;
 }
@@ -150,17 +137,9 @@ button:disabled {
 }
 
 .file-input-label {
-    display: block;
     background: var(--sepia-border);
     color: var(--sepia-text);
-    padding: 0.6rem 1.2rem;
-    border-radius: 6px;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.3s ease;
     border: 2px solid var(--sepia-border);
-    font-family: inherit;
-    font-weight: 500;
 }
 
 .file-input-label:hover {
@@ -169,23 +148,16 @@ button:disabled {
     border-color: var(--sepia-accent);
 }
 
-.page-controls {
+.page-controls, .verse-controls {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
 }
 
-.page-controls label {
-    font-weight: 600;
-    color: var(--sepia-accent);
-}
-
 .verse-controls {
-    display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    align-items: center;
 }
 
 .input-group {
@@ -194,13 +166,12 @@ button:disabled {
     gap: 0.5rem;
 }
 
-.input-group label {
+.page-controls label, .input-group label {
     font-weight: 600;
     color: var(--sepia-accent);
     min-width: 50px;
 }
 
-/* Audio Player Styling */
 audio {
     width: 100%;
     margin: 0.5rem 0 1rem 0;
@@ -216,10 +187,6 @@ audio {
     box-shadow: 0 8px 24px var(--sepia-shadow);
 }
 
-.mushaf-page-container {
-    max-width: 100%;
-}
-
 .verse-context-container {
     padding: 1rem;
     line-height: 2.5;
@@ -231,26 +198,19 @@ audio {
     transition: background-color 0.2s ease;
 }
 
-.line.centered {
-    text-align: center;
-}
-
 .line.surah_name {
     font-weight: 600;
     color: var(--sepia-accent);
-    text-align: center;
     background: linear-gradient(135deg, rgba(139, 115, 85, 0.1) 0%, rgba(139, 115, 85, 0.05) 100%);
     border-radius: 8px;
     border: 1px solid rgba(139, 115, 85, 0.2);
 }
 
 .line.basmallah {
-    text-align: center;
     font-size: 1.1em;
     color: var(--sepia-accent);
 }
 
-/* Mushaf Word-level hover effects */
 .word {
     display: inline-block;
     padding: 0.1rem 0.2rem;
@@ -258,7 +218,6 @@ audio {
     transition: all 0.1s ease;
 }
 
-/* Mushaf Verse-level highlighting */
 .verse-highlighted {
     background: rgba(139, 115, 85, 0.12);
     color: var(--sepia-accent);
@@ -275,9 +234,8 @@ audio {
 }
 
 .verse-number {
-    color: var(--sepia-light);
+    color: var(--sepia-text);
     padding: 0.25rem 0.5rem;
-    display: inline-block;
     font-size: 1.2rem;
     font-weight: 600;
     flex-shrink: 0;
@@ -289,7 +247,6 @@ audio {
     font-family: 'qpc-hafs', 'Traditional Arabic', 'Arabic Typesetting', serif;
     font-size: 3rem;
     line-height: 2.2;
-    /* text-align: right; */
     direction: rtl;
     color: var(--sepia-text);
     flex: 1;
@@ -321,10 +278,8 @@ audio {
 .bismillah .arabic-text {
     font-size: 2.5rem;
     color: var(--sepia-accent);
-    text-align: center;
 }
 
-/* Log Styling */
 #log {
     margin-top: 1rem;
     background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
@@ -359,7 +314,6 @@ audio {
     background: #22c55e;
 }
 
-/* Error styling */
 .error {
     color: #dc2626;
     background: rgba(220, 38, 38, 0.1);
@@ -367,43 +321,4 @@ audio {
     border-radius: 6px;
     border: 1px solid rgba(220, 38, 38, 0.3);
     text-align: center;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-    body {
-        padding: 1rem;
-    }
-    
-    .quran-container {
-        padding: 1.5rem;
-    }
-    
-    .arabic-text {
-        font-size: 2rem;
-    }
-    
-    h2 {
-        font-size: 2rem;
-    }
-    
-    .control-row {
-        flex-direction: column;
-    }
-    
-    .control-section {
-        padding: 1rem;
-        border-right: none;
-        border-bottom: 1px solid var(--sepia-border);
-        min-width: auto;
-    }
-    
-    .control-section:last-child {
-        border-bottom: none;
-    }
-    
-    .page-controls, .verse-controls {
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
 }
