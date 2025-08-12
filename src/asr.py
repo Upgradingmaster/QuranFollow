@@ -12,47 +12,10 @@ from rapidfuzz import fuzz
 import unicodedata
 
 
-SURAH_NAMES = {
-    1: "Al-Fātiḥah", 2: "Al-Baqarah", 3: "Āl-ʿImrān", 4: "An-Nisāʾ",
-    5: "Al-Māʾidah", 6: "Al-Anʿām", 7: "Al-Aʿrāf", 8: "Al-Anfāl",
-    9: "At-Tawbah", 10: "Yūnus", 11: "Hūd", 12: "Yūsuf",
-    13: "Ar-Raʿd", 14: "Ibrāhīm", 15: "Al-Ḥijr", 16: "An-Naḥl",
-    17: "Al-Isrāʾ", 18: "Al-Kahf", 19: "Maryam", 20: "Ṭā-Hā",
-    21: "Al-Anbiyāʾ", 22: "Al-Ḥajj", 23: "Al-Muʾminūn",
-    24: "An-Nūr", 25: "Al-Furqān", 26: "Ash-Shuʿarāʾ",
-    27: "An-Naml", 28: "Al-Qaṣaṣ", 29: "Al-ʿAnkabūt",
-    30: "Ar-Rūm", 31: "Luqmān", 32: "As-Sajdah", 33: "Al-Aḥzāb",
-    34: "Sabaʾ", 35: "Fāṭir", 36: "Yā-Sīn", 37: "Aṣ-Ṣāffāt",
-    38: "Ṣād", 39: "Az-Zumar", 40: "Ghāfir", 41: "Fuṣṣilat",
-    42: "Ash-Shūrā", 43: "Az-Zukhruf", 44: "Ad-Dukhān",
-    45: "Al-Jāthiyah", 46: "Al-Aḥqāf", 47: "Muḥammad",
-    48: "Al-Fatḥ", 49: "Al-Ḥujurāt", 50: "Qāf", 51: "Adh-Dhāriyāt",
-    52: "Aṭ-Ṭūr", 53: "An-Najm", 54: "Al-Qamar", 55: "Ar-Raḥmān",
-    56: "Al-Wāqiʿah", 57: "Al-Ḥadīd", 58: "Al-Mujādilah",
-    59: "Al-Ḥashr", 60: "Al-Mumtaḥanah", 61: "Aṣ-Ṣaff",
-    62: "Al-Jumuʿah", 63: "Al-Munāfiqūn", 64: "At-Taghābun",
-    65: "Aṭ-Ṭalāq", 66: "At-Taḥrīm", 67: "Al-Mulk",
-    68: "Al-Qalam", 69: "Al-Ḥāqqah", 70: "Al-Maʿārij",
-    71: "Nūḥ", 72: "Al-Jinn", 73: "Al-Muzzammil",
-    74: "Al-Mudda ththir", 75: "Al-Qiyāmah", 76: "Al-Insān",
-    77: "Al-Mursalāt", 78: "An-Nabaʾ", 79: "An-Nāziʿāt",
-    80: "ʿAbasa", 81: "At-Takwīr", 82: "Al-Infiṭār",
-    83: "Al-Muṭaffifīn", 84: "Al-Inshiqāq", 85: "Al-Burūj",
-    86: "Aṭ-Ṭāriq", 87: "Al-Aʿlā", 88: "Al-Gāshiyah",
-    89: "Al-Fajr", 90: "Al-Balad", 91: "Ash-Shams",
-    92: "Al-Layl", 93: "Aḍ-Ḍuḥā", 94: "Ash-Sharḥ",
-    95: "At-Tīn", 96: "Al-ʿAlaq", 97: "Al-Qadr",
-    98: "Al-Bayyinah", 99: "Az-Zalzalah", 100: "Al-ʿĀdiyāt",
-    101: "Al-Qāriʿah", 102: "At-Takāthur", 103: "Al-ʿAṣr",
-    104: "Al-Humazah", 105: "Al-Fīl", 106: "Quraysh",
-    107: "Al-Māʿūn", 108: "Al-Kawthar", 109: "Al-Kāfirūn",
-    110: "An-Naṣr", 111: "Al-Masad", 112: "Al-Ikhlāṣ",
-    113: "Al-Falāq", 114: "An-Nās",
-}
 
 # ============================ Data Structures ================================
 class VerseInfo(NamedTuple):
-    surah_name: str
+    surah_number: int
     ayah_number: int
     start_pos: int
     end_pos: int
@@ -66,7 +29,7 @@ class MatchResult(NamedTuple):
 # ============================ Configuration =================================
 class Config:
     SAMPLE_RATE = 16000
-    CHUNK_DURATION_FORWARD  = 4.0
+    CHUNK_DURATION_FORWARD  = 2.0
     CHUNK_DURATION_BACKWARD = 4.0
     MIN_MATCH_LENGTH = 8
     MIN_SIMILARITY_SCORE = 65
@@ -180,7 +143,7 @@ class QuranDatabase:
                 continue
 
             self._add_verse(
-                surah_name=SURAH_NAMES.get(surah_num, f"Surah {surah_num}"),
+                surah_number=surah_num,
                 ayah_number=ayah_num,
                 original_text=original_text,
             )
@@ -203,7 +166,7 @@ class QuranDatabase:
         # for surah, ayah, word_idx, txt in cur:
         for verse_key, surah, ayah, txt in cur:
             self._add_verse(
-                surah_name    = SURAH_NAMES.get(surah, f"Foo: {verse_key}"),
+                surah_number  = surah,
                 ayah_number   = ayah,
                 original_text = txt
             )
@@ -236,7 +199,7 @@ class QuranDatabase:
             key = (surah, ayah)
             if current_key and key != current_key:
                 self._add_verse(
-                    surah_name = SURAH_NAMES.get(current_key[0], f"Surah {current_key[0]}"),
+                    surah_number = current_key[0],
                     ayah_number= current_key[1],
                     original_text = " ".join(buf)
                 )
@@ -247,7 +210,7 @@ class QuranDatabase:
         # flush last āyah
         if current_key:
             self._add_verse(
-                surah_name = SURAH_NAMES.get(current_key[0], f"Surah {current_key[0]}"),
+                surah_number = current_key[0],
                 ayah_number= current_key[1],
                 original_text = " ".join(buf)
             )
@@ -255,14 +218,14 @@ class QuranDatabase:
         con.close()
         print(f"Loaded {len(self.verses)} verses from {db_file.name}")
 
-    def _add_verse(self, *, surah_name: str, ayah_number: int, original_text: str) -> None:
+    def _add_verse(self, *, surah_number: int, ayah_number: int, original_text: str) -> None:
         norm_text = ArabicTextProcessor.normalize(original_text)
         if not norm_text:
             return
 
         self.verses.append(
             VerseInfo(
-                surah_name=surah_name,
+                surah_number=surah_number,
                 ayah_number=ayah_number,
                 start_pos=0,             # not used
                 end_pos=0,
@@ -378,7 +341,7 @@ class RealTimeQuranASR:
         # --- success --------------------------------------------------------
         result.update(
             status       = "matched",
-            surah        = match.verse_info.surah_name,
+            surah        = match.verse_info.surah_number,
             ayah         = match.verse_info.ayah_number,
             arabic_text  = match.verse_info.text,
             confidence   = match.confidence,

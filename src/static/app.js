@@ -24,10 +24,24 @@ function log(msg) {
     logel.textContent+=msg+"\n"; logel.scrollTop=logel.scrollHeight;
 }
 
-function updateCurrentVerse(json) {
+let current_loc = {"verse": 1, "chapter": 1}
+async function updateCurrentVerse(json) {
     if (json.status == 'matched') {
-        const msg = `${json.surah} : ${json.ayah}\n${json.arabic_text}`;
-        quran.textContent = msg;
+        const surahNumber = parseInt(json.surah);
+        const ayahNumber = parseInt(json.ayah);
+        const loc = {"verse": ayahNumber, "chapter": surahNumber}
+
+        log(`✔ Found verse: ${surahNumber}:${ayahNumber}`);
+
+        // Check if we need to load a different page
+        if (current_loc != loc) {
+            try {
+                await QuranRenderer.renderVerseWithContext(surahNumber, ayahNumber);
+            } catch (error) {
+                log(`❌ Failed to load verse with context : ${error.message}`);
+                return;
+            }
+        }
     }
 }
 
@@ -42,7 +56,7 @@ async function loadQuranPage() {
     try {
         loadPageBtn.disabled = true;
         log(`📖 Loading page ${pageNumber}...`);
-        await QuranRenderer.renderPageToElement(pageNumber, quran);
+        await QuranRenderer.renderMushafPage(pageNumber);
         log(`✔ Page ${pageNumber} loaded successfully`);
     } catch (error) {
         log(`❌ Failed to load page ${pageNumber}: ${error.message}`);
@@ -87,7 +101,7 @@ async function predictCurrentPosition() {
     const js = await r.json();
 
     log(JSON.stringify(js, null, 2));
-    updateCurrentVerse(js);
+    await updateCurrentVerse(js);
 }
 
 // variables
@@ -126,5 +140,8 @@ pageInput.addEventListener('keypress', (e) => {
 
 loadAudio();
 
-QuranRenderer.initializeQuranRenderer();
-QuranRenderer.renderPageToElement(1, quran)
+await QuranRenderer.initializeQuranRenderer();
+// QuranRenderer.renderVerseWithContext(20, 3);
+QuranRenderer.renderMushafPage(1);
+
+// TODO: Get rid of the redundant centers in css
