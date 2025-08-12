@@ -65,6 +65,32 @@ async function loadQuranPage() {
     }
 }
 
+async function loadVerseWithContext() {
+    const surahNumber = parseInt(surahInput.value);
+    const verseNumber = parseInt(verseInput.value);
+    
+    if (surahNumber < 1 || surahNumber > 114) {
+        log(`❌ Invalid surah number: ${surahNumber}. Please enter 1-114.`);
+        return;
+    }
+    
+    if (verseNumber < 1) {
+        log(`❌ Invalid verse number: ${verseNumber}. Please enter a positive number.`);
+        return;
+    }
+    
+    try {
+        loadVerseBtn.disabled = true;
+        log(`📖 Loading verse ${surahNumber}:${verseNumber} with context...`);
+        await QuranRenderer.renderVerseWithContext(surahNumber, verseNumber);
+        log(`✔ Verse ${surahNumber}:${verseNumber} loaded successfully`);
+    } catch (error) {
+        log(`❌ Failed to load verse ${surahNumber}:${verseNumber}: ${error.message}`);
+    } finally {
+        loadVerseBtn.disabled = false;
+    }
+}
+
 async function predictCurrentPosition() {
     // grab +-4 s around currentTime, resample to 16 kHz and send
 
@@ -114,6 +140,9 @@ const logel  = document.getElementById('log');
 const ctx    = new AudioContext();
 const pageInput = document.getElementById('page-input');
 const loadPageBtn = document.getElementById('load-page');
+const surahInput = document.getElementById('surah-input');
+const verseInput = document.getElementById('verse-input');
+const loadVerseBtn = document.getElementById('load-verse');
 
 let   audioBuf   = null;
 let   decodeToken = 0;
@@ -130,11 +159,25 @@ picker.onchange = async () => {
 };
 btn.onclick = predictCurrentPosition;
 loadPageBtn.onclick = loadQuranPage;
+loadVerseBtn.onclick = loadVerseWithContext;
 
 // Allow Enter key to load page
 pageInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         loadQuranPage();
+    }
+});
+
+// Allow Enter key to load verse
+surahInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        loadVerseWithContext();
+    }
+});
+
+verseInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        loadVerseWithContext();
     }
 });
 
