@@ -3,25 +3,47 @@ import * as QuranRenderer from './quran-renderer.js'
 
 async function decodeArrayBuffer(ab, token) {
     try {
+        if (!ctx) {
+            log(`❌ AudioContext not available`);
+            return;
+        }
         const buf = await ctx.decodeAudioData(ab);
         if (token !== decodeToken) return;
         audioBuf = buf;
         log(`✔ audio decoded ${(buf.length / buf.sampleRate).toFixed(1)} s @ ${buf.sampleRate} Hz`);
-        btn.disabled = false;
+        if (btn) {
+            btn.disabled = false;
+        }
     } catch (e) {
         log(`❌ decode failed: ${e}`);
     }
 }
 
 async function loadAudio() {
+    if (!btn || !player) {
+        log(`❌ Required DOM elements not found`);
+        return;
+    }
     btn.disabled = true;
     const token = ++decodeToken;
-    const ab    = await fetch(player.src).then(r => r.arrayBuffer());
-    await decodeArrayBuffer(ab, token);
+    try {
+        const ab = await fetch(player.src).then(r => r.arrayBuffer());
+        await decodeArrayBuffer(ab, token);
+    } catch (e) {
+        log(`❌ Failed to load audio: ${e.message}`);
+        if (btn) {
+            btn.disabled = false;
+        }
+    }
 }
 
 function log(msg) {
-    logel.textContent+=msg+"\n"; logel.scrollTop=logel.scrollHeight;
+    if (logel) {
+        logel.textContent += msg + "\n"; 
+        logel.scrollTop = logel.scrollHeight;
+    } else {
+        console.log(msg); // Fallback to console if log element not found
+    }
 }
 
 async function updateCurrentVerse(json) {
@@ -61,67 +83,92 @@ async function updateCurrentVerse(json) {
 }
 
 async function loadQuranPage() {
+    if (!pageInput) {
+        log(`❌ Page input element not found`);
+        return;
+    }
+    
     const pageNumber = parseInt(pageInput.value);
     
-    if (pageNumber < 1 || pageNumber > 604) {
-        log(`❌ Invalid page number: ${pageNumber}. Please enter 1-604.`);
+    if (isNaN(pageNumber) || pageNumber < 1 || pageNumber > 604) {
+        log(`❌ Invalid page number: ${pageInput.value}. Please enter 1-604.`);
         return;
     }
     
     try {
-        loadPageBtn.disabled = true;
+        if (loadPageBtn) {
+            loadPageBtn.disabled = true;
+        }
         log(`📖 Loading page ${pageNumber}...`);
         await QuranRenderer.renderMushafPage(pageNumber);
         log(`✔ Page ${pageNumber} loaded successfully`);
     } catch (error) {
         log(`❌ Failed to load page ${pageNumber}: ${error.message}`);
     } finally {
-        loadPageBtn.disabled = false;
+        if (loadPageBtn) {
+            loadPageBtn.disabled = false;
+        }
     }
 }
 
 async function loadVerseWithContext() {
-    const surahNumber = parseInt(surahInput.value);
-    const verseNumber = parseInt(verseInput.value);
-    
-    if (surahNumber < 1 || surahNumber > 114) {
-        log(`❌ Invalid surah number: ${surahNumber}. Please enter 1-114.`);
+    if (!surahInput || !verseInput) {
+        log(`❌ Required input elements not found`);
         return;
     }
     
-    if (verseNumber < 1) {
-        log(`❌ Invalid verse number: ${verseNumber}. Please enter a positive number.`);
+    const surahNumber = parseInt(surahInput.value);
+    const verseNumber = parseInt(verseInput.value);
+    
+    if (isNaN(surahNumber) || surahNumber < 1 || surahNumber > 114) {
+        log(`❌ Invalid surah number: ${surahInput.value}. Please enter 1-114.`);
+        return;
+    }
+    
+    if (isNaN(verseNumber) || verseNumber < 1) {
+        log(`❌ Invalid verse number: ${verseInput.value}. Please enter a positive number.`);
         return;
     }
     
     try {
-        loadVerseBtn.disabled = true;
+        if (loadVerseBtn) {
+            loadVerseBtn.disabled = true;
+        }
         log(`📖 Loading verse ${surahNumber}:${verseNumber} with context...`);
         await QuranRenderer.renderVerseWithContext(surahNumber, verseNumber);
         log(`✔ Verse ${surahNumber}:${verseNumber} loaded successfully`);
     } catch (error) {
         log(`❌ Failed to load verse ${surahNumber}:${verseNumber}: ${error.message}`);
     } finally {
-        loadVerseBtn.disabled = false;
+        if (loadVerseBtn) {
+            loadVerseBtn.disabled = false;
+        }
     }
 }
 
 async function loadSurah() {
-    const surahNumber = parseInt(surahNumberInput.value);
-    const targetVerse = surahVerseInput.value ? parseInt(surahVerseInput.value) : null;
-    
-    if (surahNumber < 1 || surahNumber > 114) {
-        log(`❌ Invalid surah number: ${surahNumber}. Please enter 1-114.`);
+    if (!surahNumberInput) {
+        log(`❌ Surah number input element not found`);
         return;
     }
     
-    if (targetVerse !== null && targetVerse < 1) {
-        log(`❌ Invalid verse number: ${targetVerse}. Please enter a positive number.`);
+    const surahNumber = parseInt(surahNumberInput.value);
+    const targetVerse = surahVerseInput && surahVerseInput.value ? parseInt(surahVerseInput.value) : null;
+    
+    if (isNaN(surahNumber) || surahNumber < 1 || surahNumber > 114) {
+        log(`❌ Invalid surah number: ${surahNumberInput.value}. Please enter 1-114.`);
+        return;
+    }
+    
+    if (targetVerse !== null && (isNaN(targetVerse) || targetVerse < 1)) {
+        log(`❌ Invalid verse number: ${surahVerseInput?.value}. Please enter a positive number.`);
         return;
     }
     
     try {
-        loadSurahBtn.disabled = true;
+        if (loadSurahBtn) {
+            loadSurahBtn.disabled = true;
+        }
         const verseText = targetVerse ? ` with target verse ${targetVerse}` : '';
         log(`📖 Loading surah ${surahNumber}${verseText}...`);
         await QuranRenderer.renderSurah(surahNumber, targetVerse);
@@ -129,12 +176,19 @@ async function loadSurah() {
     } catch (error) {
         log(`❌ Failed to load surah ${surahNumber}: ${error.message}`);
     } finally {
-        loadSurahBtn.disabled = false;
+        if (loadSurahBtn) {
+            loadSurahBtn.disabled = false;
+        }
     }
 }
 
 async function predictCurrentPosition() {
     // grab +-4 s around currentTime, resample to 16 kHz and send
+    
+    if (!player || !audioBuf) {
+        log(`❌ Audio player or buffer not available`);
+        return;
+    }
 
     const now = player.currentTime;
     const from = Math.max(0, now - CHUNK_BACK);
@@ -165,11 +219,20 @@ async function predictCurrentPosition() {
     const fd = new FormData(); fd.append('chunk', blob, 'chunk.wav');
     log(`▶ sending ${blob.size/1024|0} kB …`);
 
-    const r  = await fetch('/process_chunk', {method:'POST', body:fd});
-    const js = await r.json();
-
-    // log(JSON.stringify(js, null, 2));
-    await updateCurrentVerse(js);
+    try {
+        const r = await fetch('/process_chunk', {method:'POST', body:fd});
+        
+        if (!r.ok) {
+            throw new Error(`Server error: ${r.status} ${r.statusText}`);
+        }
+        
+        const js = await r.json();
+        
+        // log(JSON.stringify(js, null, 2));
+        await updateCurrentVerse(js);
+    } catch (error) {
+        log(`❌ Failed to process audio chunk: ${error.message}`);
+    }
 }
 
 // variables
@@ -244,5 +307,3 @@ await QuranRenderer.initializeQuranRenderer();
 // QuranRenderer.renderMushafPage(1);
 QuranRenderer.renderSurah(18);
 
-
-// TODO: don't redraw all the html each time, current surah etc.

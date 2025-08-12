@@ -12,7 +12,6 @@ from rapidfuzz import fuzz
 import unicodedata
 
 
-
 # ============================ Data Structures ================================
 class VerseInfo(NamedTuple):
     surah_number: int
@@ -21,33 +20,36 @@ class VerseInfo(NamedTuple):
     end_pos: int
     text: str
 
+
 class MatchResult(NamedTuple):
     verse_info: VerseInfo
     confidence: float
     matched_text: str
 
+
 # ============================ Configuration =================================
 class Config:
     SAMPLE_RATE = 16000
-    CHUNK_DURATION_FORWARD  = 2.0
+    CHUNK_DURATION_FORWARD = 2.0
     CHUNK_DURATION_BACKWARD = 4.0
     MIN_MATCH_LENGTH = 8
     MIN_SIMILARITY_SCORE = 65
     ENERGY_THRESHOLD = 0.002
 
+
 # ============================ Text Processing ================================
 # TODO: Currently Normalizing to match between QUL databases, but we need to normalized for the model to be optimized
 class ArabicTextProcessor:
     # harakat + tatweel + superscript alef
-    _RE_HARAKAT = re.compile(r'[\u064B-\u065F\u0670\u0640]')
+    _RE_HARAKAT = re.compile(r"[\u064B-\u065F\u0670\u0640]")
 
     # Qur'anic annotation marks (stop signs, small high signs, etc.)
-    _RE_QURAN_ANN = re.compile(r'[\u06D6-\u06ED\u08E4-\u08FF]')
+    _RE_QURAN_ANN = re.compile(r"[\u06D6-\u06ED\u08E4-\u08FF]")
 
     # Bidi / zero-width / BOM controls to strip
-    _RE_CTRL = re.compile(r'[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]')
+    _RE_CTRL = re.compile(r"[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]")
 
-    _RE_WS = re.compile(r'\s+')
+    _RE_WS = re.compile(r"\s+")
 
     _RE_AYAH_NUM = re.compile(
         r"""
@@ -61,47 +63,61 @@ class ArabicTextProcessor:
     )
 
     # Letter maps
-    _MAP_BASE = str.maketrans({
-        'أ': 'ا', 'إ': 'ا', 'آ': 'ا', 'ٱ': 'ا',
-    })
+    _MAP_BASE = str.maketrans(
+        {
+            "أ": "ا",
+            "إ": "ا",
+            "آ": "ا",
+            "ٱ": "ا",
+        }
+    )
 
-    _MAP_LENIENT = str.maketrans({
-        'أ': 'ا', 'إ': 'ا', 'آ': 'ا', 'ٱ': 'ا',
-        'ة': 'ه',
-        'ى': 'ي',
-    })
+    _MAP_LENIENT = str.maketrans(
+        {
+            "أ": "ا",
+            "إ": "ا",
+            "آ": "ا",
+            "ٱ": "ا",
+            "ة": "ه",
+            "ى": "ي",
+        }
+    )
 
     @staticmethod
     @lru_cache(maxsize=20000)
-    def normalize(text: str,
-                  *,
-                  remove_harakat: bool           = True,
-                  remove_quran_annotations: bool = True,
-                  remove_controls: bool          = True,
-                  remove_ayah_numbers: bool      = True,
-                  collapse_space: bool           = True,
-                  lenient_letters: bool          = False ) -> str:
+    def normalize(
+        text: str,
+        *,
+        remove_harakat: bool = True,
+        remove_quran_annotations: bool = True,
+        remove_controls: bool = True,
+        remove_ayah_numbers: bool = True,
+        collapse_space: bool = True,
+        lenient_letters: bool = False,
+    ) -> str:
         if not text:
             return ""
 
         # Decompose → strip marks → recompose (safer than raw NFKC)
-        t = unicodedata.normalize('NFKD', text)
+        t = unicodedata.normalize("NFKD", text)
         if remove_quran_annotations:
-            t = ArabicTextProcessor._RE_QURAN_ANN.sub('', t)
+            t = ArabicTextProcessor._RE_QURAN_ANN.sub("", t)
         if remove_harakat:
-            t = ArabicTextProcessor._RE_HARAKAT.sub('', t)
+            t = ArabicTextProcessor._RE_HARAKAT.sub("", t)
         if remove_controls:
-            t = ArabicTextProcessor._RE_CTRL.sub('', t)
+            t = ArabicTextProcessor._RE_CTRL.sub("", t)
         if remove_ayah_numbers:
-            t = ArabicTextProcessor._RE_AYAH_NUM.sub(' ', t)
+            t = ArabicTextProcessor._RE_AYAH_NUM.sub(" ", t)
 
+        t = unicodedata.normalize("NFC", t)
 
-        t = unicodedata.normalize('NFC', t)
-
-        t = t.translate(ArabicTextProcessor._MAP_LENIENT if lenient_letters
-                        else ArabicTextProcessor._MAP_BASE)
+        t = t.translate(
+            ArabicTextProcessor._MAP_LENIENT
+            if lenient_letters
+            else ArabicTextProcessor._MAP_BASE
+        )
         if collapse_space:
-            t = ArabicTextProcessor._RE_WS.sub(' ', t).strip()
+            t = ArabicTextProcessor._RE_WS.sub(" ", t).strip()
 
         return t
 
@@ -150,14 +166,12 @@ class QuranDatabase:
 
         print(f"Loaded {len(self.verses)} verses from {json_file.name}")
 
-
     def _load_from_sqlite_aba(self, db_file: Path) -> None:
         try:
             con = sqlite3.connect(db_file)
             cur = con.cursor()
             cur.execute(
-                "SELECT verse_key, surah, ayah, text "
-                "FROM verses ORDER BY surah, ayah"
+                "SELECT verse_key, surah, ayah, text FROM verses ORDER BY surah, ayah"
             )
         except Exception as e:
             print(f"Error reading sqlite aba db {db_file}: {e}")
@@ -165,11 +179,7 @@ class QuranDatabase:
 
         # for surah, ayah, word_idx, txt in cur:
         for verse_key, surah, ayah, txt in cur:
-            self._add_verse(
-                surah_number  = surah,
-                ayah_number   = ayah,
-                original_text = txt
-            )
+            self._add_verse(surah_number=surah, ayah_number=ayah, original_text=txt)
 
         con.close()
         print(f"Loaded {len(self.verses)} verses from {db_file.name}")
@@ -183,14 +193,13 @@ class QuranDatabase:
             con = sqlite3.connect(db_file)
             cur = con.cursor()
             cur.execute(
-                "SELECT surah, ayah, word, text "
-                "FROM words ORDER BY surah, ayah, word"
+                "SELECT surah, ayah, word, text FROM words ORDER BY surah, ayah, word"
             )
         except Exception as e:
             print(f"Error reading sqlite wbw db {db_file}: {e}")
             return
 
-        current_key: tuple[int,int]|None = None
+        current_key: tuple[int, int] | None = None
         buf: list[str] = []
 
         for surah, ayah, word_idx, txt in cur:
@@ -199,9 +208,9 @@ class QuranDatabase:
             key = (surah, ayah)
             if current_key and key != current_key:
                 self._add_verse(
-                    surah_number = current_key[0],
-                    ayah_number= current_key[1],
-                    original_text = " ".join(buf)
+                    surah_number=current_key[0],
+                    ayah_number=current_key[1],
+                    original_text=" ".join(buf),
                 )
                 buf = []
             buf.append(txt.strip())
@@ -210,15 +219,17 @@ class QuranDatabase:
         # flush last āyah
         if current_key:
             self._add_verse(
-                surah_number = current_key[0],
-                ayah_number= current_key[1],
-                original_text = " ".join(buf)
+                surah_number=current_key[0],
+                ayah_number=current_key[1],
+                original_text=" ".join(buf),
             )
 
         con.close()
         print(f"Loaded {len(self.verses)} verses from {db_file.name}")
 
-    def _add_verse(self, *, surah_number: int, ayah_number: int, original_text: str) -> None:
+    def _add_verse(
+        self, *, surah_number: int, ayah_number: int, original_text: str
+    ) -> None:
         norm_text = ArabicTextProcessor.normalize(original_text)
         if not norm_text:
             return
@@ -227,7 +238,7 @@ class QuranDatabase:
             VerseInfo(
                 surah_number=surah_number,
                 ayah_number=ayah_number,
-                start_pos=0,             # not used
+                start_pos=0,  # not used
                 end_pos=0,
                 text=original_text,
             )
@@ -253,7 +264,7 @@ class QuranDatabase:
                 return MatchResult(
                     verse_info=self.verses[i],
                     confidence=1.0,
-                    matched_text=normalized_query
+                    matched_text=normalized_query,
                 )
 
             # Fuzzy matching
@@ -263,10 +274,11 @@ class QuranDatabase:
                 best_match = MatchResult(
                     verse_info=self.verses[i],
                     confidence=score / 100.0,
-                    matched_text=verse_norm
+                    matched_text=verse_norm,
                 )
 
         return best_match
+
 
 # ============================ ASR Engine =====================================
 class ASREngine:
@@ -288,12 +300,14 @@ class ASREngine:
             without_timestamps=True,
         )
         return "".join(seg.text for seg in segments).strip()
+
+
 # ============================ Real-time Recognizer ===========================
 class RealTimeQuranASR:
     def __init__(self, script_db: Path, model_name: str):
         print("Initializing...")
-        self.quran_db      = QuranDatabase(script_db)
-        self.asr           = ASREngine(model_name)
+        self.quran_db = QuranDatabase(script_db)
+        self.asr = ASREngine(model_name)
         print("Initialization done.\n")
 
     def process_chunk(self, chunk: np.ndarray):
@@ -304,14 +318,14 @@ class RealTimeQuranASR:
         """
         # --- template for the result ---------------------------------------
         result = {
-            "status":       "ok",        # will be overwritten if we bail
-            "surah":        None,
-            "ayah":         None,
-            "arabic_text":  None,
-            "confidence":   None,
-            "transcript":   None,
-            "tt":           None,        # transcription time
-            "tm":           None,        # matching time
+            "status": "ok",  # will be overwritten if we bail
+            "surah": None,
+            "ayah": None,
+            "arabic_text": None,
+            "confidence": None,
+            "transcript": None,
+            "tt": None,  # transcription time
+            "tm": None,  # matching time
         }
 
         # --- sanity check ---------------------------------------------------
@@ -340,10 +354,10 @@ class RealTimeQuranASR:
 
         # --- success --------------------------------------------------------
         result.update(
-            status       = "matched",
-            surah        = match.verse_info.surah_number,
-            ayah         = match.verse_info.ayah_number,
-            arabic_text  = match.verse_info.text,
-            confidence   = match.confidence,
+            status="matched",
+            surah=match.verse_info.surah_number,
+            ayah=match.verse_info.ayah_number,
+            arabic_text=match.verse_info.text,
+            confidence=match.confidence,
         )
         return result
