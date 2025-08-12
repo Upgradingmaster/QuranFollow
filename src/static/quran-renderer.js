@@ -115,6 +115,40 @@ function setupVerseHighlighting(container) {
 }
 
 // ============================================================================
+// Shared Verse Rendering
+// ============================================================================
+
+/**
+ * Renders a single verse HTML
+ * @param {Object} verse - Verse object with surah, ayah, text properties
+ * @param {string} cssClass - CSS class for the verse container
+ * @param {boolean} showFullReference - Whether to show full surah:ayah reference (default: false, shows only ayah)
+ * @returns {string} HTML string for the verse
+ */
+function renderVerseHTML(verse, cssClass = 'verse', showFullReference = false) {
+    const verseKey = `${verse.surah}:${verse.ayah}`;
+    const translationVerse = translationData ? translationData[verseKey] : null;
+    const verseNumber = showFullReference ? `${verse.surah}:${verse.ayah}` : `${verse.ayah}`;
+    
+    let html = `<div class="${cssClass}" data-surah="${verse.surah}" data-ayah="${verse.ayah}">`;
+    html += `<div class="verse-metadata">`;
+    html += `<div class="verse-number">${verseNumber}</div>`;
+    html += `</div>`;
+    html += `<div class="verse-content">`;
+    html += `<div class="arabic-text">${verse.text}</div>`;
+    
+    // Add translation if available
+    if (translationVerse && translationVerse.text) {
+        html += `<div class="translation-text">${translationVerse.text}</div>`;
+    }
+    
+    html += `</div>`;
+    html += '</div>';
+    
+    return html;
+}
+
+// ============================================================================
 // Context Rendering
 // ============================================================================
 
@@ -128,14 +162,7 @@ function setupVerseHighlighting(container) {
  * @returns {string} HTML string of verse with context
  */
 function generateVerseWithContextHTML(surahNumber, verseNumber, contextBefore = 4, contextAfter = 4, options = {}) {
-    // Find the target verse
-    const targetVerseKey = `${surahNumber}:${verseNumber}`;
-    const targetVerse = versesData[targetVerseKey];
-    
-    if (!targetVerse) {
-        return `<div class="error">Verse ${surahNumber}:${verseNumber} not found</div>`;
-    }
-    
+
     // Calculate range of verses to include
     const startVerse = Math.max(1, verseNumber - contextBefore);
     const endVerse = verseNumber + contextAfter;
@@ -146,17 +173,14 @@ function generateVerseWithContextHTML(surahNumber, verseNumber, contextBefore = 
         const verseKey = `${surahNumber}:${ayah}`;
         const verse = versesData[verseKey];
         if (verse) {
-            versesToRender.push({
-                ...verse,
-                isTarget: ayah === verseNumber
-            });
+            versesToRender.push(verse);
         }
     }
-    
 
     // Generate HTML
     let html = '<div class="quran-container verse-context-container">';
-    
+
+    // TODO: Add surah name if needed
     // Add Bismillah if needed
     const shouldIncludeBismillah = startVerse === 1 &&
           surahNumber !== 1 &&
@@ -169,24 +193,9 @@ function generateVerseWithContextHTML(surahNumber, verseNumber, contextBefore = 
     
     // Render each verse
     versesToRender.forEach(verse => {
-        const cssClass = verse.isTarget ? 'verse target-verse' : 'verse context-verse';
-        const verseKey = `${verse.surah}:${verse.ayah}`;
-        const translationVerse = translationData ? translationData[verseKey] : null;
-        
-        html += `<div class="${cssClass}" data-surah="${verse.surah}" data-ayah="${verse.ayah}">`;
-        html += `<div class="verse-metadata">`;
-        html += `<div class="verse-number">${verse.surah}:${verse.ayah}</div>`;
-        html += `</div>`;
-        html += `<div class="verse-content">`;
-        html += `<div class="arabic-text">${verse.text}</div>`;
-        
-        // Add translation if available
-        if (translationVerse && translationVerse.text) {
-            html += `<div class="translation-text">${translationVerse.text}</div>`;
-        }
-        
-        html += `</div>`;
-        html += '</div>';
+        const isTarget = verse.ayah === verseNumber;
+        const cssClass = isTarget ? 'verse target-verse' : 'verse';
+        html += renderVerseHTML(verse, cssClass, true);
     });
     
     html += '</div>';
@@ -231,6 +240,102 @@ async function renderVerseWithContext(surahNumber, verseNumber, contextBefore = 
     updateVerseContextDOM(html, targetElementId);
 }
 
+
+// ============================================================================
+// Surah Rendering
+// ============================================================================
+
+/**
+ * Generates HTML for an entire surah
+ * @param {number} surahNumber - Surah number (1-114)
+ * @param {number} targetVerse - Target verse to highlight (optional)
+ * @param {Object} options - Rendering options
+ * @returns {string} HTML string of rendered surah
+ */
+function generateSurahHTML(surahNumber, targetVerse = null, options = {}) {
+    if (surahNumber < 1 || surahNumber > 114) {
+        return `<div class="error">Invalid surah number: ${surahNumber}</div>`;
+    }
+
+    // Get all verses for this surah
+    const surahVerses = [];
+    let verseNumber = 1;
+    while (true) {
+        const verseKey = `${surahNumber}:${verseNumber}`;
+        const verse = versesData[verseKey];
+        if (!verse) break;
+        surahVerses.push(verse);
+        verseNumber++;
+    }
+
+    if (surahVerses.length === 0) {
+        return `<div class="error">No verses found for surah ${surahNumber}</div>`;
+    }
+
+    // Generate HTML
+    let html = `<div class="quran-container surah-container" data-surah="${surahNumber}">`;
+    
+    // Add Surah header
+    html += '<div class="surah-header">';
+    html += `<div class="surah-name">سورۃ ${getSurahName(surahNumber)}</div>`;
+    html += `<div class="surah-number">Surah ${surahNumber}</div>`;
+    html += '</div>';
+    
+    // Add Bismillah if needed (not for Al-Fatiha or At-Tawbah)
+    if (surahNumber !== 1 && surahNumber !== 9) {
+        html += '<div class="verse bismillah">';
+        html += '<div class="verse-content">';
+        html += '<div class="arabic-text">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</div>';
+        html += '</div>';
+        html += '</div>';
+    }
+    
+    // Render each verse
+    surahVerses.forEach(verse => {
+        const isTarget = targetVerse && verse.ayah === targetVerse;
+        const cssClass = isTarget ? 'verse target-verse' : 'verse';
+        html += renderVerseHTML(verse, cssClass, false);
+    });
+    
+    html += '</div>';
+    
+    return html;
+}
+
+/**
+ * Updates DOM with surah HTML and handles scrolling to target verse
+ * @param {string} html - HTML string to insert
+ * @param {string} targetElementId - ID of the container element (default: 'quran')
+ */
+function updateSurahDOM(html, targetElementId = 'quran') {
+    const quranContainer = document.getElementById(targetElementId);
+    if (quranContainer) {
+        quranContainer.innerHTML = html;
+        
+        // Scroll the target verse into view
+        setTimeout(() => {
+            const targetElement = quranContainer.querySelector('.target-verse');
+            if (targetElement) {
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }
+        }, 100);
+    }
+}
+
+/**
+ * Renders an entire surah
+ * @param {number} surahNumber - Surah number (1-114)
+ * @param {number} targetVerse - Target verse to highlight (optional)
+ * @param {Object} options - Rendering options
+ * @param {string} targetElementId - ID of the container element (default: 'quran')
+ */
+async function renderSurah(surahNumber, targetVerse = null, options = {}, targetElementId = 'quran') {
+    const html = generateSurahHTML(surahNumber, targetVerse, options);
+    updateSurahDOM(html, targetElementId);
+}
 
 // ============================================================================
 // DATABASE AND GLOBAL DATA
@@ -413,12 +518,15 @@ export {
     initializeQuranRenderer,
     renderMushafPage,
     renderVerseWithContext,
+    renderSurah,
 
     // HTML generation functions (for advanced usage)
     generateMushafPageHTML,
     generateVerseWithContextHTML,
+    generateSurahHTML,
 
     // DOM update functions (for advanced usage)
     updateMushafPageDOM,
-    updateVerseContextDOM
+    updateVerseContextDOM,
+    updateSurahDOM
 }

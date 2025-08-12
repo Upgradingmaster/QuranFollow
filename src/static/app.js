@@ -25,22 +25,24 @@ function log(msg) {
 }
 
 let current_loc = {"verse": 1, "chapter": 1}
+
 async function updateCurrentVerse(json) {
     if (json.status == 'matched') {
         const surahNumber = parseInt(json.surah);
         const ayahNumber = parseInt(json.ayah);
-        const loc = {"verse": ayahNumber, "chapter": surahNumber}
-
         log(`✔ Found verse: ${surahNumber}:${ayahNumber}`);
 
-        // Check if we need to load a different page
-        if (current_loc != loc) {
+        // if (surahNumber != current_loc.chapter) { // new surah
+        if (true) { // new surah
             try {
-                await QuranRenderer.renderVerseWithContext(surahNumber, ayahNumber);
+                await QuranRenderer.renderSurah(surahNumber, ayahNumber);
+                current_loc = {"verse": ayahNumber, "chapter": surahNumber}
             } catch (error) {
                 log(`❌ Failed to load verse with context : ${error.message}`);
                 return;
             }
+        } else {
+            //TODO:
         }
     }
 }
@@ -88,6 +90,33 @@ async function loadVerseWithContext() {
         log(`❌ Failed to load verse ${surahNumber}:${verseNumber}: ${error.message}`);
     } finally {
         loadVerseBtn.disabled = false;
+    }
+}
+
+async function loadSurah() {
+    const surahNumber = parseInt(surahNumberInput.value);
+    const targetVerse = surahVerseInput.value ? parseInt(surahVerseInput.value) : null;
+    
+    if (surahNumber < 1 || surahNumber > 114) {
+        log(`❌ Invalid surah number: ${surahNumber}. Please enter 1-114.`);
+        return;
+    }
+    
+    if (targetVerse !== null && targetVerse < 1) {
+        log(`❌ Invalid verse number: ${targetVerse}. Please enter a positive number.`);
+        return;
+    }
+    
+    try {
+        loadSurahBtn.disabled = true;
+        const verseText = targetVerse ? ` with target verse ${targetVerse}` : '';
+        log(`📖 Loading surah ${surahNumber}${verseText}...`);
+        await QuranRenderer.renderSurah(surahNumber, targetVerse);
+        log(`✔ Surah ${surahNumber} loaded successfully`);
+    } catch (error) {
+        log(`❌ Failed to load surah ${surahNumber}: ${error.message}`);
+    } finally {
+        loadSurahBtn.disabled = false;
     }
 }
 
@@ -143,6 +172,9 @@ const loadPageBtn = document.getElementById('load-page');
 const surahInput = document.getElementById('surah-input');
 const verseInput = document.getElementById('verse-input');
 const loadVerseBtn = document.getElementById('load-verse');
+const surahNumberInput = document.getElementById('surah-number-input');
+const surahVerseInput = document.getElementById('surah-verse-input');
+const loadSurahBtn = document.getElementById('load-surah');
 
 let   audioBuf   = null;
 let   decodeToken = 0;
@@ -160,15 +192,14 @@ picker.onchange = async () => {
 btn.onclick = predictCurrentPosition;
 loadPageBtn.onclick = loadQuranPage;
 loadVerseBtn.onclick = loadVerseWithContext;
+loadSurahBtn.onclick = loadSurah;
 
-// Allow Enter key to load page
 pageInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         loadQuranPage();
     }
 });
 
-// Allow Enter key to load verse
 surahInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         loadVerseWithContext();
@@ -181,10 +212,24 @@ verseInput.addEventListener('keypress', (e) => {
     }
 });
 
+surahNumberInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        loadSurah();
+    }
+});
+
+surahVerseInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        loadSurah();
+    }
+});
+
 loadAudio();
 
 await QuranRenderer.initializeQuranRenderer();
 // QuranRenderer.renderVerseWithContext(20, 3);
-QuranRenderer.renderMushafPage(1);
+// QuranRenderer.renderMushafPage(1);
+QuranRenderer.renderSurah(18, 1);
 
-// TODO: Get rid of the redundant centers in css
+
+// TODO: don't redraw all the html each time, current surah etc.
