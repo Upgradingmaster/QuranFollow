@@ -6,7 +6,8 @@
   
   "permissions": [
     "storage",
-    "tabCapture"
+    "tabCapture",
+    "sidePanel"
   ],
   
   "host_permissions": [
@@ -14,13 +15,20 @@
   ],
   
   "action": {
-    "default_popup": "popup/popup.html",
     "default_title": "Qurʾān Locator",
     "default_icon": {
       "16": "assets/icons/icon-16.png",
       "48": "assets/icons/icon-48.png",
       "128": "assets/icons/icon-128.png"
     }
+  },
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "side_panel": {
+    "default_path": "sidepanel/sidepanel.html"
   },
   
   "icons": {
@@ -31,7 +39,7 @@
   
   "web_accessible_resources": [
     {
-      "resources": ["data/*", "assets/*"],
+      "resources": ["data/*", "assets/*", "lib/*"],
       "matches": ["<all_urls>"]
     }
   ],
