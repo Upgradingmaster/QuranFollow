@@ -6,7 +6,8 @@ import {
     loadWordsData, 
     loadLayoutData, 
     loadVersesData, 
-    loadTranslationData 
+    loadTranslationData,
+    findPageContainingVerse
 } from './quran-data.js';
 
 import { 
@@ -53,11 +54,14 @@ async function initializeQuranRenderer() {
  * Renders a mushaf page directly to a DOM element
  * @param {number} pageNumber - Page number (1-604)
  * @param {Object} options - Rendering options
+ * @param {number} options.targetSurah - Target surah for highlighting
+ * @param {number} options.targetVerse - Target verse for highlighting
  * @param {string} targetElementId - ID of the container element (default: 'quran')
  */
 async function renderMushafPage(pageNumber, options = {}, targetElementId = 'quran') {
     const html = await generateMushafPageHTML(pageNumber, options);
-    updateMushafPageDOM(html, pageNumber, targetElementId);
+    updateMushafPageDOM(html, pageNumber, options.targetSurah, options.targetVerse, targetElementId);
+    scrollToTargetVerse();
 }
 
 /**
@@ -72,8 +76,6 @@ async function renderMushafPage(pageNumber, options = {}, targetElementId = 'qur
 async function renderVerseWithContext(surahNumber, verseNumber, contextBefore = 4, contextAfter = 4, options = {}, targetElementId = 'quran') {
     const html = generateVerseWithContextHTML(surahNumber, verseNumber, contextBefore, contextAfter, options);
     updateVerseContextDOM(html, surahNumber, verseNumber, contextBefore, contextAfter, targetElementId);
-    
-    // Scroll to target verse
     scrollToTargetVerse();
 }
 
@@ -87,8 +89,6 @@ async function renderVerseWithContext(surahNumber, verseNumber, contextBefore = 
 async function renderSurah(surahNumber, targetVerse = null, options = {}, targetElementId = 'quran') {
     const html = generateSurahHTML(surahNumber, targetVerse, options);
     updateSurahDOM(html, surahNumber, targetVerse, targetElementId);
-    
-    // Scroll to target verse
     scrollToTargetVerse();
 }
 
@@ -121,5 +121,8 @@ export {
     // DOM update functions (for advanced usage)
     updateMushafPageDOM,
     updateVerseContextDOM,
-    updateSurahDOM
+    updateSurahDOM,
+    
+    // Utility functions
+    findPageContainingVerse
 };

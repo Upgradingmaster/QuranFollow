@@ -18,25 +18,54 @@ async function updateCurrentVerse(json) {
 
         log(`✔ Found verse: ${surahNumber}:${ayahNumber}`);
         const currentState = QuranRenderer.getCurrentRenderingState();
+        const selectedMode = getCurrentMode();
 
-        if (!currentState.mode || currentState.surah !== surahNumber) { // new surah
+        // Check if we need to render new content or just update target verse
+        const needsNewRender = !currentState.mode || 
+                              currentState.mode !== selectedMode ||
+                              (selectedMode === 'surah' && currentState.surah !== surahNumber) ||
+                              (selectedMode === 'context') || // Always re-render for context mode
+                              (selectedMode === 'mushaf'); // Always re-render for mushaf to find correct page
+
+        if (needsNewRender) {
             try {
-                await QuranRenderer.renderSurah(surahNumber, ayahNumber);
-                log(`📖 Loaded surah ${surahNumber} with verse ${ayahNumber} highlighted`);
+                switch (selectedMode) {
+                    case 'surah':
+                        await QuranRenderer.renderSurah(surahNumber, ayahNumber);
+                        log(`📖 Loaded surah ${surahNumber} with verse ${ayahNumber} highlighted`);
+                        break;
+                    case 'context':
+                        await QuranRenderer.renderVerseWithContext(surahNumber, ayahNumber);
+                        log(`📖 Loaded verse ${surahNumber}:${ayahNumber} with context`);
+                        break;
+                    case 'mushaf':
+                        const pageNumber = QuranRenderer.findPageContainingVerse(surahNumber, ayahNumber);
+                        if (pageNumber) {
+                            await QuranRenderer.renderMushafPage(pageNumber, {
+                                targetSurah: surahNumber,
+                                targetVerse: ayahNumber
+                            });
+                            log(`📖 Loaded page ${pageNumber} with verse ${surahNumber}:${ayahNumber} highlighted`);
+                        } else {
+                            log(`❌ Could not find page containing verse ${surahNumber}:${ayahNumber}`);
+                            return;
+                        }
+                        break;
+                }
             } catch (error) {
-                log(`❌ Failed to load surah ${surahNumber}: ${error.message}`);
+                log(`❌ Failed to load content: ${error.message}`);
                 return;
             }
-        }
-        else { // same surah
-            if (currentState.targetVerse !== ayahNumber) { // new ayah
+        } else {
+            // Just update target verse if we're in the same mode and context
+            if (currentState.targetVerse !== ayahNumber) {
                 const success = QuranRenderer.setTargetVerse(ayahNumber);
                 if (success) {
-                    log(`🎯 Switched to verse ${ayahNumber} in current surah`);
+                    log(`🎯 Switched to verse ${ayahNumber} in current view`);
                 } else {
                     log(`❌ Failed to switch to verse ${ayahNumber}`);
                 }
-            } else {// same ayah
+            } else {
                 QuranRenderer.scrollToTargetVerse();
                 log(`📍 Scrolled to current verse ${surahNumber}:${ayahNumber}`);
             }
@@ -194,6 +223,12 @@ const analyzeBtn = document.getElementById('analyse');
 const quran = document.getElementById('quran');
 const logel = document.getElementById('log');
 
+// Mode selection elements
+const modeSelect = document.getElementById('mode-select');
+const mushafControls = document.getElementById('mushaf-controls');
+const contextControls = document.getElementById('context-controls');
+const surahControls = document.getElementById('surah-controls');
+
 // Navigation elements
 const pageInput = document.getElementById('page-input');
 const loadPageBtn = document.getElementById('load-page');
@@ -205,6 +240,33 @@ const surahVerseInput = document.getElementById('surah-verse-input');
 const loadSurahBtn = document.getElementById('load-surah');
 
 let isCapturing = false;
+
+// Mode management functions
+function getCurrentMode() {
+    return modeSelect.value;
+}
+
+function updateModeVisibility() {
+    const selectedMode = getCurrentMode();
+    
+    // Hide all mode-specific controls
+    mushafControls.style.display = 'none';
+    contextControls.style.display = 'none';
+    surahControls.style.display = 'none';
+    
+    // Show only the selected mode's controls
+    switch (selectedMode) {
+        case 'mushaf':
+            mushafControls.style.display = 'block';
+            break;
+        case 'context':
+            contextControls.style.display = 'block';
+            break;
+        case 'surah':
+            surahControls.style.display = 'block';
+            break;
+    }
+}
 
 // Audio capture functions
 async function toggleAudioCapture() {
@@ -255,6 +317,7 @@ analyzeBtn.onclick = analyzeCurrentAudio;
 loadPageBtn.onclick = loadQuranPage;
 loadVerseBtn.onclick = loadVerseWithContext;
 loadSurahBtn.onclick = loadSurah;
+modeSelect.onchange = updateModeVisibility;
 
 pageInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
@@ -293,4 +356,9 @@ audioCapture.onStatusChange = (status, details) => {
 
 // Initialize Quran renderer
 await QuranRenderer.initializeQuranRenderer();
+
+// Initialize mode visibility
+updateModeVisibility();
+
+// Load initial content based on default mode
 QuranRenderer.renderSurah(18);

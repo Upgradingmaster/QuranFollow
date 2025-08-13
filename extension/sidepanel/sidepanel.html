@@ -22,6 +22,17 @@
     </div>
     
     <div class="control-section">
+      <h3>View Mode</h3>
+      <div class="mode-controls">
+        <select id="mode-select">
+          <option value="surah">Surah</option>
+          <option value="context">Context</option>
+          <option value="mushaf">Mushaf</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="control-section" id="mushaf-controls" style="display: none;">
       <h3>Page Navigation</h3>
       <div class="page-controls">
         <label for="page-input">Page:</label>
@@ -30,7 +41,7 @@
       </div>
     </div>
     
-    <div class="control-section">
+    <div class="control-section" id="context-controls" style="display: none;">
       <h3>Verse Context</h3>
       <div class="verse-controls">
         <div class="input-group">
@@ -45,7 +56,7 @@
       </div>
     </div>
     
-    <div class="control-section">
+    <div class="control-section" id="surah-controls">
       <h3>Surah View</h3>
       <div class="surah-controls">
         <div class="input-group">

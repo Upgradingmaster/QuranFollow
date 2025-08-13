@@ -272,10 +272,16 @@ audio {
     text-align: center;
 }
 
-.target-verse {
+.verse.target-verse {
     background: rgba(139, 115, 85, 0.15);
     border-left: 4px solid var(--sepia-accent);
     box-shadow: 0 2px 8px rgba(139, 115, 85, 0.2);
+}
+
+.word.target-verse {
+    background: rgba(139, 115, 85, 0.15);
+    color: var(--sepia-accent);
+    text-shadow: 0 1px 2px rgba(139, 115, 85, 0.1);
 }
 
 .arabic-text {
@@ -348,6 +354,34 @@ audio {
     align-items: center;
     gap: 1rem;
     flex-wrap: wrap;
+}
+
+.mode-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.mode-controls select {
+    background: var(--sepia-paper);
+    border: 2px solid var(--sepia-border);
+    border-radius: 6px;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.9rem;
+    color: var(--sepia-text);
+    font-family: inherit;
+    cursor: pointer;
+    min-width: 100px;
+}
+
+.mode-controls select:focus {
+    outline: none;
+    border-color: var(--sepia-accent);
+    box-shadow: 0 0 0 3px rgba(139, 115, 85, 0.1);
+}
+
+.mode-controls select:hover {
+    border-color: var(--sepia-accent);
 }
 
 #log {

@@ -75,17 +75,23 @@ const RenderingState = {
     },
 
     // State setters with validation
-    setMushafState(pageNumber, containerElement) {
+    setMushafState(pageNumber, containerElement, surah = null, targetVerse = null) {
         if (!this.isValidPage(pageNumber)) {
             throw new Error(`Invalid page number: ${pageNumber}`);
+        }
+        if (!this.isValidSurah(surah)) {
+            throw new Error(`Invalid surah number: ${surah}`);
+        }
+        if (!this.isValidVerse(targetVerse)) {
+            throw new Error(`Invalid target verse: ${targetVerse}`);
         }
         if (!containerElement) {
             throw new Error('Container element is required');
         }
 
         this._state.mode = 'mushaf';
-        this._state.surah = null;
-        this._state.targetVerse = null;
+        this._state.surah = surah;
+        this._state.targetVerse = targetVerse;
         this._state.pageNumber = pageNumber;
         this._state.contextBefore = null;
         this._state.contextAfter = null;
@@ -140,9 +146,6 @@ const RenderingState = {
         if (!this.isValidVerse(targetVerse)) {
             throw new Error(`Invalid target verse: ${targetVerse}`);
         }
-        if (this._state.mode === 'mushaf') {
-            throw new Error('Cannot set target verse in mushaf mode');
-        }
         if (!this._state.containerElement) {
             throw new Error('No container element available');
         }
@@ -156,10 +159,7 @@ const RenderingState = {
         return !!(this._state.mode && this._state.containerElement);
     },
 
-    // Check if mode supports target verses
-    supportsTargetVerse() {
-        return this._state.mode === 'context' || this._state.mode === 'surah';
-    },
+
 
     // Clear state
     clear() {
@@ -280,9 +280,11 @@ function getSurahName(surahNumber) {
  * Gets words text by ID range, wrapped in individual spans for hover effects
  * @param {number} firstWordId - Starting word ID
  * @param {number} lastWordId - Ending word ID
+ * @param {number} targetSurah - Target surah for highlighting (optional)
+ * @param {number} targetVerse - Target verse for highlighting (optional)
  * @returns {string} HTML string with words wrapped in spans
  */
-function getWords(firstWordId, lastWordId) {
+function getWords(firstWordId, lastWordId, targetSurah = null, targetVerse = null) {
     if (!wordsData) {
         console.error('Words data not loaded');
         return '';
@@ -292,7 +294,14 @@ function getWords(firstWordId, lastWordId) {
     for (let id = firstWordId; id <= lastWordId; id++) {
         if (wordsData[id]) {
             const word = wordsData[id];
-            words.push(`<span class="word" data-word-id="${id}" data-surah="${word.surah}" data-ayah="${word.ayah}">${word.text} </span>`);
+            let cssClass = 'word';
+            
+            // Add target-verse class if this word matches the target verse
+            if (targetSurah && targetVerse && word.surah === targetSurah && word.ayah === targetVerse) {
+                cssClass += ' target-verse';
+            }
+            
+            words.push(`<span class="${cssClass}" data-word-id="${id}" data-surah="${word.surah}" data-ayah="${word.ayah}">${word.text} </span>`);
         }
     }
     return words.join('');
@@ -310,6 +319,40 @@ function getPageLayout(pageNumber) {
     }
 
     return layoutData[pageNumber] || [];
+}
+
+/**
+ * Finds which page contains a specific verse
+ * @param {number} surahNumber - Surah number (1-114)
+ * @param {number} verseNumber - Verse number within surah
+ * @returns {number|null} Page number containing the verse, or null if not found
+ */
+function findPageContainingVerse(surahNumber, verseNumber) {
+    if (!layoutData || !wordsData) {
+        console.error('Layout or words data not loaded');
+        return null;
+    }
+
+    // Search through all pages
+    for (let pageNumber = 1; pageNumber <= 604; pageNumber++) {
+        const pageLayout = layoutData[pageNumber];
+        if (!pageLayout) continue;
+
+        // Check each line on the page
+        for (const line of pageLayout) {
+            if (line.line_type === 'ayah' && line.first_word_id && line.last_word_id) {
+                // Check if any word in this line matches our target verse
+                for (let wordId = line.first_word_id; wordId <= line.last_word_id; wordId++) {
+                    const word = wordsData[wordId];
+                    if (word && word.surah === surahNumber && word.ayah === verseNumber) {
+                        return pageNumber;
+                    }
+                }
+            }
+        }
+    }
+
+    return null;
 }
 
 // ============================================================================
@@ -335,6 +378,7 @@ export {
     getSurahName,
     getWords,
     getPageLayout,
+    findPageContainingVerse,
     
     // Data access
     getVersesData,

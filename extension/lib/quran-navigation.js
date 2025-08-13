@@ -20,10 +20,7 @@ function setTargetVerse(newTargetVerse, scrollIntoView = true) {
             return false;
         }
         
-        if (!RenderingState.supportsTargetVerse()) {
-            console.error(`Current mode '${RenderingState.getMode()}' does not support target verses.`);
-            return false;
-        }
+
         
         const currentSurah = RenderingState.getSurah();
         const currentTargetVerse = RenderingState.getTargetVerse();

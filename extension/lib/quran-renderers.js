@@ -12,6 +12,8 @@ import { RenderingState, getSurahName, getWords, getPageLayout, getVersesData, g
  * Generates HTML for a Mushaf page
  * @param {number} pageNumber - Page number (1-604 for standard Mushaf)
  * @param {Object} options - Rendering options
+ * @param {number} options.targetSurah - Target surah for highlighting
+ * @param {number} options.targetVerse - Target verse for highlighting
  * @returns {string} HTML string of rendered page
  */
 function generateMushafPageHTML(pageNumber, options = {}) {
@@ -46,7 +48,7 @@ function generateMushafPageHTML(pageNumber, options = {}) {
 
             case 'ayah':
                 if (line.first_word_id && line.last_word_id) {
-                    lineElement += getWords(line.first_word_id, line.last_word_id);
+                    lineElement += getWords(line.first_word_id, line.last_word_id, options.targetSurah, options.targetVerse);
                 }
                 break;
 
@@ -69,15 +71,18 @@ function generateMushafPageHTML(pageNumber, options = {}) {
 /**
  * Updates DOM with Mushaf page HTML and sets up interactions
  * @param {string} html - HTML string to insert
+ * @param {number} pageNumber - Page number for state tracking
+ * @param {number} surah - Surah number for state tracking (optional)
+ * @param {number} targetVerse - Target verse for state tracking (optional)
  * @param {string} targetElementId - ID of the container element (default: 'quran')
  */
-function updateMushafPageDOM(html, pageNumber, targetElementId = 'quran') {
+function updateMushafPageDOM(html, pageNumber, surah = null, targetVerse = null, targetElementId = 'quran') {
     const quranContainer = document.getElementById(targetElementId);
     if (quranContainer) {
         quranContainer.innerHTML = html;
         
         // Update state
-        RenderingState.setMushafState(pageNumber, quranContainer);
+        RenderingState.setMushafState(pageNumber, quranContainer, surah, targetVerse);
 
         setupVerseHighlighting(quranContainer);
     }

@@ -1,6 +1,6 @@
 # Qurʾān Locator Firefox Extension
 
-A Firefox extension that brings the Quran locator functionality to your browser as a convenient popup.
+A Firefox extension that brings the Quran locator functionality to your browser as a convenient sidepanel.
 
 ## Prerequisites
 
@@ -35,7 +35,7 @@ A Firefox extension that brings the Quran locator functionality to your browser 
    python src/server.py
    ```
 
-2. **Click the extension icon** in Firefox toolbar to open the popup
+2. **Click the extension icon** in Firefox toolbar to open the sidepanel
 
 3. **Use the interface** exactly like the web version:
    - Load audio files or use the default recitation
@@ -57,10 +57,10 @@ A Firefox extension that brings the Quran locator functionality to your browser 
 ```
 extension/
 ├── manifest.json          # Extension configuration
-├── popup/                 # Main popup interface
-│   ├── popup.html
-│   ├── popup.js
-│   └── popup.css
+├── sidepanel/             # Main sidepanel interface
+│   ├── sidepanel.html
+│   ├── sidepanel.js
+│   └── sidepanel.css
 ├── lib/                   # JavaScript modules
 ├── data/                  # Quran data (JSON files)
 └── assets/                # Fonts and icons
