@@ -390,3 +390,39 @@ audio {
     border: 1px solid rgba(220, 38, 38, 0.3);
     text-align: center;
 }
+
+/* Audio Capture Styles */
+.capture-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.capture-button {
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 0.8rem 1.5rem;
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transition: all 0.3s ease;
+}
+
+.capture-button:hover {
+    background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+}
+
+.capture-button.capturing {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+.capture-button.capturing:hover {
+    background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+}
+
+.capture-status {
+    font-size: 0.9rem;
+    color: var(--sepia-accent);
+    text-align: center;
+    font-style: italic;
+    min-height: 1.2em;
+}

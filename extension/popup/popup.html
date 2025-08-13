@@ -13,10 +13,12 @@
 <div id="control-panel">
   <div class="control-row">
     <div class="control-section">
-      <h3>Audio Controls</h3>
-      <audio id="player" controls src="http://localhost:5000/assets/recitation.mp3"></audio>
-      <input type="file" id="pick" accept="audio/*">
-      <button id="analyse">Analyse current position</button>
+      <h3>Live Audio Capture</h3>
+      <div class="capture-controls">
+        <button id="toggle-capture" class="capture-button">Start Capture</button>
+        <div id="capture-status" class="capture-status">Ready to capture</div>
+        <button id="analyse" disabled>Analyse Audio</button>
+      </div>
     </div>
     
     <div class="control-section">

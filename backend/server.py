@@ -8,7 +8,7 @@ from asr import RealTimeQuranASR, Config
 import mimetypes
 
 # ---------------------------------------------------------------------------
-SCRIPT_DB     =  Path("./website/data/scripts/db/uthmani-wbw.db")
+SCRIPT_DB     =  Path("./website/data/scripts/uthmani-aba.json")
 MODEL_NAME    = "OdyAsh/faster-whisper-base-ar-quran"
 # MODEL_NAME    = "tarteel-ai/whisper-base-ar-quran"
 # TODO: try the normal whisper models

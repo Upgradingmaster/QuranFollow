@@ -1,41 +1,6 @@
 import * as WavEncoder from '../lib/wav-encoder.js'
 import * as QuranRenderer from '../lib/quran-renderer.js'
-
-async function decodeArrayBuffer(ab, token) {
-    try {
-        if (!ctx) {
-            log(`❌ AudioContext not available`);
-            return;
-        }
-        const buf = await ctx.decodeAudioData(ab);
-        if (token !== decodeToken) return;
-        audioBuf = buf;
-        log(`✔ audio decoded ${(buf.length / buf.sampleRate).toFixed(1)} s @ ${buf.sampleRate} Hz`);
-        if (btn) {
-            btn.disabled = false;
-        }
-    } catch (e) {
-        log(`❌ decode failed: ${e}`);
-    }
-}
-
-async function loadAudio() {
-    if (!btn || !player) {
-        log(`❌ Required DOM elements not found`);
-        return;
-    }
-    btn.disabled = true;
-    const token = ++decodeToken;
-    try {
-        const ab = await fetch(player.src).then(r => r.arrayBuffer());
-        await decodeArrayBuffer(ab, token);
-    } catch (e) {
-        log(`❌ Failed to load audio: ${e.message}`);
-        if (btn) {
-            btn.disabled = false;
-        }
-    }
-}
+import { AudioCapture } from '../lib/audio-capture.js'
 
 function log(msg) {
     if (logel) {
@@ -182,42 +147,30 @@ async function loadSurah() {
     }
 }
 
-async function predictCurrentPosition() {
-    // grab +-4 s around currentTime, resample to 16 kHz and send
-    
-    if (!player || !audioBuf) {
-        log(`❌ Audio player or buffer not available`);
+async function analyzeCurrentAudio() {
+    if (!audioCapture || !audioCapture.isCapturing) {
+        log(`❌ Audio capture not active`);
         return;
     }
 
-    const now = player.currentTime;
-    const from = Math.max(0, now - CHUNK_BACK);
-    const to   = Math.min(audioBuf.duration, now + CHUNK_FWD);
-    const origSR = audioBuf.sampleRate;
+    const CHUNK_DURATION = 8.0; // seconds - grab 8 seconds of recent audio
+    const pcm = audioCapture.getAudioChunk(CHUNK_DURATION);
+    
+    if (!pcm || pcm.length === 0) {
+        log(`❌ No audio data available`);
+        return;
+    }
 
-    // slice the original buffer
-    const start  = Math.floor(from * origSR);
-    const end    = Math.floor(to   * origSR);
-    const slice  = audioBuf.getChannelData(0).slice(start, end); // mono(channel 0 only)
-
-    // resample using an OfflineAudioContext
-    const frames   = Math.floor((end-start) * TARGET_SR / origSR);
-    const off      = new OfflineAudioContext(1, frames, TARGET_SR);
-    const buf      = off.createBuffer(1, slice.length, origSR); buf.copyToChannel(slice, 0);
-    const src      = off.createBufferSource();
-    src.buffer     = buf; src.connect(off.destination); src.start();
-    const rendered = await off.startRendering();
-    const pcm      = rendered.getChannelData(0); // Float32Array @16 kHz
-
-    // encode small little-endian mono WAV
+    // encode mono WAV at 16kHz
     const wav = WavEncoder.encodeSync({
-        sampleRate:  TARGET_SR,
+        sampleRate: 16000,
         channelData: [pcm]
     });
 
-    const blob= new Blob([wav], {type:'audio/wav'});
-    const fd = new FormData(); fd.append('chunk', blob, 'chunk.wav');
-    log(`▶ sending ${blob.size/1024|0} kB …`);
+    const blob = new Blob([wav], {type:'audio/wav'});
+    const fd = new FormData(); 
+    fd.append('chunk', blob, 'chunk.wav');
+    log(`▶ sending ${blob.size/1024|0} kB from live stream…`);
 
     try {
         const r = await fetch('http://localhost:5000/process_chunk', {method:'POST', body:fd});
@@ -227,22 +180,21 @@ async function predictCurrentPosition() {
         }
         
         const js = await r.json();
-        
-        // log(JSON.stringify(js, null, 2));
         await updateCurrentVerse(js);
     } catch (error) {
         log(`❌ Failed to process audio chunk: ${error.message}`);
     }
 }
 
-// variables
-const CHUNK_BACK = 4.0, CHUNK_FWD = 4.0, TARGET_SR = 16_000;
-const picker = document.getElementById('pick');
-const player = document.getElementById('player');
-const btn    = document.getElementById('analyse');
-const quran  = document.getElementById('quran');
-const logel  = document.getElementById('log');
-const ctx    = new AudioContext();
+// Audio capture and UI elements
+const audioCapture = new AudioCapture();
+const toggleCaptureBtn = document.getElementById('toggle-capture');
+const captureStatus = document.getElementById('capture-status');
+const analyzeBtn = document.getElementById('analyse');
+const quran = document.getElementById('quran');
+const logel = document.getElementById('log');
+
+// Navigation elements
 const pageInput = document.getElementById('page-input');
 const loadPageBtn = document.getElementById('load-page');
 const surahInput = document.getElementById('surah-input');
@@ -252,20 +204,54 @@ const surahNumberInput = document.getElementById('surah-number-input');
 const surahVerseInput = document.getElementById('surah-verse-input');
 const loadSurahBtn = document.getElementById('load-surah');
 
-let   audioBuf   = null;
-let   decodeToken = 0;
+let isCapturing = false;
 
-// Handlers
-picker.onchange = async () => {
-    const file = picker.files[0];
-    if (!file) return;
+// Audio capture functions
+async function toggleAudioCapture() {
+    if (isCapturing) {
+        stopCapture();
+    } else {
+        await startCapture();
+    }
+}
 
-    player.src = URL.createObjectURL(file);
-    player.load();
+async function startCapture() {
+    try {
+        toggleCaptureBtn.disabled = true;
+        captureStatus.textContent = 'Starting capture...';
+        
+        await audioCapture.startCapture();
+        
+        isCapturing = true;
+        toggleCaptureBtn.textContent = 'Stop Capture';
+        toggleCaptureBtn.classList.add('capturing');
+        captureStatus.textContent = 'Capturing live audio from tab';
+        analyzeBtn.disabled = false;
+        
+        log('✔ Started capturing audio from current tab');
+    } catch (error) {
+        log(`❌ Failed to start capture: ${error.message}`);
+        captureStatus.textContent = 'Failed to start capture';
+    } finally {
+        toggleCaptureBtn.disabled = false;
+    }
+}
 
-    loadAudio();
-};
-btn.onclick = predictCurrentPosition;
+function stopCapture() {
+    audioCapture.stopCapture();
+    
+    isCapturing = false;
+    toggleCaptureBtn.textContent = 'Start Capture';
+    toggleCaptureBtn.classList.remove('capturing');
+    captureStatus.textContent = 'Capture stopped';
+    analyzeBtn.disabled = true;
+    
+    log('🛑 Stopped audio capture');
+}
+
+// Event handlers
+toggleCaptureBtn.onclick = toggleAudioCapture;
+analyzeBtn.onclick = analyzeCurrentAudio;
 loadPageBtn.onclick = loadQuranPage;
 loadVerseBtn.onclick = loadVerseWithContext;
 loadSurahBtn.onclick = loadSurah;
@@ -300,9 +286,11 @@ surahVerseInput.addEventListener('keypress', (e) => {
     }
 });
 
-loadAudio();
+// Setup audio capture status monitoring
+audioCapture.onStatusChange = (status, details) => {
+    log(`🔊 Audio capture: ${status}`);
+};
 
+// Initialize Quran renderer
 await QuranRenderer.initializeQuranRenderer();
-// QuranRenderer.renderVerseWithContext(20, 3);
-// QuranRenderer.renderMushafPage(1);
 QuranRenderer.renderSurah(18);
