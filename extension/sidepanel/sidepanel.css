@@ -93,13 +93,151 @@ button:disabled {
     box-shadow: none;
 }
 
-#control-panel {
+/* Footer Controls */
+#footer-controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
     background: var(--sepia-paper);
-    border-radius: 12px;
-    border: 1px solid var(--sepia-border);
-    box-shadow: 0 8px 24px var(--sepia-shadow);
-    margin: 1rem 0;
-    overflow: hidden;
+    border-top: 2px solid var(--sepia-border);
+    padding: 0.75rem;
+    z-index: 1000;
+    box-shadow: 0 -4px 16px var(--sepia-shadow);
+}
+
+.footer-button {
+    width: 100%;
+    background: linear-gradient(135deg, var(--sepia-button) 0%, var(--sepia-accent) 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px var(--sepia-shadow);
+    font-family: inherit;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.footer-button:hover {
+    background: linear-gradient(135deg, var(--sepia-button-hover) 0%, #7a6347 100%);
+    box-shadow: 0 4px 12px var(--sepia-dark-shadow);
+    transform: translateY(-2px);
+}
+
+.controls-icon {
+    font-size: 1.2rem;
+}
+
+.controls-text {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* Modal Backdrop */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-backdrop.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Control Modal */
+.control-modal {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--sepia-paper);
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    box-shadow: 0 -8px 32px var(--sepia-dark-shadow);
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    max-height: 80vh;
+    overflow-y: auto;
+    z-index: 2001;
+}
+
+.modal-backdrop.show .control-modal {
+    transform: translateY(0);
+}
+
+/* Modal Header */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 2px solid var(--sepia-border);
+    background: linear-gradient(135deg, var(--sepia-bg) 0%, #ede8dc 100%);
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: var(--sepia-accent);
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: var(--sepia-accent);
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    width: auto;
+    min-width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.close-button:hover {
+    background: rgba(139, 115, 85, 0.1);
+    color: var(--sepia-text);
+    transform: none;
+    box-shadow: none;
+}
+
+/* Control Panel inside Modal */
+#control-panel {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    margin: 0;
+    border-radius: 0;
+    overflow: visible;
+}
+
+/* Body padding to account for footer */
+body {
+    padding-bottom: 4rem;
 }
 
 .control-row {

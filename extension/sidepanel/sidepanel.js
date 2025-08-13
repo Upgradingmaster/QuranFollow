@@ -223,6 +223,11 @@ const analyzeBtn = document.getElementById('analyse');
 const quran = document.getElementById('quran');
 const logel = document.getElementById('log');
 
+// Footer modal elements
+const toggleControlPanelBtn = document.getElementById('toggle-control-panel');
+const closeControlPanelBtn = document.getElementById('close-control-panel');
+const controlModalBackdrop = document.getElementById('control-modal-backdrop');
+
 // Mode selection elements
 const modeSelect = document.getElementById('mode-select');
 const mushafControls = document.getElementById('mushaf-controls');
@@ -311,6 +316,17 @@ function stopCapture() {
     log('🛑 Stopped audio capture');
 }
 
+// Footer modal functions
+function showControlPanel() {
+    controlModalBackdrop.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function hideControlPanel() {
+    controlModalBackdrop.classList.remove('show');
+    document.body.style.overflow = '';
+}
+
 // Event handlers
 toggleCaptureBtn.onclick = toggleAudioCapture;
 analyzeBtn.onclick = analyzeCurrentAudio;
@@ -318,6 +334,24 @@ loadPageBtn.onclick = loadQuranPage;
 loadVerseBtn.onclick = loadVerseWithContext;
 loadSurahBtn.onclick = loadSurah;
 modeSelect.onchange = updateModeVisibility;
+
+// Footer modal event handlers
+toggleControlPanelBtn.onclick = showControlPanel;
+closeControlPanelBtn.onclick = hideControlPanel;
+
+// Close modal when clicking backdrop
+controlModalBackdrop.onclick = (e) => {
+    if (e.target === controlModalBackdrop) {
+        hideControlPanel();
+    }
+};
+
+// Close modal with Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && controlModalBackdrop.classList.contains('show')) {
+        hideControlPanel();
+    }
+});
 
 pageInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
