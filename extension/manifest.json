@@ -1,0 +1,34 @@
+{
+  "manifest_version": 2,
+  "name": "Qurʾān Locator",
+  "version": "1.0.0",
+  "description": "Audio-based Quran verse locator and reader",
+  
+  "permissions": [
+    "http://localhost:5000/*",
+    "storage"
+  ],
+  
+  "browser_action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Qurʾān Locator",
+    "default_icon": {
+      "16": "assets/icons/icon-16.png",
+      "48": "assets/icons/icon-48.png",
+      "128": "assets/icons/icon-128.png"
+    }
+  },
+  
+  "icons": {
+    "16": "assets/icons/icon-16.png",
+    "48": "assets/icons/icon-48.png",
+    "128": "assets/icons/icon-128.png"
+  },
+  
+  "web_accessible_resources": [
+    "data/*",
+    "assets/*"
+  ],
+  
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+}

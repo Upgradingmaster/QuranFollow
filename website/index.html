@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<meta charset="utf-8">
+<title>Qurʾān Locator</title>
+
+
+<h2>Qurʾān Locator</h2>
+
+<!-- Control Panel -->
+<div id="control-panel">
+  <div class="control-row">
+    <div class="control-section">
+      <h3>Audio Controls</h3>
+      <audio id="player" controls src="assets/recitation.mp3"></audio>
+      <input type="file" id="pick" accept="audio/*">
+      <button id="analyse">Analyse current position</button>
+    </div>
+    
+    <div class="control-section">
+      <h3>Page Navigation</h3>
+      <div class="page-controls">
+        <label for="page-input">Page:</label>
+        <input type="number" id="page-input" min="1" max="604" value="1" />
+        <button id="load-page">Load Page</button>
+      </div>
+    </div>
+    
+    <div class="control-section">
+      <h3>Verse Context</h3>
+      <div class="verse-controls">
+        <div class="input-group">
+          <label for="surah-input">Surah:</label>
+          <input type="number" id="surah-input" min="1" max="114" value="1" />
+        </div>
+        <div class="input-group">
+          <label for="verse-input">Verse:</label>
+          <input type="number" id="verse-input" min="1" max="286" value="1" />
+        </div>
+        <button id="load-verse">Load Verse</button>
+      </div>
+    </div>
+    
+    <div class="control-section">
+      <h3>Surah View</h3>
+      <div class="surah-controls">
+        <div class="input-group">
+          <label for="surah-number-input">Surah:</label>
+          <input type="number" id="surah-number-input" min="1" max="114" value="1" />
+        </div>
+        <div class="input-group">
+          <label for="surah-verse-input">Target Verse:</label>
+          <input type="number" id="surah-verse-input" min="1" max="286" value="" placeholder="Optional" />
+        </div>
+        <button id="load-surah">Load Surah</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="quran"></div>
+<div id="log"></div>
+
+<script type="module" src="app.js"></script>
+</html>
