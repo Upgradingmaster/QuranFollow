@@ -1,4 +1,3 @@
-// AudioWorklet processor for replacing ScriptProcessorNode
 class AudioProcessorWorklet extends AudioWorkletProcessor {
     constructor() {
         super();

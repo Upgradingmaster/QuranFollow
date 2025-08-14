@@ -2,7 +2,7 @@
 // HTML Generation and DOM Updates
 // ============================================================================
 
-import { RenderingState, getSurahName, getWords, getPageLayout, getVersesData, getTranslationData } from './quran-data.js';
+import { RenderingState, getSurahName, getWords, getPageLayout, getVersesData, getTranslationData } from './data.js';
 
 // ============================================================================
 // Mushaf Rendering

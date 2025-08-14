@@ -240,6 +240,66 @@ body {
     padding-bottom: 4rem;
 }
 
+/* Keybind Visual Feedback */
+.keybind-toast {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    background: var(--sepia-accent);
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    box-shadow: 0 4px 16px var(--sepia-dark-shadow);
+    z-index: 3000;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+    pointer-events: none;
+    max-width: 250px;
+    word-wrap: break-word;
+}
+
+.keybind-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.keybind-toast.success {
+    background: #059669;
+}
+
+.keybind-toast.error {
+    background: #dc2626;
+}
+
+.keybind-toast.info {
+    background: var(--sepia-accent);
+}
+
+/* Keybind Help Modal */
+.keybind-help-content {
+    max-width: 600px;
+    margin: 2rem auto;
+    max-height: 80vh;
+}
+
+.keybind-help-body {
+    padding: 1.5rem;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.keybind-help-body pre {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--sepia-text);
+    white-space: pre-wrap;
+    margin: 0;
+}
+
 .control-row {
     display: flex;
     flex-direction: column;

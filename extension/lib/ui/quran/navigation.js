@@ -1,8 +1,4 @@
-// ============================================================================
-// Verse Navigation and Target Management
-// ============================================================================
-
-import { RenderingState } from './quran-data.js';
+import { RenderingState } from './data.js';
 
 // ============================================================================
 // Target Verse Management
@@ -19,9 +15,7 @@ function setTargetVerse(newTargetVerse, scrollIntoView = true) {
             console.error('Rendering state not ready. Render content first.');
             return false;
         }
-        
 
-        
         const currentSurah = RenderingState.getSurah();
         const currentTargetVerse = RenderingState.getTargetVerse();
         

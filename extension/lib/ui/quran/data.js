@@ -228,6 +228,22 @@ async function loadLayoutData() {
     }
 }
 
+async function initializeQuranData() {
+        try {
+            console.log('Initializing Quran Renderer...');
+            await Promise.all([
+                loadWordsData(),
+                loadLayoutData(),
+                loadVersesData(),
+                loadTranslationData()
+            ]);
+            console.log('Quran Renderer initialized successfully ✓');
+        } catch (error) {
+            console.error('Failed to initialize Quran Renderer:', error);
+            throw error;
+        }
+}
+
 /**
  * Loads verses data from the JSON file
  * @returns {Promise<Object>} Verses data indexed by surah:ayah key
@@ -373,6 +389,7 @@ export {
     loadLayoutData,
     loadVersesData,
     loadTranslationData,
+    initializeQuranData,
     
     // Utility functions
     getSurahName,

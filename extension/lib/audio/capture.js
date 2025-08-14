@@ -1,4 +1,4 @@
-import { AudioBuffer } from './audio-buffer.js';
+import { AudioBuffer } from './buffer.js';
 
 export class AudioCapture {
     constructor() {
@@ -38,7 +38,7 @@ export class AudioCapture {
             this.audioContext = new AudioContext();
             
             // Load the AudioWorklet processor
-            const workletUrl = chrome.runtime.getURL('lib/audio-processor-worklet.js');
+            const workletUrl = chrome.runtime.getURL('lib/audio/processor-worklet.js');
             await this.audioContext.audioWorklet.addModule(workletUrl);
             
             // Create MediaStreamSource
