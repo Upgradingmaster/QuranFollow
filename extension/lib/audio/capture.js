@@ -1,15 +1,17 @@
 import { AudioBuffer } from './buffer.js';
 
 export class AudioCapture {
-    constructor() {
+    constructor(dependencies) {
+        this.log = dependencies.log;
+        this.isCapturing = false;
+
         this.mediaStream = null;
         this.audioContext = null;
         this.audioWorkletNode = null;
         this.audioBuffer = null;
-        this.isCapturing = false;
         this.outputAudioContext = null;
-        this.onStatusChange = null;
-        
+
+
         this.TARGET_SAMPLE_RATE = 16000;
         this.BUFFER_DURATION = 60; // seconds
     }
@@ -133,8 +135,6 @@ export class AudioCapture {
     }
 
     notifyStatusChange(status) {
-        if (this.onStatusChange) {
-            this.onStatusChange(status, this.getStatus());
-        }
+        this.log(`🔊 Audio capture: ${status}`);
     }
 }

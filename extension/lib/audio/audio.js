@@ -1,11 +1,11 @@
 import * as WavEncoder from './wav-encoder.js';
+import { AudioCapture } from './capture.js';
 
 export class AudioModule {
     constructor(dependencies) {
+        this.audioCapture = new AudioCapture(dependencies);
         this.log = dependencies.log;
-        this.audioCapture = dependencies.audioCapture;
         this.elements = dependencies.elements;
-        this.isCapturing = false;
     }
 
     async analyzeCurrentAudio() {
@@ -49,7 +49,7 @@ export class AudioModule {
     }
 
     async toggleAudioCapture() {
-        if (this.isCapturing) {
+        if (this.audioCapture.isCapturing) {
             this.stopCapture();
         } else {
             await this.startCapture();
@@ -69,7 +69,6 @@ export class AudioModule {
             
             await this.audioCapture.startCapture();
             
-            this.isCapturing = true;
             if (toggleCaptureBtn) {
                 toggleCaptureBtn.textContent = 'Stop Capture';
                 toggleCaptureBtn.classList.add('capturing');
@@ -99,7 +98,6 @@ export class AudioModule {
         
         this.audioCapture.stopCapture();
         
-        this.isCapturing = false;
         if (toggleCaptureBtn) {
             toggleCaptureBtn.textContent = 'Start Capture';
             toggleCaptureBtn.classList.remove('capturing');

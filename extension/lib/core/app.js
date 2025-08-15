@@ -23,7 +23,6 @@ export class AppModule {
     }
 
     initializeElements() {
-        this.audioCapture = new AudioCapture();
 
         //TODO: naming
         this.elements = {
@@ -31,18 +30,18 @@ export class AppModule {
             toggleCaptureBtn      : document.getElementById('toggle-capture'),
             captureStatus         : document.getElementById('capture-status'),
             analyzeBtn            : document.getElementById('analyse'),
-            
+
             // UI elements
             quran                 : document.getElementById('quran'),
             logel                 : document.getElementById('log'),
             controlModalBackdrop  : document.getElementById('control-modal-backdrop'),
-            
+
             // Mode elements
             modeSelect            : document.getElementById('mode-select'),
             mushafControls        : document.getElementById('mushaf-controls'),
             contextControls       : document.getElementById('context-controls'),
             surahControls         : document.getElementById('surah-controls'),
-            
+
             // Navigation elements
 
             pageInput             : document.getElementById('page-input'),
@@ -64,7 +63,6 @@ export class AppModule {
     async initializeModules() {
         let dependencies = {
             log: this.log,
-            audioCapture: this.audioCapture, //TODO: remove?
             elements: this.elements,
             modules: {},
             getModules: () => { return this.modules; }
@@ -175,11 +173,6 @@ export class AppModule {
                 this.modules.uiModule.hideControlPanel();
             }
         });
-
-        // Audio capture status monitoring
-        this.audioCapture.onStatusChange = (status, details) => {
-            this.log(`🔊 Audio capture: ${status}`);
-        };
     }
 
     async initialize() {
