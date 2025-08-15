@@ -235,8 +235,9 @@ button:disabled {
     overflow: visible;
 }
 
-/* Body padding to account for footer */
+/* Body padding to account for header and footer */
 body {
+    padding-top: 3.5rem;
     padding-bottom: 4rem;
 }
 
@@ -582,38 +583,93 @@ audio {
     border-color: var(--sepia-accent);
 }
 
-#log {
-    margin-top: 1rem;
-    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
-    color: #4ade80;
-    padding: 1rem;
-    height: 200px;
-    overflow-y: auto;
-    font-family: 'Consolas', 'Monaco', monospace;
-    white-space: pre-wrap;
-    border-radius: 10px;
-    border: 1px solid #333;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-    font-size: 0.8rem;
-    line-height: 1.3;
+.log-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: var(--sepia-paper);
+    border-bottom: 2px solid var(--sepia-border);
+    z-index: 999;
+    box-shadow: 0 2px 8px var(--sepia-shadow);
+    transition: all 0.3s ease;
 }
 
-#log::-webkit-scrollbar {
+.log-status-bar {
+    color: var(--sepia-accent);
+    padding: 0.75rem 1rem;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+    cursor: pointer;
+    user-select: none;
+}
+
+.log-status-bar:hover {
+    background: rgba(139, 115, 85, 0.05);
+}
+
+
+.log-full-content::-webkit-scrollbar {
     width: 6px;
 }
 
-#log::-webkit-scrollbar-track {
-    background: #1a1a1a;
+.log-full-content::-webkit-scrollbar-track {
+    background: rgba(139, 115, 85, 0.1);
     border-radius: 4px;
 }
 
-#log::-webkit-scrollbar-thumb {
-    background: #4ade80;
+.log-full-content::-webkit-scrollbar-thumb {
+    background: var(--sepia-accent);
     border-radius: 4px;
 }
 
-#log::-webkit-scrollbar-thumb:hover {
-    background: #22c55e;
+.log-full-content::-webkit-scrollbar-thumb:hover {
+    background: var(--sepia-button);
+}
+
+.log-toggle {
+    position: absolute;
+    right: 1rem;
+    top: 0.75rem;
+    color: var(--sepia-accent);
+    font-size: 0.8rem;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.3s ease;
+    z-index: 1;
+}
+
+.log-container.expanded .log-toggle {
+    transform: rotate(180deg);
+}
+
+.log-full-content {
+    background: var(--sepia-paper);
+    color: transparent;
+    padding: 0 1rem;
+    height: 0;
+    overflow: hidden;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.8rem;
+    white-space: pre-wrap;
+    line-height: 1.3;
+    border-top: 1px solid transparent;
+    transition: height 0.3s ease, color 0s ease 0.3s;
+}
+
+.log-container.expanded .log-full-content {
+    height: 150px;
+    overflow-y: auto;
+    padding: 1rem;
+    border-top: 1px solid var(--sepia-border);
+    color: var(--sepia-accent);
+    transition: height 0.3s ease, color 0s ease 0s;
 }
 
 .error {

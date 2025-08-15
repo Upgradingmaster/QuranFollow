@@ -73,8 +73,6 @@ export const QuranState = {
             throw new Error(`Invalid target verse: ${targetVerse}`);
         }
 
-
-        console.log("Setting state to mushaf.");
         this._state.mode = 'mushaf';
         this._state.surah = surah;
         this._state.targetVerse = targetVerse;
@@ -92,7 +90,6 @@ export const QuranState = {
             throw new Error(`Invalid target verse: ${targetVerse}`);
         }
 
-        console.log("Setting state to context.");
         this._state.mode = 'context';
         this._state.surah = surah;
         this._state.targetVerse = targetVerse;
@@ -110,7 +107,6 @@ export const QuranState = {
             throw new Error(`Invalid target verse: ${targetVerse}`);
         }
 
-        console.log("Setting state to surah.");
         this._state.mode = 'surah';
         this._state.surah = surah;
         this._state.targetVerse = targetVerse;

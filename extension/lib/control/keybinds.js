@@ -96,11 +96,10 @@ export class GlobalKeybinds {
                 this.actions[action](...args);
             } else {
                 console.warn(`[Keybind] Action not found: ${action}`);
-                this.showToast(`❌ Action not found: ${action}`, 'error');
+                this.showToast(`[X] Action not found: ${action}`, 'error');
             }
         } catch (error) {
             console.error(`[Keybind] Error executing action:`, error);
-            this.showToast(`❌ Error: ${error.message}`, 'error');
         }
     }
 
@@ -143,15 +142,6 @@ export class GlobalKeybinds {
         };
         
         this.keybinds.set(key, keybind);
-        console.log(`[Keybind] Bound: ${key} -> ${action} (${description})`);
-    }
-
-    unbind(key) {
-        const removed = this.keybinds.delete(key);
-        if (removed) {
-            console.log(`[Keybind] Unbound: ${key}`);
-        }
-        return removed;
     }
 
     enable() {
@@ -231,7 +221,7 @@ export class GlobalKeybinds {
             <div class="keybind-help-content control-modal">
                 <div class="modal-header">
                     <h3>Keyboard Shortcuts</h3>
-                    <button class="close-button" onclick="this.closest('.keybind-help-modal').remove()">×</button>
+                    <button class="close-button">×</button>
                 </div>
                 <div class="keybind-help-body">
                     <pre>${helpText}</pre>
@@ -240,6 +230,13 @@ export class GlobalKeybinds {
         `;
 
         document.body.appendChild(modal);
+
+
+        // Close on backdrop click
+        const closeButton = modal.querySelector('.close-button');
+        closeButton.addEventListener('click', () => {
+            modal.remove();
+        });
 
         // Close on backdrop click
         modal.addEventListener('click', (e) => {
@@ -282,8 +279,7 @@ export class GlobalKeybinds {
         
         // UI controls
         this.bind('Ctrl+p', 'toggleControlPanel', 'Toggle control panel');
-        this.bind('Ctrl+l', 'clearLog', 'Clear log');
-        this.bind('?', 'showHelp', 'Show keyboard shortcuts');
+        this.bind('q', 'showHelp', 'Show keyboard shortcuts');
         this.bind('F1', 'showHelp', 'Show keyboard shortcuts');
         
         // Quick access

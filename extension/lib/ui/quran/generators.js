@@ -6,7 +6,7 @@ import {
     getSurahName,
     getWords,
     getVerse,
-    getLayout,
+    getPage,
     getTranslation,
 } from './data.js';
 
@@ -23,9 +23,8 @@ import {
  * @returns {string} HTML string of rendered page
  */
 function generateMushafPageHTML(pageNumber, options = {}) {
-    const pageData = getLayout(pageNumber);
+    const pageData = getPage(pageNumber);
     if (!pageData.length) {
-        console.log(pageData);
         return `<div class="error">Page ${pageNumber} not found</div>`;
     }
 

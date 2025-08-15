@@ -10,3 +10,4 @@
 - Study keybinds
 - Tests
 - Footnote dropdown
+- Bring UI and Quran State truly together

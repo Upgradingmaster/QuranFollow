@@ -1,8 +1,7 @@
 import { AudioBuffer } from './buffer.js';
 
 export class AudioCapture {
-    constructor(dependencies) {
-        this.log = dependencies.log;
+    constructor() {
         this.isCapturing = false;
         this.audioBuffer = null;
 
@@ -70,8 +69,7 @@ export class AudioCapture {
             this.audioWorkletNode.connect(this.audioContext.destination);
             
             this.isCapturing = true;
-            this.notifyStatusChange('started');
-            
+
             return true;
         } catch (error) {
             this.cleanup();
@@ -86,7 +84,6 @@ export class AudioCapture {
 
         this.cleanup();
         this.isCapturing = false;
-        this.notifyStatusChange('stopped');
     }
 
     cleanup() {
@@ -132,9 +129,5 @@ export class AudioCapture {
             hasAudioWorklet: !!this.audioWorkletNode,
             audioBuffer: this.audioBuffer ? this.audioBuffer.getStatus() : null
         };
-    }
-
-    notifyStatusChange(status) {
-        this.log(`🔊 Audio capture: ${status}`);
     }
 }

@@ -20,14 +20,14 @@ const SURAH_NAMES = {
 
 
 // Quran Data paths
-const verses_path      = '../data/scripts/uthmani-aba.json'
-const words_path       = '../data/scripts/uthmani-wbw.json'
-const layout_path      = '../data/layouts/uthmani.json'
-const translation_path = '../data/translations/si-footnotes-inline.json'
+const versesPath      = '../data/scripts/uthmani-aba.json'
+const wordsPath       = '../data/scripts/uthmani-wbw.json'
+const pagesPath       = '../data/pages/uthmani.json'
+const translationPath = '../data/translations/si-footnotes-inline.json'
 
 // Global Quran data stores
 let wordsData = null;
-let layoutData = null;
+let pagesData = null;
 let surahNames = null;
 let versesData = null;
 let translationData = null;
@@ -40,9 +40,9 @@ async function loadWordsData() {
     if (wordsData) return wordsData;
 
     try {
-        const response = await fetch(words_path);
+        const response = await fetch(wordsPath);
         wordsData      = await response.json();
-        console.log(`Loaded ${Object.keys(wordsData).length} words from database`);
+        console.log(`[Data] Loaded ${Object.keys(wordsData).length} words from ${wordsPath}`);
     } catch (error) {
         console.error('Failed to load words data:', error);
         throw error;
@@ -57,9 +57,9 @@ async function loadVersesData() {
     if (versesData) return versesData;
 
     try {
-        const response = await fetch(verses_path);
+        const response = await fetch(versesPath);
         versesData     = await response.json();
-        console.log(`Loaded ${Object.keys(versesData).length} verses from uthmani.json`);
+        console.log(`[Data] Loaded ${Object.keys(versesData).length} verses from ${versesPath}`);
         return versesData;
     } catch (error) {
         console.error('Failed to load verses data:', error);
@@ -68,18 +68,18 @@ async function loadVersesData() {
 }
 
 /**
- * Loads layout data from the JSON file
- * @returns {Promise<Object>} Layout data indexed by page number
+ * Loads pages data from the JSON file
+ * @returns {Promise<Object>} Pages data indexed by page number
  */
-async function loadLayoutData() {
-    if (layoutData) return layoutData;
+async function loadPagesData() {
+    if (pagesData) return pagesData;
 
     try {
-        const response = await fetch(layout_path);
-        layoutData     = await response.json();
-        console.log(`Loaded layout data for ${Object.keys(layoutData).length} pages`);
+        const response = await fetch(pagesPath);
+        pagesData      = await response.json();
+        console.log(`[Data] Loaded ${Object.keys(pagesPath).length} pages from ${pagesPath}`);
     } catch (error) {
-        console.error('Failed to load layout data:', error);
+        console.error('Failed to load pages data:', error);
         throw error;
     }
 }
@@ -91,9 +91,9 @@ async function loadLayoutData() {
 async function loadTranslationData() {
     if (translationData) return translationData;
     try {
-        const response = await fetch(translation_path);
+        const response = await fetch(translationPath);
         translationData = await response.json();
-        console.log(`Loaded ${Object.keys(translationData).length} translations from si-simple.json`);
+        console.log(`[Data] Loaded ${Object.keys(translationData).length} translations from ${translationPath}`);
         return translationData;
     } catch (error) {
         console.error('Failed to load translation data:', error);
@@ -103,23 +103,23 @@ async function loadTranslationData() {
 
 async function initializeQuranData() {
         try {
-            console.log('Initializing Quran Renderer...');
+            console.log('Loading Quran data...');
             await Promise.all([
                 loadWordsData(),
                 loadVersesData(),
-                loadLayoutData(),
+                loadPagesData(),
                 loadTranslationData()
             ]);
-            console.log('Quran Renderer initialized successfully ✓');
+            console.log('Loaded Quran data successfully');
         } catch (error) {
-            console.error('Failed to initialize Quran Renderer:', error);
+            console.error('Failed to load Quran data:', error);
             throw error;
         }
 }
 
 function getVersesData() { return versesData; }
 function getWordsData() { return wordsData; }
-function getLayoutData() { return layoutData; }
+function getPagesData() { return pagesData; }
 function getTranslationData() { return translationData; }
 
 
@@ -174,12 +174,12 @@ function getVerse(verseKey) {
     return versesData[verseKey];
 }
 
-function getLayout(pageNumber) {
-    if (!layoutData) {
+function getPage(pageNumber) {
+    if (!pagesData) {
         return [];
     }
 
-    return layoutData[pageNumber] || [];
+    return pagesData[pageNumber] || [];
 }
 
 function getTranslation(verseKey) {
@@ -198,18 +198,18 @@ function getTranslation(verseKey) {
  * @returns {number|null} Page number containing the verse, or null if not found
  */
 function findPageContainingVerse(surahNumber, verseNumber) {
-    if (!layoutData || !wordsData) {
-        console.error('Layout or words data not loaded');
+    if (!pagesData || !wordsData) {
+        console.error('Pages or words data not loaded');
         return null;
     }
 
     // Search through all pages
     for (let pageNumber = 1; pageNumber <= 604; pageNumber++) {
-        const pageLayout = layoutData[pageNumber];
-        if (!pageLayout) continue;
+        const page = pagesData[pageNumber];
+        if (!page) continue;
 
         // Check each line on the page
-        for (const line of pageLayout) {
+        for (const line of page) {
             if (line.line_type === 'ayah' && line.first_word_id && line.last_word_id) {
                 // Check if any word in this line matches our target verse
                 for (let wordId = line.first_word_id; wordId <= line.last_word_id; wordId++) {
@@ -228,15 +228,10 @@ function findPageContainingVerse(surahNumber, verseNumber) {
 export {
     initializeQuranData,
 
-    getVersesData,
-    getWordsData,
-    getLayoutData,
-    getTranslationData,
-
     getSurahName,
     getWords,
     getVerse,
-    getLayout,
+    getPage,
     getTranslation,
 
 

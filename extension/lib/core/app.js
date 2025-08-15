@@ -15,8 +15,23 @@ export class AppModule {
 
     log(msg) {
         if (this.elements.logel) {
-            this.elements.logel.textContent += msg + "\n"; 
-            this.elements.logel.scrollTop = this.elements.logel.scrollHeight;
+            // Store full history in data attribute
+            const currentHistory = this.elements.logel.dataset.history || '';
+            const newHistory = currentHistory + msg + '\n';
+            this.elements.logel.dataset.history = newHistory;
+            
+            // Update status bar with latest message
+            const statusBar = this.elements.logel.querySelector('.log-status-bar');
+            if (statusBar) {
+                statusBar.textContent = msg;
+            }
+            
+            // Update full content if expanded
+            const fullContent = this.elements.logel.querySelector('.log-full-content');
+            if (fullContent) {
+                fullContent.textContent = newHistory;
+                fullContent.scrollTop = fullContent.scrollHeight;
+            }
         } else {
             console.log(msg);
         }
@@ -94,7 +109,7 @@ export class AppModule {
             goToSurah: () => this.modules.controlModule.promptAndNavigateTo('surah'),
             
             // View modes
-            setMode: (mode) => this.modules.uiModule.setViewMode(mode),
+            setMode: (mode) => this.modules.controlModule.updateMode(mode),
             
             // Quick navigation
             nextItem: () => this.modules.controlModule.navigateNext(),
@@ -103,8 +118,7 @@ export class AppModule {
             goEnd: () => this.modules.controlModule.goToEnd(),
             
             // UI controls
-            toggleControlPanel: () => this.modules.uiModule.toggleControlPanel(),
-            clearLog: () => this.modules.uiModule.clearLogContent(),
+            toggleControlPanel: () => this.modules.controlModule.toggleControlPanel(),
             showHelp: () => this.globalKeybinds.showHelp(),
             reload: () => this.modules.controlModule.reloadQuranView()
         };
@@ -135,25 +149,25 @@ export class AppModule {
         // Keyboard handlers for inputs
         // Mushaf view
         elements.pageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') { console.log("pageInput"); this.modules.controlModule.loadMushafPageFromControlPanel();}
+            if (e.key === 'Enter') this.modules.controlModule.loadMushafPageFromControlPanel();
         });
 
         //ContextView
         elements.contextSurahInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') { console.log("contextSurahInput"); this.modules.controlModule.loadVerseWithContextFromControlPanel();}
+            if (e.key === 'Enter') this.modules.controlModule.loadVerseWithContextFromControlPanel();
         });
 
         elements.contextVerseInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') { console.log("contextVerseInput"); this.modules.controlModule.loadVerseWithContextFromControlPanel();}
+            if (e.key === 'Enter') this.modules.controlModule.loadVerseWithContextFromControlPanel();
         });
 
         // Surah View
         elements.surahNumberInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') { console.log("surahNumberInput"); this.modules.controlModule.loadSurahFromControlPanel();}
+            if (e.key === 'Enter') this.modules.controlModule.loadSurahFromControlPanel();
         });
 
         elements.surahVerseInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') { console.log("surahVerseInput"); this.modules.controlModule.loadSurahFromControlPanel();}
+            if (e.key === 'Enter') this.modules.controlModule.loadSurahFromControlPanel();
         });
 
         // Global escape key for modal
@@ -162,27 +176,45 @@ export class AppModule {
                 this.modules.uiModule.hideControlPanel();
             }
         });
+        
+        // Log toggle functionality
+        const logContainer = document.getElementById('log');
+        const logStatusBar = logContainer.querySelector('.log-status-bar');
+        const logToggle = logContainer.querySelector('.log-toggle');
+        const logFullContent = logContainer.querySelector('.log-full-content');
+        
+        const toggleLog = () => {
+            const isExpanded = logContainer.classList.contains('expanded');
+            if (isExpanded) {
+                logContainer.classList.remove('expanded');
+            } else {
+                logContainer.classList.add('expanded');
+                // Update full content with current history
+                const history = logContainer.dataset.history || '';
+                logFullContent.textContent = history;
+                // Small delay to allow transition to start before scrolling
+                setTimeout(() => {
+                    logFullContent.scrollTop = logFullContent.scrollHeight;
+                }, 50);
+            }
+        };
+        
+        logStatusBar.addEventListener('click', toggleLog);
+        logToggle.addEventListener('click', toggleLog);
     }
 
     async initialize() {
         try {
             await this.initializeModules();
 
-            // // Initialize mode visibility
-            // this.modules.controlModule.updateMode();
+            this.modules.controlModule.updateMode('context');
 
-            // Load initial content
-            await this.modules.controlModule.loadSurah(18);
-
-            // Log success
-            this.log('⌨️ Global keybinds initialized. Press ? or F1 for help.');
-            this.log('🎯 Application initialized successfully');
+            this.log('Initialization successfully, Press q or F1 help');
 
             return true;
         } catch (error) {
-            this.log(`❌ Failed to initialize application: ${error.message}`);
-            console.log(this.modules.controlModule);
-            console.error(`App initialization error: ${this.modules.controlModule}`, error);
+            this.log(`[X] Failed to initialize application`);
+            console.error(error);
             return false;
         }
     }
@@ -191,7 +223,7 @@ export class AppModule {
         if (this.globalKeybinds) {
             this.globalKeybinds.destroy();
         }
-        if (this.modules.audioModule) { //TODO: ?
+        if (this.modules.audioModule) {
             this.modules.audioModule.stopCapture();
         }
     }

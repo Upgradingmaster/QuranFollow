@@ -66,6 +66,7 @@ function scrollToVerse(surah, ayah, delay = 100) {
 // Target Verse Management
 // ============================================================================
 
+//TODO: Why so much error handling
 function setTargetVerse(newTargetVerse, scrollIntoView = true) {
     try {
         if (!QuranState.isReady()) {

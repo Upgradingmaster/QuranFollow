@@ -3,14 +3,14 @@ import { AudioCapture } from './capture.js';
 
 export class AudioModule {
     constructor(dependencies) {
-        this.audioCapture = new AudioCapture(dependencies);
+        this.audioCapture = new AudioCapture();
         this.log = dependencies.log;
         this.elements = dependencies.elements;
     }
 
     async analyzeCurrentAudio() {
         if (!this.audioCapture || !this.audioCapture.isCapturing) {
-            this.log(`❌ Audio capture not active`);
+            this.log(`[X] Audio capture not active`);
             return;
         }
 
@@ -18,7 +18,7 @@ export class AudioModule {
         const pcm = this.audioCapture.getAudioChunk(CHUNK_DURATION);
         
         if (!pcm || pcm.length === 0) {
-            this.log(`❌ No audio data available`);
+            this.log(`[X] No audio data available`);
             return;
         }
 
@@ -31,7 +31,7 @@ export class AudioModule {
         const blob = new Blob([wav], {type:'audio/wav'});
         const fd = new FormData(); 
         fd.append('chunk', blob, 'chunk.wav');
-        this.log(`▶ sending ${blob.size/1024|0} kB from live stream…`);
+        this.log(`Sending past ${CHUNK_DURATION}s of audio to backend…`);
 
         try {
             const r = await fetch('http://localhost:5000/process_chunk', {method:'POST', body:fd});
@@ -44,7 +44,8 @@ export class AudioModule {
             console.log("Received response from the backend: ", js);
             return js;
         } catch (error) {
-            this.log(`❌ Failed to process audio chunk: ${error.message}`);
+            this.log(`[X] Failed to process audio chunk`);
+            console.error(error);
         }
     }
 
@@ -80,9 +81,10 @@ export class AudioModule {
                 analyzeBtn.disabled = false;
             }
             
-            this.log('✔ Started capturing audio from current tab');
+            this.log('Started capturing audio from current tab');
         } catch (error) {
-            this.log(`❌ Failed to start capture: ${error.message}`);
+            this.log(`[X] Failed to start capture`);
+            console.error(error);
             if (captureStatus) {
                 captureStatus.textContent = 'Failed to start capture';
             }
@@ -109,6 +111,6 @@ export class AudioModule {
             analyzeBtn.disabled = true;
         }
         
-        this.log('🛑 Stopped audio capture');
+        this.log('Stopped capturing audio from current tab');
     }
 }

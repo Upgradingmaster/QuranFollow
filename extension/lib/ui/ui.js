@@ -32,11 +32,11 @@ export class UIModule {
         return selectedMode;
     }
 
-    setViewMode(mode) {
+    setMode(mode) {
         if (this.elements.modeSelect.value !== mode) {
             this.elements.modeSelect.value = mode;
             this.updateMode();
-            this.log(`📋 Switched to ${mode.charAt(0).toUpperCase() + mode.slice(1)} view mode`);
+            this.log(`Switched to ${mode.charAt(0).toUpperCase() + mode.slice(1)} view mode`);
         }
     }
 
@@ -55,13 +55,6 @@ export class UIModule {
             this.hideControlPanel();
         } else {
             this.showControlPanel();
-        }
-    }
-
-    clearLogContent() {
-        if (this.elements.logel) {
-            this.elements.logel.textContent = '';
-            this.log('📋 Log cleared');
         }
     }
 }

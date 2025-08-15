@@ -3,83 +3,49 @@ export class ControlModule {
         this.log = dependencies.log;
         this.elements = dependencies.elements;
         this.modules = modules;
-        console.log("Building Controller with: ", this.modules);
     }
 
     loadMushafPage(pageNumber) {
         const { loadPageBtn } = this.elements;
 
-        try {
-            if (loadPageBtn) {
-                loadPageBtn.disabled = true;
-            }
-            this.log(`📖 Loading page ${pageNumber}...`);
-            this.modules.quranModule.renderMushafPage(pageNumber);
-            this.log(`✔ Page ${pageNumber} loaded successfully`);
-        } catch (error) {
-            this.log(`❌ Failed to load page ${pageNumber}: ${error.message}`);
-        } finally {
-            if (loadPageBtn) {
-                loadPageBtn.disabled = false;
-            }
-        }
+        if (loadPageBtn) { loadPageBtn.disabled = true; }
+        this.modules.quranModule.renderMushafPage(pageNumber);
+        this.modules.uiModule.setMode('mushaf');
+        if (loadPageBtn) { loadPageBtn.disabled = false; }
     }
 
     loadMushafPageFromControlPanel() {
-        const { pageInput, loadPageBtn } = this.elements;
+        const { pageInput } = this.elements;
         
         if (!pageInput) {
-            this.log(`❌ Page input element not found`);
+            console.error(`Page input element not found`);
             return;
         }
         
         const pageNumber = parseInt(pageInput.value);
 
         if (isNaN(pageNumber) || pageNumber < 1 || pageNumber > 604) {
-            this.log(`❌ Invalid page number: ${pageInput.value}. Please enter 1-604.`);
+            this.log(`[X] Invalid page number: ${pageInput.value}. Please enter 1-604.`);
             return;
         }
-        
-        try {
-            if (loadPageBtn) {
-                loadPageBtn.disabled = true;
-            }
-            this.log(`📖 Loading page ${pageNumber}...`);
-            this.modules.quranModule.renderMushafPage(pageNumber);
-            this.log(`✔ Page ${pageNumber} loaded successfully`);
-        } catch (error) {
-            this.log(`❌ Failed to load page ${pageNumber}: ${error.message}`);
-        } finally {
-            if (loadPageBtn) {
-                loadPageBtn.disabled = false;
-            }
-        }
+
+        this.loadMushafPage(pageNumber);
     }
 
     loadVerseWithContext(surahNumber, verseNumber) {
-        const { contextSurahInput, contextVerseInput, loadContextVerseBtn } = this.elements;
+        const { loadContextVerseBtn } = this.elements;
 
-        try {
-            if (loadContextVerseBtn) {
-                loadContextVerseBtn.disabled = true;
-            }
-            this.log(`📖 Loading verse ${surahNumber}:${verseNumber} with context...`);
-            this.modules.quranModule.renderVerseWithContext(surahNumber, verseNumber);
-            this.log(`✔ Verse ${surahNumber}:${verseNumber} loaded successfully`);
-        } catch (error) {
-            this.log(`❌ Failed to load verse ${surahNumber}:${verseNumber}: ${error.message}`);
-        } finally {
-            if (loadContextVerseBtn) {
-                loadContextVerseBtn.disabled = false;
-            }
-        }
+        if (loadContextVerseBtn) { loadContextVerseBtn.disabled = true; }
+        this.modules.quranModule.renderVerseWithContext(surahNumber, verseNumber);
+        this.modules.uiModule.setMode('context');
+        if (loadContextVerseBtn) { loadContextVerseBtn.disabled = false; }
     }
 
     loadVerseWithContextFromControlPanel() {
-        const { contextSurahInput, contextVerseInput, loadContextVerseBtn } = this.elements;
+        const { contextSurahInput, contextVerseInput } = this.elements;
         
         if (!contextSurahInput || !contextVerseInput) {
-            this.log(`❌ Required input elements not found`);
+            console.error(`Required input elements not found`);
             return;
         }
         
@@ -87,90 +53,53 @@ export class ControlModule {
         const verseNumber = parseInt(contextVerseInput.value);
         
         if (isNaN(surahNumber) || surahNumber < 1 || surahNumber > 114) {
-            this.log(`❌ Invalid surah number: ${contextSurahInput.value}. Please enter 1-114.`);
+            this.log(`[X] Invalid surah number: ${contextSurahInput.value}. Please enter 1-114.`);
             return;
         }
 
         if (isNaN(verseNumber) || verseNumber < 1) {
-            this.log(`❌ Invalid verse number: ${contextVerseInput.value}. Please enter a positive number.`);
+            this.log(`[X] Invalid verse number: ${contextVerseInput.value}. Please enter a positive number.`);
             return;
         }
         
-        try {
-            if (loadContextVerseBtn) {
-                loadContextVerseBtn.disabled = true;
-            }
-            this.log(`📖 Loading verse ${surahNumber}:${verseNumber} with context...`);
-            this.modules.quranModule.renderVerseWithContext(surahNumber, verseNumber);
-            this.log(`✔ Verse ${surahNumber}:${verseNumber} loaded successfully`);
-        } catch (error) {
-            this.log(`❌ Failed to load verse ${surahNumber}:${verseNumber}: ${error.message}`);
-        } finally {
-            if (loadContextVerseBtn) {
-                loadContextVerseBtn.disabled = false;
-            }
-        }
+        this.loadVerseWithContext(surahNumber, verseNumber);
     }
 
     loadSurah(surahNumber, verseNumber = null) {
         const { loadSurahBtn } = this.elements;
 
-        try {
-            if (loadSurahBtn) {
-                loadSurahBtn.disabled = true;
-            }
-            const verseText = verseNumber ? ` with target verse ${verseNumber}` : '';
-            this.log(`📖 Loading surah ${surahNumber}${verseText}...`);
-            this.modules.quranModule.renderSurah(surahNumber, verseNumber);
-            this.log(`✔ Surah ${surahNumber} loaded successfully`);
-        } catch (error) {
-            this.log(`❌ Failed to load surah ${surahNumber}: ${error.message}`);
-        } finally {
-            if (loadSurahBtn) {
-                loadSurahBtn.disabled = false;
-            }
-        }
+        if (loadSurahBtn) { loadSurahBtn.disabled = true; }
+        this.modules.quranModule.renderSurah(surahNumber, verseNumber);
+        this.modules.uiModule.setMode('surah');
+        if (loadSurahBtn) { loadSurahBtn.disabled = false; }
     }
 
     loadSurahFromControlPanel() {
-        const { surahNumberInput, surahVerseInput, loadSurahBtn } = this.elements;
+        const { surahNumberInput, surahVerseInput } = this.elements;
         
         if (!surahNumberInput) {
-            this.log(`❌ Surah number input element not found`);
+            console.error(`Surah number input element not found`);
             return;
         }
         
         const surahNumber = parseInt(surahNumberInput.value);
-        const targetVerse = surahVerseInput && surahVerseInput.value ? parseInt(surahVerseInput.value) : null;
+        const verseNumber = surahVerseInput && surahVerseInput.value ? parseInt(surahVerseInput.value) : null;
         
         if (isNaN(surahNumber) || surahNumber < 1 || surahNumber > 114) {
-            this.log(`❌ Invalid surah number: ${surahNumberInput.value}. Please enter 1-114.`);
+            this.log(`[X] Invalid surah number: ${surahNumberInput.value}. Please enter 1-114.`);
             return;
         }
         
-        if (targetVerse !== null && (isNaN(targetVerse) || targetVerse < 1)) {
-            this.log(`❌ Invalid verse number: ${surahVerseInput?.value}. Please enter a positive number.`);
+        if (verseNumber !== null && (isNaN(verseNumber) || verseNumber < 1)) {
+            this.log(`[X] Invalid verse number: ${surahVerseInput?.value}. Please enter a positive number.`);
             return;
         }
-        
-        try {
-            if (loadSurahBtn) {
-                loadSurahBtn.disabled = true;
-            }
-            const verseText = targetVerse ? ` with target verse ${targetVerse}` : '';
-            this.log(`📖 Loading surah ${surahNumber}${verseText}...`);
-            this.modules.quranModule.renderSurah(surahNumber, targetVerse);
-            this.log(`✔ Surah ${surahNumber} loaded successfully`);
-        } catch (error) {
-            this.log(`❌ Failed to load surah ${surahNumber}: ${error.message}`);
-        } finally {
-            if (loadSurahBtn) {
-                loadSurahBtn.disabled = false;
-            }
-        }
+
+        this.loadSurah(surahNumber, verseNumber);
     }
 
-    promptAndNavigateTo(type) {
+    // TODO: use quranModule.goto
+    promptAndNavigateTo(type) { //TODO: check if this function works
         const { pageInput,
                 contextSurahInput, contextVerseInput,
                 surahNumberInput, surahVerseInput } = this.elements;
@@ -185,7 +114,7 @@ export class ControlModule {
                         if (pageInput) pageInput.value = pageNumber;
                         this.loadQuranPage();
                     } else {
-                        this.log(`❌ Invalid page number: ${value}. Please enter 1-604.`);
+                        this.log(`[X] Invalid page number: ${value}. Please enter 1-604.`);
                     }
                 };
                 break;
@@ -202,10 +131,10 @@ export class ControlModule {
                             if (contextVerseInput) contextVerseInput.value = verse;
                             this.loadVerseWithContext();
                         } else {
-                            this.log(`❌ Invalid verse format: ${value}. Use format surah:verse (e.g., 18:10)`);
+                            this.log(`[X] Invalid verse format: ${value}. Use format surah:verse (e.g., 18:10)`);
                         }
                     } else {
-                        this.log(`❌ Invalid verse format: ${value}. Use format surah:verse (e.g., 18:10)`);
+                        this.log(`[X] Invalid verse format: ${value}. Use format surah:verse (e.g., 18:10)`);
                     }
                 };
                 break;
@@ -218,13 +147,13 @@ export class ControlModule {
                         if (surahNumberInput) surahNumberInput.value = surahNumber;
                         this.loadSurah(); //TODO
                     } else {
-                        this.log(`❌ Invalid surah number: ${value}. Please enter 1-114.`);
+                        this.log(`[X] Invalid surah number: ${value}. Please enter 1-114.`);
                     }
                 };
                 break;
                 
             default:
-                this.log(`❌ Unknown navigation type: ${type}`);
+                console.error(`[X] Unknown navigation type: ${type}`);
                 return;
         }
         
@@ -256,8 +185,15 @@ export class ControlModule {
 
     async predict() {
         const pred = await this.modules.audioModule.analyzeCurrentAudio();
-        if (pred) {
-            this.modules.quranModule.goToPrediction(pred);
+        if (!pred) return;
+
+        if (pred.status == 'matched') {
+            const surahNumber = parseInt(pred.surah);
+            const ayahNumber = parseInt(pred.ayah);
+            this.log(`Found: ${surahNumber}:${ayahNumber}`);
+            this.modules.quranModule.goTo(surahNumber, ayahNumber);
+        } else {
+            this.log("[?] Couldn't find a matching verse")
         }
     }
 
@@ -269,9 +205,18 @@ export class ControlModule {
         this.modules.uiModule.hideControlPanel();
     }
 
-    //TODO: try to update with where we were before, this could be done without changing anything here, but having shared input between modes
-    updateMode() {
-        const mode = this.modules.uiModule.updateMode();
+    toggleControlPanel() {
+        this.modules.uiModule.toggleControlPanel();
+    }
+
+    //TODO: !! try to perist location on switch of modes, this could be done without changing anything here, but having shared input between modes
+    updateMode(mode = null) {
+        if (mode != null) {
+            this.modules.uiModule.setMode(mode);
+        } else {
+            mode = this.modules.uiModule.updateMode();
+        }
+
         switch (mode) {
         case 'mushaf':
             this.loadMushafPageFromControlPanel();
@@ -284,6 +229,8 @@ export class ControlModule {
             break;
         }
     }
+
+
 
     toggleAudioCapture() {
         this.modules.audioModule.toggleAudioCapture();
