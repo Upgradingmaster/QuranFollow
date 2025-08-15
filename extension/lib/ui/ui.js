@@ -29,6 +29,7 @@ export class UIModule {
                 surahControls.style.display = 'block';
                 break;
         }
+        return selectedMode;
     }
 
     setViewMode(mode) {

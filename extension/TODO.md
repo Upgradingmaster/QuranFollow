@@ -1,0 +1,12 @@
+- See how highlighting works for all modes
+  - Finding: The mushaf generator is passed the surah+verse in the opts
+- See the difference between rendering quran in: 
+  - prediction 
+  - control panel
+  - prompt jump
+- Context Mode magic context window numbers
+- Find redundant re-renders (where we can just scroll etc.)
+- Currently for out of bounds control panel input, we have an empty element
+- Study keybinds
+- Tests
+- Footnote dropdown

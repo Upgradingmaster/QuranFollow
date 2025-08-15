@@ -4,11 +4,11 @@ export class AudioCapture {
     constructor(dependencies) {
         this.log = dependencies.log;
         this.isCapturing = false;
+        this.audioBuffer = null;
 
         this.mediaStream = null;
         this.audioContext = null;
         this.audioWorkletNode = null;
-        this.audioBuffer = null;
         this.outputAudioContext = null;
 
 

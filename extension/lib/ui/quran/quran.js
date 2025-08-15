@@ -1,41 +1,32 @@
 // ============================================================================
-// QuranModule - Singleton for Quran Rendering and Navigation
+// QuranModule
 // ============================================================================
 
-import { 
-    loadWordsData, 
-    loadLayoutData, 
-    loadVersesData, 
-    loadTranslationData,
+import { QuranState } from './state.js'
+
+import {
     initializeQuranData,
     findPageContainingVerse,
-    getLayoutData
 } from './data.js';
 
-import { 
+import {
     generateMushafPageHTML,
     generateVerseWithContextHTML,
     generateSurahHTML,
-    updateMushafPageDOM,
-    updateVerseContextDOM,
-    updateSurahDOM
-} from './renderers.js';
+} from './generators.js';
 
 import { 
     scrollToTargetVerse,
-    setTargetVerse,
-    getCurrentTargetVerse,
-    getCurrentRenderingState,
     scrollToVerse,
-    findVerseElements,
-    findTargetVerseElement,
-    findCurrentTargetVerseElements
+
+    setTargetVerse,
 } from './navigation.js';
 
 export class QuranModule {
     constructor(dependencies) {
         this.log = dependencies.log;
-        this.dependencies = dependencies;
+        this.quranContainer = dependencies.elements.quranContainer;
+        QuranState.setQuranContainer(this.quranContainer);
     }
 
     async initialize() {
@@ -48,19 +39,20 @@ export class QuranModule {
             const ayahNumber = parseInt(pred.ayah);
 
             this.log(`✔ Found verse: ${surahNumber}:${ayahNumber}`);
-            const currentState = this.getCurrentRenderingState();
-            const selectedMode = this.dependencies.getModules().uiModule.getSelectedMode(); // TODO: get this from our state instead
+            const currentState = QuranState.getStateClone();
+            const mode = currentState.mode;
+            console.log("Displaying prediction in mode: ", mode);
 
             // Check if we need to render new content or just update target verse
             const needsNewRender = !currentState.mode ||
-                                  currentState.mode !== selectedMode ||
-                                  (selectedMode === 'surah' && currentState.surah !== surahNumber) ||
-                                  (selectedMode === 'context') || // Always re-render for context mode
-                  (selectedMode === 'mushaf'); // Always re-render for mushaf to find correct page // TODO:
+                                  currentState.mode !== mode ||
+                                  (mode === 'surah' && currentState.surah !== surahNumber) ||
+                                  (mode === 'context') || // Always re-render for context mode
+                  (mode === 'mushaf'); // Always re-render for mushaf to find correct page // TODO:
 
             if (needsNewRender) {
                 try {
-                    switch (selectedMode) {
+                    switch (mode) {
                         case 'surah':
                             this.renderSurah(surahNumber, ayahNumber);
                             this.log(`📖 Loaded surah ${surahNumber} with verse ${ayahNumber} highlighted`);
@@ -101,8 +93,7 @@ export class QuranModule {
                     this.log(`📍 Scrolled to current verse ${surahNumber}:${ayahNumber}`);
                 }
             }
-        }
-        else {
+        } else {
             this.log("❌ No matching verse found.")
         }
     }
@@ -115,10 +106,11 @@ export class QuranModule {
      * @param {number} options.targetVerse - Target verse for highlighting
      * @param {string} targetElementId - ID of the container element (default: 'quran')
      */
-    renderMushafPage(pageNumber, options = {}, targetElementId = 'quran') {
+    renderMushafPage(pageNumber, options = {}) {
         const html = generateMushafPageHTML(pageNumber, options);
-        updateMushafPageDOM(html, pageNumber, options.targetSurah, options.targetVerse, targetElementId);
+        this.quranContainer.innerHTML = html;
         scrollToTargetVerse();
+        QuranState.setMushafState(pageNumber);
     }
 
     /**
@@ -130,10 +122,11 @@ export class QuranModule {
      * @param {Object} options - Rendering options
      * @param {string} targetElementId - ID of the container element (default: 'quran')
      */
-    renderVerseWithContext(surahNumber, verseNumber, contextBefore = 4, contextAfter = 4, options = {}, targetElementId = 'quran') {
+    renderVerseWithContext(surahNumber, verseNumber, contextBefore = 4, contextAfter = 4, options) {
         const html = generateVerseWithContextHTML(surahNumber, verseNumber, contextBefore, contextAfter, options);
-        updateVerseContextDOM(html, surahNumber, verseNumber, contextBefore, contextAfter, targetElementId);
+        this.quranContainer.innerHTML = html;
         scrollToTargetVerse();
+        QuranState.setContextState(surahNumber, verseNumber, contextBefore, contextAfter);
     }
 
     /**
@@ -143,10 +136,32 @@ export class QuranModule {
      * @param {Object} options - Rendering options
      * @param {string} targetElementId - ID of the container element (default: 'quran')
      */
-    renderSurah(surahNumber, targetVerse = null, options = {}, targetElementId = 'quran') {
+    renderSurah(surahNumber, targetVerse = null, options = {}) {
         const html = generateSurahHTML(surahNumber, targetVerse, options);
-        updateSurahDOM(html, surahNumber, targetVerse, targetElementId);
+        this.quranContainer.innerHTML = html;
         scrollToTargetVerse();
+        QuranState.setSurahState(surahNumber, targetVerse);
+    }
+
+    reload() {
+        const currentState = QuranState.getStateClone();
+        const mode = currentState.mode;
+        switch (mode) {
+            case 'surah':
+                this.modules.quranModule.renderSurah(currentState.surah, currentState.targetVerse);
+                this.log(`Reloaded surah ${currentState.surah}`);
+                break;
+            case 'context':
+                this.modules.quranModule.renderVerseWithContext(currentState.surah, currentState.targetVerse);
+                this.log(`Reloaded verse ${currentState.surah}:${currentState.targetVerse} with context`);
+                break;
+            case 'mushaf':
+                this.modules.quranModule.renderMushafPage(currentState.page);
+                this.log(`Reloaded page ${currentState.page}`);
+                break;
+            default:
+                this.log('Unsupported mode');
+        }
     }
 
     // ========================================================================
@@ -160,22 +175,6 @@ export class QuranModule {
      */
     setTargetVerse(verseNumber) {
         return setTargetVerse(verseNumber);
-    }
-
-    /**
-     * Get the current target verse
-     * @returns {number|null} - Current target verse number
-     */
-    getCurrentTargetVerse() {
-        return getCurrentTargetVerse();
-    }
-
-    /**
-     * Get the current rendering state
-     * @returns {Object} - Current state object
-     */
-    getCurrentRenderingState() {
-        return getCurrentRenderingState();
     }
 
     // ========================================================================
@@ -199,110 +198,6 @@ export class QuranModule {
     }
 
     // ========================================================================
-    // DOM Utilities
-    // ========================================================================
-
-    /**
-     * Find verse elements in the DOM
-     * @param {number} surahNumber - Surah number
-     * @param {number} verseNumber - Verse number
-     * @returns {NodeList} - Found verse elements
-     */
-    findVerseElements(surahNumber, verseNumber) {
-        return findVerseElements(surahNumber, verseNumber);
-    }
-
-    /**
-     * Find the current target verse element
-     * @returns {Element|null} - Target verse element
-     */
-    findTargetVerseElement() {
-        return findTargetVerseElement();
-    }
-
-    /**
-     * Find all current target verse elements
-     * @returns {NodeList} - Target verse elements
-     */
-    findCurrentTargetVerseElements() {
-        return findCurrentTargetVerseElements();
-    }
-
-    // ========================================================================
-    // Advanced/Internal Methods (for power users)
-    // ========================================================================
-
-    /**
-     * Generate HTML for mushaf page (advanced usage)
-     * @param {number} pageNumber - Page number
-     * @param {Object} options - Options
-     * @returns {Promise<string>} - Generated HTML
-     */
-    generateMushafPageHTML(pageNumber, options = {}) {
-        return generateMushafPageHTML(pageNumber, options);
-    }
-
-    /**
-     * Generate HTML for verse with context (advanced usage)
-     * @param {number} surahNumber - Surah number
-     * @param {number} verseNumber - Verse number
-     * @param {number} contextBefore - Context before
-     * @param {number} contextAfter - Context after
-     * @param {Object} options - Options
-     * @returns {string} - Generated HTML
-     */
-    generateVerseWithContextHTML(surahNumber, verseNumber, contextBefore = 4, contextAfter = 4, options = {}) {
-        return generateVerseWithContextHTML(surahNumber, verseNumber, contextBefore, contextAfter, options);
-    }
-
-    /**
-     * Generate HTML for surah (advanced usage)
-     * @param {number} surahNumber - Surah number
-     * @param {number} targetVerse - Target verse
-     * @param {Object} options - Options
-     * @returns {string} - Generated HTML
-     */
-    generateSurahHTML(surahNumber, targetVerse = null, options = {}) {
-        return generateSurahHTML(surahNumber, targetVerse, options);
-    }
-
-    /**
-     * Update DOM with mushaf page (advanced usage)
-     * @param {string} html - HTML content
-     * @param {number} pageNumber - Page number
-     * @param {number} targetSurah - Target surah
-     * @param {number} targetVerse - Target verse
-     * @param {string} targetElementId - Target element ID
-     */
-    updateMushafPageDOM(html, pageNumber, targetSurah, targetVerse, targetElementId = 'quran') {
-        return updateMushafPageDOM(html, pageNumber, targetSurah, targetVerse, targetElementId);
-    }
-
-    /**
-     * Update DOM with verse context (advanced usage)
-     * @param {string} html - HTML content
-     * @param {number} surahNumber - Surah number
-     * @param {number} verseNumber - Verse number
-     * @param {number} contextBefore - Context before
-     * @param {number} contextAfter - Context after
-     * @param {string} targetElementId - Target element ID
-     */
-    updateVerseContextDOM(html, surahNumber, verseNumber, contextBefore, contextAfter, targetElementId = 'quran') {
-        return updateVerseContextDOM(html, surahNumber, verseNumber, contextBefore, contextAfter, targetElementId);
-    }
-
-    /**
-     * Update DOM with surah (advanced usage)
-     * @param {string} html - HTML content
-     * @param {number} surahNumber - Surah number
-     * @param {number} targetVerse - Target verse
-     * @param {string} targetElementId - Target element ID
-     */
-    updateSurahDOM(html, surahNumber, targetVerse, targetElementId = 'quran') {
-        return updateSurahDOM(html, surahNumber, targetVerse, targetElementId);
-    }
-
-    // ========================================================================
     // Utility Methods
     // ========================================================================
 
@@ -315,5 +210,5 @@ export class QuranModule {
     findPageContainingVerse(surahNumber, verseNumber) {
         return findPageContainingVerse(surahNumber, verseNumber);
     }
-}
 
+}

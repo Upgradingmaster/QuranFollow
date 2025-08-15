@@ -2,7 +2,13 @@
 // HTML Generation and DOM Updates
 // ============================================================================
 
-import { RenderingState, getSurahName, getWords, getPageLayout, getVersesData, getTranslationData } from './data.js';
+import {
+    getSurahName,
+    getWords,
+    getVerse,
+    getLayout,
+    getTranslation,
+} from './data.js';
 
 // ============================================================================
 // Mushaf Rendering
@@ -17,7 +23,7 @@ import { RenderingState, getSurahName, getWords, getPageLayout, getVersesData, g
  * @returns {string} HTML string of rendered page
  */
 function generateMushafPageHTML(pageNumber, options = {}) {
-    const pageData = getPageLayout(pageNumber);
+    const pageData = getLayout(pageNumber);
     if (!pageData.length) {
         console.log(pageData);
         return `<div class="error">Page ${pageNumber} not found</div>`;
@@ -68,46 +74,23 @@ function generateMushafPageHTML(pageNumber, options = {}) {
     return html;
 }
 
-/**
- * Updates DOM with Mushaf page HTML and sets up interactions
- * @param {string} html - HTML string to insert
- * @param {number} pageNumber - Page number for state tracking
- * @param {number} surah - Surah number for state tracking (optional)
- * @param {number} targetVerse - Target verse for state tracking (optional)
- * @param {string} targetElementId - ID of the container element (default: 'quran')
- */
-function updateMushafPageDOM(html, pageNumber, surah = null, targetVerse = null, targetElementId = 'quran') {
-    const quranContainer = document.getElementById(targetElementId);
-    if (quranContainer) {
-        quranContainer.innerHTML = html;
-        
-        // Update state
-        RenderingState.setMushafState(pageNumber, quranContainer, surah, targetVerse);
-
-        setupVerseHighlighting(quranContainer);
-    }
-}
-
-/**
- * Sets up verse-level highlighting for all words in the container
- * @param {Element} container - The container element with rendered Quran text
- */
-function setupVerseHighlighting(container) {
-    const words = container.querySelectorAll('.word');
+//TODO: !! move this to generation
+function setupVerseHighlighting(quranContainer) {
+    const words = quranContainer.querySelectorAll('.word');
     words.forEach(word => {
         word.addEventListener('mouseenter', () => {
             const surah = word.dataset.surah;
             const ayah = word.dataset.ayah;
 
             // Highlight all words in the same verse
-            const verseWords = container.querySelectorAll(`[data-surah="${surah}"][data-ayah="${ayah}"]`);
+            const verseWords = quranContainer.querySelectorAll(`[data-surah="${surah}"][data-ayah="${ayah}"]`);
             verseWords.forEach(verseWord => {
                 verseWord.classList.add('verse-highlighted');
             });
         });
         word.addEventListener('mouseleave', () => {
             // Remove all verse highlighting instantly
-            const highlightedWords = container.querySelectorAll('.verse-highlighted');
+            const highlightedWords = quranContainer.querySelectorAll('.verse-highlighted');
             highlightedWords.forEach(highlightedWord => {
                 highlightedWord.classList.remove('verse-highlighted');
             });
@@ -127,10 +110,9 @@ function setupVerseHighlighting(container) {
  * @param {boolean} showFullReference - Whether to show full surah:ayah reference (default: false, shows only ayah)
  * @returns {string} HTML string for the verse
  */
-function renderVerseHTML(verse, cssClass = 'verse', showFullReference = false) {
+function generateVerseHTML(verse, cssClass = 'verse', showFullReference = false) {
     const verseKey = `${verse.surah}:${verse.ayah}`;
-    const translationData = getTranslationData();
-    const translationVerse = translationData ? translationData[verseKey] : null;
+    const translationVerse = getTranslation(verseKey);
     const verseNumber = showFullReference ? `${verse.surah}:${verse.ayah}` : `${verse.ayah}`;
     
     let html = `<div class="${cssClass}" data-surah="${verse.surah}" data-ayah="${verse.ayah}">`;
@@ -165,7 +147,6 @@ function renderVerseHTML(verse, cssClass = 'verse', showFullReference = false) {
  * @returns {string} HTML string of verse with context
  */
 function generateVerseWithContextHTML(surahNumber, verseNumber, contextBefore = 4, contextAfter = 4, options = {}) {
-    const versesData = getVersesData();
 
     // Calculate range of verses to include
     const startVerse = Math.max(1, verseNumber - contextBefore);
@@ -175,7 +156,7 @@ function generateVerseWithContextHTML(surahNumber, verseNumber, contextBefore = 
     let versesToRender = [];
     for (let ayah = startVerse; ayah <= endVerse; ayah++) {
         const verseKey = `${surahNumber}:${ayah}`;
-        const verse = versesData[verseKey];
+        const verse = getVerse(verseKey);
         if (verse) {
             versesToRender.push(verse);
         }
@@ -199,7 +180,7 @@ function generateVerseWithContextHTML(surahNumber, verseNumber, contextBefore = 
     versesToRender.forEach(verse => {
         const isTarget = verse.ayah === verseNumber;
         const cssClass = isTarget ? 'verse target-verse' : 'verse';
-        html += renderVerseHTML(verse, cssClass, true);
+        html += generateVerseHTML(verse, cssClass, true);
     });
     
     html += '</div>';
@@ -207,22 +188,6 @@ function generateVerseWithContextHTML(surahNumber, verseNumber, contextBefore = 
     return html;
 }
 
-/**
- * Updates DOM with verse context HTML and handles scrolling
- * @param {string} html - HTML string to insert
- * @param {number} surahNumber - Surah number for state tracking
- * @param {number} targetVerse - Target verse number for state tracking
- * @param {string} targetElementId - ID of the container element (default: 'quran')
- */
-function updateVerseContextDOM(html, surahNumber, targetVerse, contextBefore, contextAfter, targetElementId = 'quran') {
-    const quranContainer = document.getElementById(targetElementId);
-    if (quranContainer) {
-        quranContainer.innerHTML = html;
-        
-        // Update state
-        RenderingState.setContextState(surahNumber, targetVerse, contextBefore, contextAfter, quranContainer);
-    }
-}
 
 // ============================================================================
 // Surah Rendering
@@ -240,14 +205,12 @@ function generateSurahHTML(surahNumber, targetVerse = null, options = {}) {
         return `<div class="error">Invalid surah number: ${surahNumber}</div>`;
     }
 
-    const versesData = getVersesData();
-
     // Get all verses for this surah
     const surahVerses = [];
     let verseNumber = 1;
     while (true) {
         const verseKey = `${surahNumber}:${verseNumber}`;
-        const verse = versesData[verseKey];
+        const verse = getVerse(verseKey);
         if (!verse) break;
         surahVerses.push(verse);
         verseNumber++;
@@ -274,34 +237,17 @@ function generateSurahHTML(surahNumber, targetVerse = null, options = {}) {
         html += '</div>';
         html += '</div>';
     }
-    
+
     // Render each verse
     surahVerses.forEach(verse => {
         const isTarget = targetVerse && verse.ayah === targetVerse;
         const cssClass = isTarget ? 'verse target-verse' : 'verse';
-        html += renderVerseHTML(verse, cssClass, false);
+        html += generateVerseHTML(verse, cssClass, false);
     });
-    
+
     html += '</div>';
     
     return html;
-}
-
-/**
- * Updates DOM with surah HTML and handles scrolling to target verse
- * @param {string} html - HTML string to insert
- * @param {number} surahNumber - Surah number for state tracking
- * @param {number} targetVerse - Target verse number for state tracking
- * @param {string} targetElementId - ID of the container element (default: 'quran')
- */
-function updateSurahDOM(html, surahNumber, targetVerse, targetElementId = 'quran') {
-    const quranContainer = document.getElementById(targetElementId);
-    if (quranContainer) {
-        quranContainer.innerHTML = html;
-        
-        // Update state
-        RenderingState.setSurahState(surahNumber, targetVerse, quranContainer);
-    }
 }
 
 export {
@@ -309,13 +255,4 @@ export {
     generateMushafPageHTML,
     generateVerseWithContextHTML,
     generateSurahHTML,
-    renderVerseHTML,
-
-    // DOM update functions
-    updateMushafPageDOM,
-    updateVerseContextDOM,
-    updateSurahDOM,
-    
-    // Utilities
-    setupVerseHighlighting
 };

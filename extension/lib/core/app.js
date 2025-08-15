@@ -32,7 +32,7 @@ export class AppModule {
             analyzeBtn            : document.getElementById('analyse'),
 
             // UI elements
-            quran                 : document.getElementById('quran'),
+            quranContainer        : document.getElementById('quran'),
             logel                 : document.getElementById('log'),
             controlModalBackdrop  : document.getElementById('control-modal-backdrop'),
 
@@ -64,30 +64,19 @@ export class AppModule {
         let dependencies = {
             log: this.log,
             elements: this.elements,
-            modules: {},
-            getModules: () => { return this.modules; }
         };
 
-        try {
-            this.modules.quranModule = new QuranModule(dependencies);
-        } catch (error){
-            this.log(`❌ Failed to initialize quran module`);
-            console.error(`❌ Failed to initialize quran module`, error);
-            return; // Exit early if module creation fails
-        }
-
+        this.modules.quranModule = new QuranModule(dependencies);
         await this.modules.quranModule.initialize();
-        dependencies.modules.quranModule = this.modules.quranModule;
 
         this.modules.uiModule = new UIModule(dependencies);
-        dependencies.modules.uiModule = this.modules.uiModule;
 
-        this.modules.controlModule = new ControlModule(dependencies);
-        dependencies.modules.controlModule = this.modules.controlModule;
-        
         this.modules.audioModule = new AudioModule(dependencies);
-        dependencies.modules.audioModule = this.modules.audioModule;
 
+        //TODO: rename control to controller and take this out
+        this.modules.controlModule = new ControlModule(dependencies, this.modules);
+
+        // TODO: this is strange
         this.globalKeybinds = new GlobalKeybinds({
             actions: this.createKeybindActions()
         });
@@ -117,7 +106,7 @@ export class AppModule {
             toggleControlPanel: () => this.modules.uiModule.toggleControlPanel(),
             clearLog: () => this.modules.uiModule.clearLogContent(),
             showHelp: () => this.globalKeybinds.showHelp(),
-            reload: () => this.modules.controlModule.reloadCurrentView()
+            reload: () => this.modules.controlModule.reloadQuranView()
         };
     }
 
@@ -130,7 +119,7 @@ export class AppModule {
         elements.loadPageBtn.onclick = () => this.modules.controlModule.loadMushafPageFromControlPanel();
         elements.loadContextVerseBtn.onclick = () => this.modules.controlModule.loadVerseWithContextFromControlPanel();
         elements.loadSurahBtn.onclick = () => this.modules.controlModule.loadSurahFromControlPanel();
-        elements.modeSelect.onchange = () => this.modules.controlModule.updateMode();
+        elements.modeSelect.onchange = async () => this.modules.controlModule.updateMode();
 
         // Modal handlers
         elements.toggleControlPanelBtn.onclick = () => this.modules.controlModule.showControlPanel();
@@ -146,7 +135,7 @@ export class AppModule {
         // Keyboard handlers for inputs
         // Mushaf view
         elements.pageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') { console.log("pageInput"); this.modules.controlModule.loadQuranPageFromControlPanel();}
+            if (e.key === 'Enter') { console.log("pageInput"); this.modules.controlModule.loadMushafPageFromControlPanel();}
         });
 
         //ContextView
@@ -179,11 +168,11 @@ export class AppModule {
         try {
             await this.initializeModules();
 
-            // Initialize mode visibility
-            this.modules.controlModule.updateMode();
+            // // Initialize mode visibility
+            // this.modules.controlModule.updateMode();
 
             // Load initial content
-            await this.modules.controlModule.loadMushafPageFromControlPanel(18);
+            await this.modules.controlModule.loadSurah(18);
 
             // Log success
             this.log('⌨️ Global keybinds initialized. Press ? or F1 for help.');
@@ -202,7 +191,7 @@ export class AppModule {
         if (this.globalKeybinds) {
             this.globalKeybinds.destroy();
         }
-        if (this.modules.audioModule) {
+        if (this.modules.audioModule) { //TODO: ?
             this.modules.audioModule.stopCapture();
         }
     }

@@ -1,178 +1,6 @@
 // ============================================================================
-// Data Loading and State Management
+// Data
 // ============================================================================
-
-// Data paths
-const verses_path      = '../data/scripts/uthmani-aba.json'
-const words_path       = '../data/scripts/uthmani-wbw.json'
-const layout_path      = '../data/layouts/uthmani.json'
-const translation_path = '../data/translations/si-simple.json'
-
-// Global data stores
-let wordsData = null;
-let layoutData = null;
-let surahNames = null;
-let versesData = null;
-let translationData = null;
-
-// Rendering state management
-const RenderingState = {
-    // Private state
-    _state: {
-        mode: null, // 'mushaf', 'context', 'surah'
-        surah: null,
-        targetVerse: null,
-        containerElement: null,
-        pageNumber: null, // for mushaf mode
-        contextBefore: null, // for context mode
-        contextAfter: null, // for context mode
-        lastUpdated: null
-    },
-
-    // Getters
-    getMode() { return this._state.mode; },
-    getSurah() { return this._state.surah; },
-    getTargetVerse() { return this._state.targetVerse; },
-    getContainerElement() { return this._state.containerElement; },
-    getPageNumber() { return this._state.pageNumber; },
-    getContextRange() { 
-        return { 
-            before: this._state.contextBefore, 
-            after: this._state.contextAfter 
-        }; 
-    },
-    getLastUpdated() { return this._state.lastUpdated; },
-
-    // Get complete state (immutable copy)
-    getState() {
-        return {
-            mode: this._state.mode,
-            surah: this._state.surah,
-            targetVerse: this._state.targetVerse,
-            pageNumber: this._state.pageNumber,
-            contextBefore: this._state.contextBefore,
-            contextAfter: this._state.contextAfter,
-            lastUpdated: this._state.lastUpdated,
-            hasContainer: !!this._state.containerElement
-        };
-    },
-
-    // Validation
-    isValidMode(mode) {
-        return ['mushaf', 'context', 'surah'].includes(mode);
-    },
-
-    isValidSurah(surah) {
-        return surah === null || (Number.isInteger(surah) && surah >= 1 && surah <= 114);
-    },
-
-    isValidVerse(verse) {
-        return verse === null || (Number.isInteger(verse) && verse >= 1);
-    },
-
-    isValidPage(page) {
-        return page === null || (Number.isInteger(page) && page >= 1 && page <= 604);
-    },
-
-    // State setters with validation
-    setMushafState(pageNumber, containerElement, surah = null, targetVerse = null) {
-        if (!this.isValidPage(pageNumber)) {
-            throw new Error(`Invalid page number: ${pageNumber}`);
-        }
-        if (!this.isValidSurah(surah)) {
-            throw new Error(`Invalid surah number: ${surah}`);
-        }
-        if (!this.isValidVerse(targetVerse)) {
-            throw new Error(`Invalid target verse: ${targetVerse}`);
-        }
-        if (!containerElement) {
-            throw new Error('Container element is required');
-        }
-
-        this._state.mode = 'mushaf';
-        this._state.surah = surah;
-        this._state.targetVerse = targetVerse;
-        this._state.pageNumber = pageNumber;
-        this._state.contextBefore = null;
-        this._state.contextAfter = null;
-        this._state.containerElement = containerElement;
-        this._state.lastUpdated = Date.now();
-    },
-
-    setContextState(surah, targetVerse, contextBefore, contextAfter, containerElement) {
-        if (!this.isValidSurah(surah)) {
-            throw new Error(`Invalid surah number: ${surah}`);
-        }
-        if (!this.isValidVerse(targetVerse)) {
-            throw new Error(`Invalid target verse: ${targetVerse}`);
-        }
-        if (!containerElement) {
-            throw new Error('Container element is required');
-        }
-
-        this._state.mode = 'context';
-        this._state.surah = surah;
-        this._state.targetVerse = targetVerse;
-        this._state.pageNumber = null;
-        this._state.contextBefore = contextBefore;
-        this._state.contextAfter = contextAfter;
-        this._state.containerElement = containerElement;
-        this._state.lastUpdated = Date.now();
-    },
-
-    setSurahState(surah, targetVerse, containerElement) {
-        if (!this.isValidSurah(surah)) {
-            throw new Error(`Invalid surah number: ${surah}`);
-        }
-        if (!this.isValidVerse(targetVerse)) {
-            throw new Error(`Invalid target verse: ${targetVerse}`);
-        }
-        if (!containerElement) {
-            throw new Error('Container element is required');
-        }
-
-        this._state.mode = 'surah';
-        this._state.surah = surah;
-        this._state.targetVerse = targetVerse;
-        this._state.pageNumber = null;
-        this._state.contextBefore = null;
-        this._state.contextAfter = null;
-        this._state.containerElement = containerElement;
-        this._state.lastUpdated = Date.now();
-    },
-
-    // Update only target verse (for dynamic changes)
-    setTargetVerse(targetVerse) {
-        if (!this.isValidVerse(targetVerse)) {
-            throw new Error(`Invalid target verse: ${targetVerse}`);
-        }
-        if (!this._state.containerElement) {
-            throw new Error('No container element available');
-        }
-
-        this._state.targetVerse = targetVerse;
-        this._state.lastUpdated = Date.now();
-    },
-
-    // Check if state is ready for operations
-    isReady() {
-        return !!(this._state.mode && this._state.containerElement);
-    },
-
-
-
-    // Clear state
-    clear() {
-        this._state.mode = null;
-        this._state.surah = null;
-        this._state.targetVerse = null;
-        this._state.containerElement = null;
-        this._state.pageNumber = null;
-        this._state.contextBefore = null;
-        this._state.contextAfter = null;
-        this._state.lastUpdated = Date.now();
-    }
-};
 
 // Surah names in Arabic
 const SURAH_NAMES = {
@@ -190,9 +18,19 @@ const SURAH_NAMES = {
     111: "المسد", 112: "الإخلاص", 113: "الفلق", 114: "الناس"
 };
 
-// ============================================================================
-// Data Loading Functions
-// ============================================================================
+
+// Quran Data paths
+const verses_path      = '../data/scripts/uthmani-aba.json'
+const words_path       = '../data/scripts/uthmani-wbw.json'
+const layout_path      = '../data/layouts/uthmani.json'
+const translation_path = '../data/translations/si-footnotes-inline.json'
+
+// Global Quran data stores
+let wordsData = null;
+let layoutData = null;
+let surahNames = null;
+let versesData = null;
+let translationData = null;
 
 /**
  * Loads words data from the SQLite database
@@ -209,39 +47,6 @@ async function loadWordsData() {
         console.error('Failed to load words data:', error);
         throw error;
     }
-}
-
-/**
- * Loads layout data from the JSON file
- * @returns {Promise<Object>} Layout data indexed by page number
- */
-async function loadLayoutData() {
-    if (layoutData) return layoutData;
-
-    try {
-        const response = await fetch(layout_path);
-        layoutData     = await response.json();
-        console.log(`Loaded layout data for ${Object.keys(layoutData).length} pages`);
-    } catch (error) {
-        console.error('Failed to load layout data:', error);
-        throw error;
-    }
-}
-
-async function initializeQuranData() {
-        try {
-            console.log('Initializing Quran Renderer...');
-            await Promise.all([
-                loadWordsData(),
-                loadLayoutData(),
-                loadVersesData(),
-                loadTranslationData()
-            ]);
-            console.log('Quran Renderer initialized successfully ✓');
-        } catch (error) {
-            console.error('Failed to initialize Quran Renderer:', error);
-            throw error;
-        }
 }
 
 /**
@@ -263,6 +68,23 @@ async function loadVersesData() {
 }
 
 /**
+ * Loads layout data from the JSON file
+ * @returns {Promise<Object>} Layout data indexed by page number
+ */
+async function loadLayoutData() {
+    if (layoutData) return layoutData;
+
+    try {
+        const response = await fetch(layout_path);
+        layoutData     = await response.json();
+        console.log(`Loaded layout data for ${Object.keys(layoutData).length} pages`);
+    } catch (error) {
+        console.error('Failed to load layout data:', error);
+        throw error;
+    }
+}
+
+/**
  * Loads translation data from the JSON file
  * @returns {Promise<Object>} Translation data indexed by verse reference (surah:ayah)
  */
@@ -279,6 +101,28 @@ async function loadTranslationData() {
     }
 }
 
+async function initializeQuranData() {
+        try {
+            console.log('Initializing Quran Renderer...');
+            await Promise.all([
+                loadWordsData(),
+                loadVersesData(),
+                loadLayoutData(),
+                loadTranslationData()
+            ]);
+            console.log('Quran Renderer initialized successfully ✓');
+        } catch (error) {
+            console.error('Failed to initialize Quran Renderer:', error);
+            throw error;
+        }
+}
+
+function getVersesData() { return versesData; }
+function getWordsData() { return wordsData; }
+function getLayoutData() { return layoutData; }
+function getTranslationData() { return translationData; }
+
+
 // ============================================================================
 // Utility Functions
 // ============================================================================
@@ -292,6 +136,7 @@ function getSurahName(surahNumber) {
     return SURAH_NAMES[surahNumber] || '';
 }
 
+//TODO: this function should just return an array of words move the HTML generation to renderers.js
 /**
  * Gets words text by ID range, wrapped in individual spans for hover effects
  * @param {number} firstWordId - Starting word ID
@@ -308,35 +153,44 @@ function getWords(firstWordId, lastWordId, targetSurah = null, targetVerse = nul
 
     const words = [];
     for (let id = firstWordId; id <= lastWordId; id++) {
-        if (wordsData[id]) {
             const word = wordsData[id];
             let cssClass = 'word';
             
-            // Add target-verse class if this word matches the target verse
+            // Add target-verse class if this word is a part of the target verse
             if (targetSurah && targetVerse && word.surah === targetSurah && word.ayah === targetVerse) {
                 cssClass += ' target-verse';
             }
             
             words.push(`<span class="${cssClass}" data-word-id="${id}" data-surah="${word.surah}" data-ayah="${word.ayah}">${word.text} </span>`);
-        }
     }
     return words.join('');
 }
 
-/**
- * Gets page layout data with caching
- * @param {number} pageNumber - Page number (1-604)
- * @returns {Array} Array of line objects for the page
- */
-function getPageLayout(pageNumber) {
+function getVerse(verseKey) {
+    if (!versesData) {
+        return {};
+    }
+
+    return versesData[verseKey];
+}
+
+function getLayout(pageNumber) {
     if (!layoutData) {
-        console.error(`Layout data not loaded`);
         return [];
     }
 
     return layoutData[pageNumber] || [];
 }
 
+function getTranslation(verseKey) {
+    if (!translationData) {
+        return {};
+    }
+
+    return translationData[verseKey];
+}
+
+//TODO: can we avoid this, if not optimize
 /**
  * Finds which page contains a specific verse
  * @param {number} surahNumber - Surah number (1-114)
@@ -371,35 +225,21 @@ function findPageContainingVerse(surahNumber, verseNumber) {
     return null;
 }
 
-// ============================================================================
-// Data Access Functions
-// ============================================================================
-
-function getVersesData() { return versesData; }
-function getTranslationData() { return translationData; }
-function getWordsData() { return wordsData; }
-function getLayoutData() { return layoutData; }
-
 export {
-    // State management
-    RenderingState,
-    
-    // Data loading
-    loadWordsData,
-    loadLayoutData,
-    loadVersesData,
-    loadTranslationData,
     initializeQuranData,
-    
-    // Utility functions
+
+    getVersesData,
+    getWordsData,
+    getLayoutData,
+    getTranslationData,
+
     getSurahName,
     getWords,
-    getPageLayout,
+    getVerse,
+    getLayout,
+    getTranslation,
+
+
+    // Utility functions
     findPageContainingVerse,
-    
-    // Data access
-    getVersesData,
-    getTranslationData,
-    getWordsData,
-    getLayoutData
 };
