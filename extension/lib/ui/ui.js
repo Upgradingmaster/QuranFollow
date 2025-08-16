@@ -39,22 +39,4 @@ export class UIModule {
             this.log(`Switched to ${mode.charAt(0).toUpperCase() + mode.slice(1)} view mode`);
         }
     }
-
-    showControlPanel() {
-        this.elements.controlModalBackdrop.classList.add('show');
-        document.body.style.overflow = 'hidden';
-    }
-
-    hideControlPanel() {
-        this.elements.controlModalBackdrop.classList.remove('show');
-        document.body.style.overflow = '';
-    }
-
-    toggleControlPanel() {
-        if (this.elements.controlModalBackdrop.classList.contains('show')) {
-            this.hideControlPanel();
-        } else {
-            this.showControlPanel();
-        }
-    }
 }

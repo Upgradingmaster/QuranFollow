@@ -200,61 +200,6 @@ export class GlobalKeybinds {
         return helpText;
     }
 
-    showHelp() {
-        const helpText = this.getHelpText();
-        
-        // Create a nicer modal instead of alert
-        this.showHelpModal(helpText);
-    }
-
-    showHelpModal(helpText) {
-        // Remove existing help modal if any
-        const existingModal = document.querySelector('.keybind-help-modal');
-        if (existingModal) {
-            existingModal.remove();
-        }
-
-        // Create help modal
-        const modal = document.createElement('div');
-        modal.className = 'keybind-help-modal modal-backdrop show';
-        modal.innerHTML = `
-            <div class="keybind-help-content control-modal">
-                <div class="modal-header">
-                    <h3>Keyboard Shortcuts</h3>
-                    <button class="close-button">×</button>
-                </div>
-                <div class="keybind-help-body">
-                    <pre>${helpText}</pre>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-
-
-        // Close on backdrop click
-        const closeButton = modal.querySelector('.close-button');
-        closeButton.addEventListener('click', () => {
-            modal.remove();
-        });
-
-        // Close on backdrop click
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.remove();
-            }
-        });
-
-        // Close on Escape key
-        const escapeHandler = (e) => {
-            if (e.key === 'Escape') {
-                modal.remove();
-                document.removeEventListener('keydown', escapeHandler);
-            }
-        };
-        document.addEventListener('keydown', escapeHandler);
-    }
-
     loadDefaultKeybinds() {
         // Audio controls
         this.bind('Space', 'toggleCapture', 'Start/stop audio capture');
@@ -279,8 +224,8 @@ export class GlobalKeybinds {
         
         // UI controls
         this.bind('Ctrl+p', 'toggleControlPanel', 'Toggle control panel');
-        this.bind('q', 'showHelp', 'Show keyboard shortcuts');
-        this.bind('F1', 'showHelp', 'Show keyboard shortcuts');
+        this.bind('q', 'toggleHelp', 'Toggle keyboard shortcuts');
+        this.bind('F1', 'toggleHelp', 'Toggle keyboard shortcuts');
         
         // Quick access
         this.bind('h', 'goHome', 'Go to beginning of current surah');

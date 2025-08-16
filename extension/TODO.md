@@ -11,3 +11,5 @@
 - Tests
 - Footnote dropdown
 - Bring UI and Quran State truly together
+- Unescape quotes in translation
+- Fix reload

@@ -198,15 +198,27 @@ export class ControlModule {
     }
 
     showControlPanel() {
-        this.modules.uiModule.showControlPanel();
+        this.modules.modalModule.showControlPanel();
     }
 
     hideControlPanel() {
-        this.modules.uiModule.hideControlPanel();
+        this.modules.modalModule.hideControlPanel();
     }
 
     toggleControlPanel() {
-        this.modules.uiModule.toggleControlPanel();
+        this.modules.modalModule.toggleControlPanel();
+    }
+
+    showHelp() {
+        this.modules.modalModule.showHelp();
+    }
+
+    hideHelp() {
+        this.modules.modalModule.hideHelp();
+    }
+
+    toggleHelp() {
+        this.modules.modalModule.toggleHelp();
     }
 
     //TODO: !! try to perist location on switch of modes, this could be done without changing anything here, but having shared input between modes

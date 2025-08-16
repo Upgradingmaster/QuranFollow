@@ -1,9 +1,10 @@
-import { QuranModule } from '../ui/quran/quran.js';
-import { GlobalKeybinds } from '../control/keybinds.js';
+import { QuranModule }    from '../ui/quran/quran.js';
 import { AudioCapture }   from '../audio/capture.js';
-import { AudioModule }   from '../audio/audio.js';
-import { ControlModule } from '../control/control.js';
-import { UIModule }      from '../ui/ui.js';
+import { AudioModule }    from '../audio/audio.js';
+import { UIModule }       from '../ui/ui.js';
+import { GlobalKeybinds } from '../control/keybinds.js';
+import { ModalModule }    from '../ui/modal.js';
+import { ControlModule }  from '../control/control.js';
 
 export class AppModule {
     constructor() {
@@ -88,16 +89,19 @@ export class AppModule {
 
         this.modules.audioModule = new AudioModule(dependencies);
 
+        // TODO: this is strange
+        this.globalKeybinds = new GlobalKeybinds({
+            actions: this.makeActionTable()
+        });
+
+        this.modules.modalModule = new ModalModule(this.globalKeybinds.getHelpText(), this.elements.controlModalBackdrop);
+
         //TODO: rename control to controller and take this out
         this.modules.controlModule = new ControlModule(dependencies, this.modules);
 
-        // TODO: this is strange
-        this.globalKeybinds = new GlobalKeybinds({
-            actions: this.createKeybindActions()
-        });
     }
 
-    createKeybindActions() {
+    makeActionTable() {
         return {
             // Audio controls
             toggleCapture: () => this.modules.controlModule.toggleAudioCapture(),
@@ -119,7 +123,7 @@ export class AppModule {
             
             // UI controls
             toggleControlPanel: () => this.modules.controlModule.toggleControlPanel(),
-            showHelp: () => this.globalKeybinds.showHelp(),
+            toggleHelp: () => this.modules.controlModule.toggleHelp(),
             reload: () => this.modules.controlModule.reloadQuranView()
         };
     }
