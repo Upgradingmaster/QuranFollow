@@ -7,9 +7,9 @@
 - Context Mode magic context window numbers
 - Find redundant re-renders (where we can just scroll etc.)
 - Currently for out of bounds control panel input, we have an empty element
-- Study keybinds
 - Tests
 - Footnote dropdown
 - Bring UI and Quran State truly together
 - Unescape quotes in translation
 - Fix reload
+- findSurahFromPage

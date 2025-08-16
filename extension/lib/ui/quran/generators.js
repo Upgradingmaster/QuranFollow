@@ -102,33 +102,57 @@ function setupVerseHighlighting(quranContainer) {
 // Shared Verse Rendering
 // ============================================================================
 
-/**
- * Renders a single verse HTML
- * @param {Object} verse - Verse object with surah, ayah, text properties
- * @param {string} cssClass - CSS class for the verse container
- * @param {boolean} showFullReference - Whether to show full surah:ayah reference (default: false, shows only ayah)
- * @returns {string} HTML string for the verse
- */
+// returns { globalId: localId }
+// example{ "226402": "1", "226403": "2" ...}
+function generateFootnoteIdTable(html) {
+const idMap = Object.fromEntries(
+  [...html.matchAll(/<sup foot_note="(\d+)">([^<]+)<\/sup>/g)]
+    .map(match => [match[1], match[2]])
+);
+    return idMap;
+}
+
+function generateFootnote(header, body) {
+    return `<div class="footnote">
+                <div class="footnote-header">
+                    ${header}
+                </div>
+                <div class="footnote-body">
+                    ${body}
+                </div>
+            </div>`;
+}
+
+
 function generateVerseHTML(verse, cssClass = 'verse', showFullReference = false) {
+    const verseText = verse.text;
     const verseKey = `${verse.surah}:${verse.ayah}`;
-    const translationVerse = getTranslation(verseKey);
-    const verseNumber = showFullReference ? `${verse.surah}:${verse.ayah}` : `${verse.ayah}`;
-    
-    let html = `<div class="${cssClass}" data-surah="${verse.surah}" data-ayah="${verse.ayah}">`;
-    html += `<div class="verse-metadata">`;
-    html += `<div class="verse-number">${verseNumber}</div>`;
-    html += `</div>`;
-    html += `<div class="verse-content">`;
-    html += `<div class="arabic-text">${verse.text}</div>`;
-    
-    // Add translation if available
-    if (translationVerse && translationVerse.text) {
-        html += `<div class="translation-text">${translationVerse.text}</div>`;
+
+    const translation = getTranslation(verseKey);
+    let translationText = translation.text ? translation.text : '';
+    const verseNumberText = showFullReference ? verseKey : `${verse.ayah}`;
+
+    let html = `<div class="${cssClass}" data-surah="${verse.surah}" data-ayah="${verse.ayah}">
+                    <div class="verse-metadata">
+                        <div class="verse-number">${verseNumberText}</div>
+                    </div>
+                    <div class="verse-content">
+                        <div class="arabic-text">${verseText}</div>
+                        <div class="translation-text">${translationText}</div>`;
+
+    if (translation.footnotes) {
+        const footnotes = JSON.parse(translation.footnotes);
+        const idMap = generateFootnoteIdTable(translationText);
+        for (const footnoteId in footnotes) {
+            const footnoteText = footnotes[footnoteId];
+            const footnoteLocalId = idMap[footnoteId];
+            html += generateFootnote(footnoteLocalId, footnoteText);
+        }
     }
-    
-    html += `</div>`;
-    html += '</div>';
-    
+
+    html += `</div>
+             </div>`;
+
     return html;
 }
 

@@ -64,7 +64,6 @@ export class ModalModule {
         }
     }
 
-
     showControlPanel() {
         this.controlPanelModal.classList.add('show');
     }

@@ -716,3 +716,40 @@ audio {
     font-style: italic;
     min-height: 1rem;
 }
+
+/* Footnote Styles */
+.footnote {
+    margin-top: 0.75rem;
+    border-top: 1px solid var(--sepia-border);
+    padding-top: 0.75rem;
+    background: rgba(139, 115, 85, 0.03);
+    border-radius: 6px;
+    padding: 0.75rem;
+    border: 1px solid rgba(139, 115, 85, 0.1);
+}
+
+.footnote-header {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--sepia-accent);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.footnote-header::before {
+    content: "📝";
+    font-size: 0.9rem;
+}
+
+.footnote-body {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--sepia-text);
+    font-style: italic;
+    opacity: 0.9;
+    text-align: left;
+}

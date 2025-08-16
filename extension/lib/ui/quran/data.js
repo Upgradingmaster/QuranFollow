@@ -23,7 +23,7 @@ const SURAH_NAMES = {
 const versesPath      = '../data/scripts/uthmani-aba.json'
 const wordsPath       = '../data/scripts/uthmani-wbw.json'
 const pagesPath       = '../data/pages/uthmani.json'
-const translationPath = '../data/translations/si-footnotes-inline.json'
+const translationPath = '../data/translations/si-footnotes.json'
 
 // Global Quran data stores
 let wordsData = null;
@@ -182,12 +182,18 @@ function getPage(pageNumber) {
     return pagesData[pageNumber] || [];
 }
 
-function getTranslation(verseKey) {
+function getTranslation(verseKey, unescapeText = true) {
     if (!translationData) {
         return {};
     }
 
-    return translationData[verseKey];
+    let translation = translationData[verseKey]
+
+    if (unescapeText) {
+        translation.text = JSON.parse(`${translation.text}`)
+    }
+
+    return translation;
 }
 
 //TODO: can we avoid this, if not optimize
