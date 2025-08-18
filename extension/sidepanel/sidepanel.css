@@ -354,10 +354,18 @@ input[type="file"]:focus {
     flex-wrap: wrap;
 }
 
-.verse-controls {
+.context-controls {
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.mushaf-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
 .input-group {
@@ -553,6 +561,12 @@ audio {
     align-items: center;
     gap: 1rem;
     flex-wrap: wrap;
+}
+
+.mushaf-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .mode-controls {

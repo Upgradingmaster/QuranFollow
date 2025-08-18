@@ -136,34 +136,19 @@ function getSurahName(surahNumber) {
     return SURAH_NAMES[surahNumber] || '';
 }
 
-//TODO: this function should just return an array of words move the HTML generation to renderers.js
-/**
- * Gets words text by ID range, wrapped in individual spans for hover effects
- * @param {number} firstWordId - Starting word ID
- * @param {number} lastWordId - Ending word ID
- * @param {number} targetSurah - Target surah for highlighting (optional)
- * @param {number} targetVerse - Target verse for highlighting (optional)
- * @returns {string} HTML string with words wrapped in spans
- */
-function getWords(firstWordId, lastWordId, targetSurah = null, targetVerse = null) {
+function getWords(firstWordId, lastWordId) {
     if (!wordsData) {
-        console.error('Words data not loaded');
-        return '';
+        return [];
     }
 
     const words = [];
-    for (let id = firstWordId; id <= lastWordId; id++) {
-            const word = wordsData[id];
-            let cssClass = 'word';
-            
-            // Add target-verse class if this word is a part of the target verse
-            if (targetSurah && targetVerse && word.surah === targetSurah && word.ayah === targetVerse) {
-                cssClass += ' target-verse';
-            }
-            
-            words.push(`<span class="${cssClass}" data-word-id="${id}" data-surah="${word.surah}" data-ayah="${word.ayah}">${word.text} </span>`);
+    for (let wordId = firstWordId; wordId <= lastWordId; wordId++) {
+        const word = wordsData[wordId.toString()];
+        if (word) {
+            words.push(word);
+        }
     }
-    return words.join('');
+    return words;
 }
 
 function getVerse(verseKey) {
@@ -187,7 +172,7 @@ function getTranslation(verseKey, unescapeText = true) {
         return {};
     }
 
-    let translation = translationData[verseKey]
+    let translation = { ...translationData[verseKey] }; // TODO: we can actually modify the data and then the next call we can try-catch the JSON.parse()
 
     if (unescapeText) {
         translation.text = JSON.parse(`${translation.text}`)
@@ -228,6 +213,7 @@ function findPageContainingVerse(surahNumber, verseNumber) {
         }
     }
 
+    console.error('findPageContainingVerse() failed');
     return null;
 }
 

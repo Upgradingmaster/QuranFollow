@@ -59,17 +59,19 @@ export class AppModule {
             surahControls         : document.getElementById('surah-controls'),
 
             // Navigation elements
+            mushafPageInput   : document.getElementById('mushaf-page-input'),
+            mushafSurahInput  : document.getElementById('mushaf-surah-input'),
+            mushafVerseInput  : document.getElementById('mushaf-verse-input'),
+            loadPageBtn       : document.getElementById('mushaf-load'),
 
-            pageInput             : document.getElementById('page-input'),
-            contextSurahInput     : document.getElementById('context-surah-input'),
-            contextVerseInput     : document.getElementById('context-verse-input'),
+            contextSurahInput : document.getElementById('context-surah-input'),
+            contextVerseInput : document.getElementById('context-verse-input'),
+            loadContextVerseBtn   : document.getElementById('context-load'),
+
             surahNumberInput      : document.getElementById('surah-number-input'),
             surahVerseInput       : document.getElementById('surah-verse-input'),
+            loadSurahBtn          : document.getElementById('surah-load'),
 
-            loadSurahBtn          : document.getElementById('load-surah'),
-            loadContextVerseBtn   : document.getElementById('load-context-verse'),
-            loadPageBtn           : document.getElementById('load-page'),
-            
             // Modal elements
             toggleControlPanelBtn : document.getElementById('toggle-control-panel'),
             closeControlPanelBtn  : document.getElementById('close-control-panel')
@@ -152,7 +154,7 @@ export class AppModule {
 
         // Keyboard handlers for inputs
         // Mushaf view
-        elements.pageInput.addEventListener('keypress', (e) => {
+        elements.mushafPageInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.modules.controlModule.loadMushafPageFromControlPanel();
         });
 

@@ -5,39 +5,57 @@ export class ControlModule {
         this.modules = modules;
     }
 
-    loadMushafPage(pageNumber) {
+    loadMushafPage(page, surah, ayah) {
         const { loadPageBtn } = this.elements;
 
         if (loadPageBtn) { loadPageBtn.disabled = true; }
-        this.modules.quranModule.renderMushafPage(pageNumber);
+        //TODO: disable the other input event listeners here
+
         this.modules.uiModule.setMode('mushaf');
+        this.modules.quranModule.goTo(surah, ayah, 'mushaf', page);
+
         if (loadPageBtn) { loadPageBtn.disabled = false; }
     }
 
     loadMushafPageFromControlPanel() {
-        const { pageInput } = this.elements;
-        
-        if (!pageInput) {
-            console.error(`Page input element not found`);
+        const {mushafPageInput, mushafSurahInput, mushafVerseInput} = this.elements;
+
+        if (!mushafPageInput || !mushafSurahInput || !mushafVerseInput) {
+            console.error(`Required input elements not found`);
             return;
         }
-        
-        const pageNumber = parseInt(pageInput.value);
 
-        if (isNaN(pageNumber) || pageNumber < 1 || pageNumber > 604) {
+        const page  = parseInt(mushafPageInput.value);
+        const surah = parseInt(mushafSurahInput.value);
+        const ayah  = parseInt(mushafVerseInput.value);
+
+        if (page < 1 || page > 604) {
             this.log(`[X] Invalid page number: ${pageInput.value}. Please enter 1-604.`);
             return;
         }
 
-        this.loadMushafPage(pageNumber);
+        if (surah < 1 || surah > 114) {
+            this.log(`[X] Invalid surah number: ${contextSurahInput.value}. Please enter 1-114.`);
+            return;
+        }
+
+        if (ayah < 1) {
+            this.log(`[X] Invalid verse number: ${contextVerseInput.value}. Please enter a positive number.`);
+            return;
+        }
+
+        this.loadMushafPage(page, surah, ayah);
     }
 
-    loadVerseWithContext(surahNumber, verseNumber) {
+    loadVerseWithContext(surah, ayah) {
         const { loadContextVerseBtn } = this.elements;
 
         if (loadContextVerseBtn) { loadContextVerseBtn.disabled = true; }
-        this.modules.quranModule.renderVerseWithContext(surahNumber, verseNumber);
+        //TODO: disable the other input event listeners here
+
         this.modules.uiModule.setMode('context');
+        this.modules.quranModule.goTo(surah, ayah, 'context');
+
         if (loadContextVerseBtn) { loadContextVerseBtn.disabled = false; }
     }
 
@@ -49,28 +67,31 @@ export class ControlModule {
             return;
         }
         
-        const surahNumber = parseInt(contextSurahInput.value);
-        const verseNumber = parseInt(contextVerseInput.value);
+        const surah = parseInt(contextSurahInput.value);
+        const ayah  = parseInt(contextVerseInput.value);
         
-        if (isNaN(surahNumber) || surahNumber < 1 || surahNumber > 114) {
+        if (isNaN(surah) || surah < 1 || surah > 114) {
             this.log(`[X] Invalid surah number: ${contextSurahInput.value}. Please enter 1-114.`);
             return;
         }
 
-        if (isNaN(verseNumber) || verseNumber < 1) {
+        if (isNaN(ayah) || ayah < 1) {
             this.log(`[X] Invalid verse number: ${contextVerseInput.value}. Please enter a positive number.`);
             return;
         }
         
-        this.loadVerseWithContext(surahNumber, verseNumber);
+        this.loadVerseWithContext(surah, ayah);
     }
 
-    loadSurah(surahNumber, verseNumber = null) {
+    loadSurah(surah, ayah = null) {
         const { loadSurahBtn } = this.elements;
 
         if (loadSurahBtn) { loadSurahBtn.disabled = true; }
-        this.modules.quranModule.renderSurah(surahNumber, verseNumber);
+        //TODO: disable the other input event listeners here
+
         this.modules.uiModule.setMode('surah');
+        this.modules.quranModule.goTo(surah, ayah, 'surah');
+
         if (loadSurahBtn) { loadSurahBtn.disabled = false; }
     }
 

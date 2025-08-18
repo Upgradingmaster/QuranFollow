@@ -11,5 +11,11 @@
 - Footnote dropdown
 - Bring UI and Quran State truly together
 - Unescape quotes in translation
-- Fix reload
+* Fix reload 
 - findSurahFromPage
+  - mushaf should behave like a superset of the other modes
+- Better notifications for the backend in the extension
+- The keybinds 1, 2, 3 are not Mushaf, Context, Surah like the code
+- standardize (chapter, verse) -> (surah, ayah)
+- What is the word sub-field in uthmani-wbw.json?
+- Mushaf mode should be (surah, ayah) XOR (page) not OR

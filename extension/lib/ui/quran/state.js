@@ -4,9 +4,9 @@ export const QuranState = {
     _state: {
         mode: null, // 'mushaf', 'context', 'surah'
         surah: null,
-        targetVerse: null,
+        ayah: null,
         quranContainer: null,
-        pageNumber: null, // for mushaf mode
+        page: null, // for mushaf mode
         contextBefore: null, // for context mode
         contextAfter: null, // for context mode
         lastUpdated: null
@@ -19,9 +19,9 @@ export const QuranState = {
     // Getters
     getMode() { return this._state.mode; },
     getSurah() { return this._state.surah; },
-    getTargetVerse() { return this._state.targetVerse; },
+    getTargetVerse() { return this._state.ayah; },
     getContainerElement() { return this._state.quranContainer; },
-    getPageNumber() { return this._state.pageNumber; },
+    getPage() { return this._state.page; },
     getContextRange() {
         return {
             before: this._state.contextBefore,
@@ -35,8 +35,8 @@ export const QuranState = {
         return {
             mode: this._state.mode,
             surah: this._state.surah,
-            targetVerse: this._state.targetVerse,
-            pageNumber: this._state.pageNumber,
+            ayah: this._state.ayah,
+            page: this._state.page,
             contextBefore: this._state.contextBefore,
             contextAfter: this._state.contextAfter,
             lastUpdated: this._state.lastUpdated,
@@ -62,67 +62,75 @@ export const QuranState = {
     },
 
     // State setters with validation
-    setMushafState(pageNumber, surah = null, targetVerse = null) {
-        if (!this.isValidPage(pageNumber)) {
-            throw new Error(`Invalid page number: ${pageNumber}`);
+    setMushafState(page, surah = null, ayah = null) {
+        if (!this.isValidPage(page)) {
+            throw new Error(`Invalid page: ${page}`);
         }
         if (!this.isValidSurah(surah)) {
-            throw new Error(`Invalid surah number: ${surah}`);
+            throw new Error(`Invalid surah: ${surah}`);
         }
-        if (!this.isValidVerse(targetVerse)) {
-            throw new Error(`Invalid target verse: ${targetVerse}`);
+        if (!this.isValidVerse(ayah)) {
+            throw new Error(`Invalid ayah: ${ayah}`);
         }
 
         this._state.mode = 'mushaf';
         this._state.surah = surah;
-        this._state.targetVerse = targetVerse;
-        this._state.pageNumber = pageNumber;
+        this._state.ayah = ayah;
+        this._state.page = page;
         this._state.contextBefore = null;
         this._state.contextAfter = null;
         this._state.lastUpdated = Date.now();
     },
 
-    setContextState(surah, targetVerse, contextBefore, contextAfter) {
+    setContextState(surah, ayah, contextBefore, contextAfter) {
         if (!this.isValidSurah(surah)) {
-            throw new Error(`Invalid surah number: ${surah}`);
+            throw new Error(`Invalid surah: ${surah}`);
         }
-        if (!this.isValidVerse(targetVerse)) {
-            throw new Error(`Invalid target verse: ${targetVerse}`);
+        if (!this.isValidVerse(ayah)) {
+            throw new Error(`Invalid ayah: ${ayah}`);
         }
 
         this._state.mode = 'context';
         this._state.surah = surah;
-        this._state.targetVerse = targetVerse;
-        this._state.pageNumber = null;
+        this._state.ayah = ayah;
+        this._state.page = null;
         this._state.contextBefore = contextBefore;
         this._state.contextAfter = contextAfter;
         this._state.lastUpdated = Date.now();
     },
 
-    setSurahState(surah, targetVerse) {
+    setSurahState(surah, ayah) {
         if (!this.isValidSurah(surah)) {
-            throw new Error(`Invalid surah number: ${surah}`);
+            throw new Error(`Invalid surah: ${surah}`);
         }
-        if (!this.isValidVerse(targetVerse)) {
-            throw new Error(`Invalid target verse: ${targetVerse}`);
+        if (!this.isValidVerse(ayah)) {
+            throw new Error(`Invalid ayah: ${ayah}`);
         }
 
         this._state.mode = 'surah';
         this._state.surah = surah;
-        this._state.targetVerse = targetVerse;
-        this._state.pageNumber = null;
+        this._state.ayah = ayah;
+        this._state.page = null;
         this._state.contextBefore = null;
         this._state.contextAfter = null;
         this._state.lastUpdated = Date.now();
     },
 
-    // Update only target verse (for dynamic changes)
-    setTargetVerse(targetVerse) {
-        if (!this.isValidVerse(targetVerse)) {
-            throw new Error(`Invalid target verse: ${targetVerse}`);
+    setState(mode, state) {
+        switch (mode) {
+        case 'mushaf':  this.setMushafState(state.page); break;
+        case 'context': this.setContextState(state.surah, state.ayah, state.contextBefore, state.contextAfter); break;
+        case 'surah':   this.setSurahState(state.surah, state.ayah); break;
+        default: console.error('Setting quran state: Unsupported Mode');
+        }
+    },
+
+    setTargetVerse(ayah) {
+        if (!this.isValidVerse(ayah)) {
+            throw new Error(`Invalid ayah: ${ayah}`);
         }
 
-        this._state.targetVerse = targetVerse;
+        this._state.ayah = ayah;
         this._state.lastUpdated = Date.now();
     },
 
@@ -135,9 +143,9 @@ export const QuranState = {
     clear() {
         this._state.mode = null;
         this._state.surah = null;
-        this._state.targetVerse = null;
+        this._state.ayah = null;
         this._state.quranContainer = null;
-        this._state.pageNumber = null;
+        this._state.page = null;
         this._state.contextBefore = null;
         this._state.contextAfter = null;
         this._state.lastUpdated = Date.now();

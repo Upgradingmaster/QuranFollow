@@ -33,74 +33,65 @@ export class QuranModule {
         await initializeQuranData();
     }
 
-    goTo(surahNumber, ayahNumber) {
+    goTo(surah, ayah, mode = null, page = null) {
+
         const currentState = QuranState.getStateClone();
-        const mode = currentState.mode;
+        if (mode == null) { mode = currrentState.mode; }
+        const currentMode = currentState.mode;
 
         // Check if we need to render new content or just update target verse
-        const needsNewRender = !currentState.mode ||
-              currentState.mode !== mode ||
-              (mode === 'surah' && currentState.surah !== surahNumber) ||
+        const needsNewRender = !currentMode || currentMode != mode ||
+              (mode === 'surah' && currentState.surah !== surah) ||
               (mode === 'context') || // Always re-render for context mode
-              (mode === 'mushaf'); // Always re-render for mushaf to find correct page // TODO:
+              (mode === 'mushaf');    // TODO: Always re-rendering for mushaf to find correct page
 
         if (needsNewRender) {
             switch (mode) {
-            case 'surah':
-                this.renderSurah(surahNumber, ayahNumber);
-                break;
-            case 'context':
-                this.renderVerseWithContext(surahNumber, ayahNumber);
-                break;
-            case 'mushaf':
-                const pageNumber = this.findPageContainingVerse(surahNumber, ayahNumber);
-                if (pageNumber) {
-                    this.renderMushafPage(pageNumber, {
-                        targetSurah: surahNumber,
-                        targetVerse: ayahNumber
-                    });
-                } else {
-                    this.log(`[X] Could not find page containing verse ${surahNumber}:${ayahNumber}`);
-                    console.error('findPageContainingVerse() failed');
-                    return;
-                }
-                break;
+                case 'surah':
+                    this.renderSurah(surah, ayah);
+                    break;
+                case 'context':
+                    this.renderVerseWithContext(surah, ayah);
+                    break;
+                case 'mushaf':
+                    this.renderMushafPage(page, surah, ayah);
+                    break;
             }
         } else {
             // Just update target verse if we're in the same mode and context
-            if (currentState.targetVerse !== ayahNumber) {
-                const success = this.setTargetVerse(ayahNumber);
+            if (currentState.targetVerse !== ayah) {
+                const success = this.setTargetVerse(ayah);
                 if (success) {
-                    this.log(`Move to ayah ${ayahNumber}`);
+                    this.log(`Move to ayah ${ayah}`);
                 } else {
-                    this.log(`[X] Failed to switch to verse ${ayahNumber}`);
+                    this.log(`[X] Failed to switch to verse ${ayah}`);
                     console.error('setTargetVerse() failed')
                 }
             } else {
                 this.scrollToTargetVerse();
-                this.log(`Same verse, ${surahNumber}:${ayahNumber}`);
+                this.log(`Same verse, ${surah}:${ayah}`);
             }
         }
     }
 
-    /**
-     * Renders a mushaf page directly to a DOM element
-     * @param {number} pageNumber - Page number (1-604)
-     * @param {Object} options - Rendering options
-     * @param {number} options.targetSurah - Target surah for highlighting
-     * @param {number} options.targetVerse - Target verse for highlighting
-     * @param {string} targetElementId - ID of the container element (default: 'quran')
-     */
-    renderMushafPage(pageNumber, options = {}) {
-        this.log(`Loading page ${pageNumber}...`);
+    renderMushafPage(page, surah, ayah) {
+        if (!page && !(surah && ayah)) {
+            console.error(`[X] no combination of information to locate the page: got Page: ${page}, Surah: ${surah}, Ayah: ${ayah}`);
+        }
+
+        if (surah && ayah && !page) {
+            page = findPageContainingVerse(surah, ayah);
+        }
+
+        this.log(`Loading page ${page}...`);
         try {
-            const html = generateMushafPageHTML(pageNumber, options);
+            const html = generateMushafPageHTML(page, surah, ayah);
             this.quranContainer.innerHTML = html;
             scrollToTargetVerse();
-            QuranState.setMushafState(pageNumber);
-            this.log(`Loaded  page ${pageNumber}`);
+            QuranState.setMushafState(page);
+            this.log(`Loaded  page ${page}`);
         } catch (error) {
-            this.log(`[X] Failed to load page ${pageNumber}: `);
+            this.log(`[X] failed to load page ${page}: `);
             console.error(error);
         }
     }
@@ -156,13 +147,13 @@ export class QuranModule {
         const mode = currentState.mode;
         switch (mode) {
             case 'surah':
-                this.modules.quranModule.renderSurah(currentState.surah, currentState.targetVerse);
+                this.modules.quranModule.renderSurah(currentState.surah, currentState.ayah);
                 break;
             case 'context':
-                this.modules.quranModule.renderVerseWithContext(currentState.surah, currentState.targetVerse);
+                this.modules.quranModule.renderVerseWithContext(currentState.surah, currentState.ayah);
                 break;
             case 'mushaf':
-                this.modules.quranModule.renderMushafPage(currentState.page);
+            this.modules.quranModule.renderMushafPage(currentState.page, currentState.surah, currentState.ayah);
                 break;
             default:
                 console.error('Unsupported mode');
@@ -212,8 +203,8 @@ export class QuranModule {
      * @param {number} verseNumber - Verse number
      * @returns {number|null} - Page number containing the verse
      */
-    findPageContainingVerse(surahNumber, verseNumber) {
-        return findPageContainingVerse(surahNumber, verseNumber);
+    findPageContainingVerse(surah, verse) {
+        return findPageContainingVerse(surah, verse);
     }
 
 }

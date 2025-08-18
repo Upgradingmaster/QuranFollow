@@ -14,24 +14,13 @@ import {
 // Mushaf Rendering
 // ============================================================================
 
-/**
- * Generates HTML for a Mushaf page
- * @param {number} pageNumber - Page number (1-604 for standard Mushaf)
- * @param {Object} options - Rendering options
- * @param {number} options.targetSurah - Target surah for highlighting
- * @param {number} options.targetVerse - Target verse for highlighting
- * @returns {string} HTML string of rendered page
- */
-function generateMushafPageHTML(pageNumber, options = {}) {
-    const pageData = getPage(pageNumber);
+function generateMushafPageHTML(page, surah = null, ayah = null) {
+    const pageData = getPage(page);
     if (!pageData.length) {
-        return `<div class="error">Page ${pageNumber} not found</div>`;
+        return `<div class="error">Page ${page} not found</div>`;
     }
 
-    // Sort by line number to ensure correct order
-    pageData.sort((a, b) => a.line_number - b.line_number);
-
-    let html = `<div class="quran-container mushaf-page-container" data-page="${pageNumber}">`;
+    let html = `<div class="quran-container mushaf-page-container" data-page="${page}">`;
 
     pageData.forEach(line => {
         let lineElement = '<div class="arabic-text line';
@@ -53,7 +42,15 @@ function generateMushafPageHTML(pageNumber, options = {}) {
 
             case 'ayah':
                 if (line.first_word_id && line.last_word_id) {
-                    lineElement += getWords(line.first_word_id, line.last_word_id, options.targetSurah, options.targetVerse);
+                    const words = getWords(line.first_word_id, line.last_word_id);
+
+                    for (const [wordId, word] of words.entries()) {
+                        let cssClass = 'word';
+                        if (surah && ayah && word.surah === surah && word.ayah === ayah) {
+                            cssClass += ' target-verse'; //TODO: what class to give
+                        }
+                        lineElement += `<span class="${cssClass}" data-word-id="${wordId}" data-surah="${word.surah}" data-ayah="${word.ayah}">${word.text} </span>`;
+                    }
                 }
                 break;
 
