@@ -17,7 +17,7 @@ import {
 function generateMushafPageHTML(page, surah = null, ayah = null) {
     const pageData = getPage(page);
     if (!pageData.length) {
-        return `<div class="error">Page ${page} not found</div>`;
+        return { html: `<div class="error">Page ${page} not found</div>`, setupInteractions: null };
     }
 
     let html = `<div class="quran-container mushaf-page-container" data-page="${page}">`;
@@ -67,33 +67,33 @@ function generateMushafPageHTML(page, surah = null, ayah = null) {
     });
 
     html += '</div>';
-    return html;
-}
+    
+    // Setup function for verse highlighting
+    const setupInteractions = (quranContainer) => {
+        const words = quranContainer.querySelectorAll('.word');
+        words.forEach(word => {
+            word.addEventListener('mouseenter', () => {
+                const surah = word.dataset.surah;
+                const ayah = word.dataset.ayah;
 
-//TODO: !! move this to generation
-function setupVerseHighlighting(quranContainer) {
-    const words = quranContainer.querySelectorAll('.word');
-    words.forEach(word => {
-        word.addEventListener('mouseenter', () => {
-            const surah = word.dataset.surah;
-            const ayah = word.dataset.ayah;
-
-            // Highlight all words in the same verse
-            const verseWords = quranContainer.querySelectorAll(`[data-surah="${surah}"][data-ayah="${ayah}"]`);
-            verseWords.forEach(verseWord => {
-                verseWord.classList.add('verse-highlighted');
+                // Highlight all words in the same verse
+                const verseWords = quranContainer.querySelectorAll(`[data-surah="${surah}"][data-ayah="${ayah}"]`);
+                verseWords.forEach(verseWord => {
+                    verseWord.classList.add('verse-highlighted');
+                });
+            });
+            word.addEventListener('mouseleave', () => {
+                const highlightedWords = quranContainer.querySelectorAll('.verse-highlighted');
+                highlightedWords.forEach(highlightedWord => {
+                    highlightedWord.classList.remove('verse-highlighted');
+                });
             });
         });
-        word.addEventListener('mouseleave', () => {
-            // Remove all verse highlighting instantly
-            const highlightedWords = quranContainer.querySelectorAll('.verse-highlighted');
-            highlightedWords.forEach(highlightedWord => {
-                highlightedWord.classList.remove('verse-highlighted');
-            });
+    };
 
-        });
-    });
+    return { html, setupInteractions };
 }
+
 
 // ============================================================================
 // Shared Verse Rendering

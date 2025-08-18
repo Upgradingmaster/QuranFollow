@@ -85,8 +85,9 @@ export class QuranModule {
 
         this.log(`Loading page ${page}...`);
         try {
-            const html = generateMushafPageHTML(page, surah, ayah);
+            const { html, setupInteractions } = generateMushafPageHTML(page, surah, ayah);
             this.quranContainer.innerHTML = html;
+            if (setupInteractions) { setupInteractions(this.quranContainer); }
             scrollToTargetVerse();
             QuranState.setMushafState(page);
             this.log(`Loaded  page ${page}`);
