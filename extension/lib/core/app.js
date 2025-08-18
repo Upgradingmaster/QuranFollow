@@ -59,15 +59,13 @@ export class AppModule {
             surahControls         : document.getElementById('surah-controls'),
 
             // Navigation elements
-            mushafPageInput   : document.getElementById('mushaf-page-input'),
-            mushafSurahInput  : document.getElementById('mushaf-surah-input'),
-            mushafVerseInput  : document.getElementById('mushaf-verse-input'),
-            loadPageBtn       : document.getElementById('mushaf-load'),
-
-            contextSurahInput : document.getElementById('context-surah-input'),
-            contextVerseInput : document.getElementById('context-verse-input'),
+            mushafPageInput       : document.getElementById('mushaf-page-input'),
+            mushafSurahInput      : document.getElementById('mushaf-surah-input'),
+            mushafVerseInput      : document.getElementById('mushaf-verse-input'),
+            loadPageBtn           : document.getElementById('mushaf-load'),
+            contextSurahInput     : document.getElementById('context-surah-input'),
+            contextVerseInput     : document.getElementById('context-verse-input'),
             loadContextVerseBtn   : document.getElementById('context-load'),
-
             surahNumberInput      : document.getElementById('surah-number-input'),
             surahVerseInput       : document.getElementById('surah-verse-input'),
             loadSurahBtn          : document.getElementById('surah-load'),
@@ -110,9 +108,11 @@ export class AppModule {
             predict: async () => await this.modules.controlModule.predict(),
             
             // Navigation
-            goToPage: () => this.modules.controlModule.promptAndNavigateTo('page'),
-            goToVerse: () => this.modules.controlModule.promptAndNavigateTo('verse'),
-            goToSurah: () => this.modules.controlModule.promptAndNavigateTo('surah'),
+            goToMushaf: () =>  this.modules.controlModule.modalGoTo('mushaf'),
+            goToContext: () => this.modules.controlModule.modalGoTo('context'),
+            goToSurah: () => this.modules.controlModule.modalGoTo('surah'),
+
+            goTo: () => this.modules.controlModule.modalGoTo(),
             
             // View modes
             setMode: (mode) => this.modules.controlModule.updateMode(mode),

@@ -121,7 +121,7 @@ export const QuranState = {
         case 'mushaf':  this.setMushafState(state.page); break;
         case 'context': this.setContextState(state.surah, state.ayah, state.contextBefore, state.contextAfter); break;
         case 'surah':   this.setSurahState(state.surah, state.ayah); break;
-        default: console.error('Setting quran state: Unsupported Mode');
+        default: console.error('Unsupported Mode!');
         }
     },
 

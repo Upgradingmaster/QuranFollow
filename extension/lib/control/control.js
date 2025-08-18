@@ -29,21 +29,6 @@ export class ControlModule {
         const surah = parseInt(mushafSurahInput.value);
         const ayah  = parseInt(mushafVerseInput.value);
 
-        if (page < 1 || page > 604) {
-            this.log(`[X] Invalid page number: ${pageInput.value}. Please enter 1-604.`);
-            return;
-        }
-
-        if (surah < 1 || surah > 114) {
-            this.log(`[X] Invalid surah number: ${contextSurahInput.value}. Please enter 1-114.`);
-            return;
-        }
-
-        if (ayah < 1) {
-            this.log(`[X] Invalid verse number: ${contextVerseInput.value}. Please enter a positive number.`);
-            return;
-        }
-
         this.loadMushafPage(page, surah, ayah);
     }
 
@@ -69,16 +54,6 @@ export class ControlModule {
         
         const surah = parseInt(contextSurahInput.value);
         const ayah  = parseInt(contextVerseInput.value);
-        
-        if (isNaN(surah) || surah < 1 || surah > 114) {
-            this.log(`[X] Invalid surah number: ${contextSurahInput.value}. Please enter 1-114.`);
-            return;
-        }
-
-        if (isNaN(ayah) || ayah < 1) {
-            this.log(`[X] Invalid verse number: ${contextVerseInput.value}. Please enter a positive number.`);
-            return;
-        }
         
         this.loadVerseWithContext(surah, ayah);
     }
@@ -106,54 +81,36 @@ export class ControlModule {
         const surahNumber = parseInt(surahNumberInput.value);
         const verseNumber = surahVerseInput && surahVerseInput.value ? parseInt(surahVerseInput.value) : null;
         
-        if (isNaN(surahNumber) || surahNumber < 1 || surahNumber > 114) {
-            this.log(`[X] Invalid surah number: ${surahNumberInput.value}. Please enter 1-114.`);
-            return;
-        }
-        
-        if (verseNumber !== null && (isNaN(verseNumber) || verseNumber < 1)) {
-            this.log(`[X] Invalid verse number: ${surahVerseInput?.value}. Please enter a positive number.`);
-            return;
-        }
-
         this.loadSurah(surahNumber, verseNumber);
     }
 
-    // TODO: use quranModule.goto
-    promptAndNavigateTo(type) { //TODO: check if this function works
-        const { pageInput,
+    modalGoTo(mode = null) {
+        if (!mode) { mode = this.modules.quranModule.getMode(); }
+        const { mushafPageInput,
                 contextSurahInput, contextVerseInput,
                 surahNumberInput, surahVerseInput } = this.elements;
+
         let prompt, handler;
+        let surah, ayah, page;
         
-        switch (type) {
-            case 'page':
+        switch (mode) {
+            case 'mushaf':
                 prompt = 'Enter page number (1-604):';
                 handler = (value) => {
-                    const pageNumber = parseInt(value);
-                    if (pageNumber >= 1 && pageNumber <= 604) {
-                        if (pageInput) pageInput.value = pageNumber;
-                        this.loadQuranPage();
-                    } else {
-                        this.log(`[X] Invalid page number: ${value}. Please enter 1-604.`);
-                    }
+                    page = parseInt(value);
+                    if (mushafPageInput) mushafPageInput.value = page;
                 };
                 break;
                 
-            case 'verse':
+            case 'context':
                 prompt = 'Enter verse (format: surah:verse, e.g., 18:10):';
                 handler = (value) => {
                     const parts = value.split(':');
                     if (parts.length === 2) {
-                        const surah = parseInt(parts[0]);
-                        const verse = parseInt(parts[1]);
-                        if (surah >= 1 && surah <= 114 && verse >= 1) {
-                            if (contextSurahInput) contextSurahInput.value = surah;
-                            if (contextVerseInput) contextVerseInput.value = verse;
-                            this.loadVerseWithContext();
-                        } else {
-                            this.log(`[X] Invalid verse format: ${value}. Use format surah:verse (e.g., 18:10)`);
-                        }
+                        surah = parseInt(parts[0]);
+                        ayah = parseInt(parts[1]);
+                        if (contextSurahInput) contextSurahInput.value = surah;
+                        if (contextVerseInput) contextVerseInput.value = ayah;
                     } else {
                         this.log(`[X] Invalid verse format: ${value}. Use format surah:verse (e.g., 18:10)`);
                     }
@@ -163,24 +120,20 @@ export class ControlModule {
             case 'surah':
                 prompt = 'Enter surah number (1-114):';
                 handler = (value) => {
-                    const surahNumber = parseInt(value);
-                    if (surahNumber >= 1 && surahNumber <= 114) {
-                        if (surahNumberInput) surahNumberInput.value = surahNumber;
-                        this.loadSurah(); //TODO
-                    } else {
-                        this.log(`[X] Invalid surah number: ${value}. Please enter 1-114.`);
-                    }
+                    surah = parseInt(value);
+                    if (surahNumberInput) surahNumberInput.value = surah;
                 };
                 break;
                 
             default:
-                console.error(`[X] Unknown navigation type: ${type}`);
+                console.error('Unsupported Mode!');
                 return;
         }
-        
-        const result = window.prompt(prompt);
-        if (result !== null && result.trim() !== '') {
-            handler(result.trim());
+
+        const result = window.prompt(prompt)?.trim();
+        if (result && result != '') {
+            handler(result);
+            this.modules.quranModule.goTo(surah, ayah, mode, page);
         }
     }
 

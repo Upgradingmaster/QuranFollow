@@ -33,6 +33,10 @@ export class QuranModule {
         await initializeQuranData();
     }
 
+    getMode() {
+        return QuranState.getStateClone().mode;
+    }
+
     goTo(surah, ayah, mode = null, page = null) {
 
         const currentState = QuranState.getStateClone();
@@ -79,6 +83,22 @@ export class QuranModule {
             console.error(`[X] no combination of information to locate the page: got Page: ${page}, Surah: ${surah}, Ayah: ${ayah}`);
         }
 
+        if (page && (page < 1 || page > 604)) {
+            this.log(`[X] Invalid page number: ${page}. Please enter 1-604.`);
+            return;
+        }
+
+        if (surah && (surah < 1 || surah > 114)) {
+            this.log(`[X] Invalid surah number: ${surah}. Please enter 1-114.`);
+            return;
+        }
+
+        if (ayah && ayah < 1) {
+            this.log(`[X] Invalid verse number: ${ayah}. Please enter a positive number.`);
+            return;
+        }
+
+
         if (surah && ayah && !page) {
             page = findPageContainingVerse(surah, ayah);
         }
@@ -97,38 +117,42 @@ export class QuranModule {
         }
     }
 
-    /**
-     * Renders a single verse with context (surrounding verses)
-     * @param {number} surahNumber - Surah number (1-114)
-     * @param {number} verseNumber - Verse number within surah (1-based)
-     * @param {number} contextBefore - Number of verses before to include
-     * @param {number} contextAfter - Number of verses after to include
-     * @param {Object} options - Rendering options
-     * @param {string} targetElementId - ID of the container element (default: 'quran')
-     */
-    renderVerseWithContext(surahNumber, verseNumber, contextBefore = 4, contextAfter = 4, options) {
-        const locText = `${surahNumber}:${verseNumber}`
+    renderVerseWithContext(surah, ayah, contextBefore = 4, contextAfter = 4, options = {}) {
+        if (isNaN(surah) || surah < 1 || surah > 114) {
+            this.log(`[X] Invalid surah number: ${surah}. Please enter 1-114.`);
+            return;
+        }
+
+        if (isNaN(ayah) || ayah < 1) {
+            this.log(`[X] Invalid verse number: ${ayah}. Please enter a positive number.`);
+            return;
+        }
+
+        const locText = `${surah}:${ayah}`
         this.log(`Loading ${locText}...`);
         try {
-            const html = generateVerseWithContextHTML(surahNumber, verseNumber, contextBefore, contextAfter, options);
+            const html = generateVerseWithContextHTML(surah, ayah, contextBefore, contextAfter, options);
             this.quranContainer.innerHTML = html;
             scrollToTargetVerse();
-            QuranState.setContextState(surahNumber, verseNumber, contextBefore, contextAfter);
+            QuranState.setContextState(surah, ayah, contextBefore, contextAfter);
             this.log(`Loaded  ${locText}`);
         } catch (error) {
-            this.log(`[X] Failed to load verse ${surahNumber}:${verseNumber}`);
+            this.log(`[X] Failed to load verse ${surah}:${ayah}`);
             console.error(error);
         }
     }
 
-    /**
-     * Renders an entire surah
-     * @param {number} surahNumber - Surah number (1-114)
-     * @param {number} targetVerse - Target verse to highlight (optional)
-     * @param {Object} options - Rendering options
-     * @param {string} targetElementId - ID of the container element (default: 'quran')
-     */
     renderSurah(surahNumber, verseNumber = null, options = {}) {
+        if (isNaN(surahNumber) || surahNumber < 1 || surahNumber > 114) {
+            this.log(`[X] Invalid surah number: ${surah}. Please enter 1-114.`);
+            return;
+        }
+
+        if (verseNumber !== null && (isNaN(verseNumber) || verseNumber < 1)) {
+            this.log(`[X] Invalid verse number: ${ayah}. Please enter a positive number.`);
+            return;
+        }
+
         const locText = `${surahNumber}:${verseNumber ? verseNumber : '1'}`;
         this.log(`Loading ${locText}...`);
         try {
@@ -157,7 +181,7 @@ export class QuranModule {
             this.modules.quranModule.renderMushafPage(currentState.page, currentState.surah, currentState.ayah);
                 break;
             default:
-                console.error('Unsupported mode');
+                console.error('Unsupported mode!');
         }
     }
 
