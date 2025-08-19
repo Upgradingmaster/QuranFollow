@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Qurʾān Locator",
   "version": "1.0.0",
-  "description": "Audio-based Quran verse locator and reader",
+  "description": "Audio-based Quran ayah locator and reader",
   
   "permissions": [
     "storage",

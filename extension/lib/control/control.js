@@ -6,8 +6,8 @@ export class ControlModule {
     }
 
     // Wrapper around quranModule.goTo to update the control panel with the state
-    goTo(surah, ayah, mode = null, page = null, opts = this.defaultGoToOpts) {
-        const newState = this.modules.quranModule.goTo(surah, ayah, mode, page, opts);
+    goTo(mode, surah, ayah, page, opts = this.defaultGoToOpts) {
+        const newState = this.modules.quranModule.goTo(mode, surah, ayah, page, opts);
 
         const newSurah = this.modules.quranModule.getSurah();
         const newAyah  = this.modules.quranModule.getAyah();
@@ -23,9 +23,9 @@ export class ControlModule {
             const surah = parseInt(pred.surah);
             const ayah  = parseInt(pred.ayah);
             this.log(`Found: ${surah}:${ayah}`);
-            this.goTo(surah, ayah);
+            this.goTo(null, surah, ayah, null);
         } else {
-            this.log("[?] Couldn't find a matching verse")
+            this.log("[?] Couldn't find a matching ayah")
         }
     }
 
@@ -43,10 +43,10 @@ export class ControlModule {
         // TODO: this will go away when we have a better startup screen
         let opts = this.modules.quranModule.getDefaultGoToOpts();
         if (firstRun) { // don't highlight
-            opts.highlightCurrentVerse = false;
+            opts.highlightCurrentAyah = false;
         }
 
-        this.goTo(null, null, mode, null, opts);
+        this.goTo(mode, null, null, null, opts);
     }
 
     showStartupScreen(mode) {
@@ -57,7 +57,7 @@ export class ControlModule {
     controlPanelGoTo() {
         const { surahInput, ayahInput, pageInput } = this.elements;
 
-        this.goTo(parseInt(surahInput.value), parseInt(ayahInput.value), null, parseInt(pageInput.value));
+        this.goTo(null, parseInt(surahInput.value), parseInt(ayahInput.value), parseInt(pageInput.value));
     }
 
     quickJumpGoTo() {
@@ -73,9 +73,9 @@ export class ControlModule {
         if (parts.length === 2) {
             let surah = parseInt(parts[0]);
             let ayah  = parseInt(parts[1]);
-            this.goTo(surah, ayah, null, null);
+            this.goTo(null, surah, ayah, null);
         } else {
-            this.log(`[X] Invalid verse format: ${key}. Use format surah:verse (e.g., 18:10)`);
+            this.log(`[X] Invalid key format: ${key}. Use format surah:ayah (e.g., 18:10)`);
         }
     }
 

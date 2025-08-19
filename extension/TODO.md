@@ -2,17 +2,10 @@
 - Currently for out of bounds control panel input, we have an empty element
 - Tests
 - Footnote dropdown
-- Bring UI and Quran State truly together
-- Unescape quotes in translation
-* Fix reload 
 - findSurahFromPage
-  - mushaf should behave like a superset of the other modes
-- Better notifications for the backend in the extension
-- The keybinds 1, 2, 3 are not Mushaf, Context, Surah like the code
-- standardize (chapter, verse) -> (surah, ayah)
+* Better notifications for the backend in the extension
 - What is the word sub-field in uthmani-wbw.json?
-- Mushaf mode should be (surah, ayah) XOR (page) not OR
-- Show the page number input just for the mushaf mode
+- (surah, ayah) XOR (page) not OR will make the control panel simple
 - Fix css classes
-- Fix the order of params in quranModule.goTo
 - Simple logging functions to write to the user and the console properly
+- Out of bounds ayah access

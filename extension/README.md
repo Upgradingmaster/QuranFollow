@@ -39,14 +39,14 @@ A Firefox extension that brings the Quran locator functionality to your browser 
 
 3. **Use the interface** exactly like the web version:
    - Load audio files or use the default recitation
-   - Navigate by page, verse, or surah
+   - Navigate by page, ayah, or surah
    - Use "Analyse current position" for ASR functionality
 
 ## Features
 
 - ✅ Complete Quran text rendering
 - ✅ Page navigation (1-604)
-- ✅ Verse context viewing
+- ✅ Ayah context viewing
 - ✅ Full surah rendering
 - ✅ Audio playback and ASR analysis
 - ✅ All original functionality preserved

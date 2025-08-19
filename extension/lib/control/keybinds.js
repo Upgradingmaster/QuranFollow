@@ -215,10 +215,10 @@ export class GlobalKeybinds {
         this.bind('3', 'setMode', 'Switch to Surah view', ['surah']);
 
         // Quick navigation
-        this.bind('j', 'nextItem', 'Next verse/page');
-        this.bind('k', 'previousItem', 'Previous verse/page');
-        this.bind('ArrowDown', 'nextItem', 'Next verse/page');
-        this.bind('ArrowUp', 'previousItem', 'Previous verse/page');
+        this.bind('j', 'nextItem', 'Next');
+        this.bind('k', 'previousItem', 'Previous');
+        this.bind('ArrowDown', 'nextItem', 'Next');
+        this.bind('ArrowUp', 'previousItem', 'Previous');
         
         // UI controls
         this.bind('Ctrl+p', 'toggleControlPanel', 'Toggle control panel');

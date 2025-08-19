@@ -5,7 +5,7 @@
 import {
     getSurahName,
     getWords,
-    getVerse,
+    getAyah,
     getPage,
     getTranslation,
 } from './data.js';
@@ -14,7 +14,7 @@ import {
 // Mushaf Rendering
 // ============================================================================
 
-function generateMushafPageHTML(page, surah = null, ayah = null, opts = {}) {
+function generateMushafModeHTML(page, surah = null, ayah = null, opts = {}) {
     const pageData = getPage(page);
     if (!pageData.length) {
         return { html: `<div class="error">Page ${page} not found</div>`, setupInteractions: null };
@@ -24,14 +24,8 @@ function generateMushafPageHTML(page, surah = null, ayah = null, opts = {}) {
 
     pageData.forEach(line => {
         let lineElement = '<div class="arabic-text line';
-
-        // Add line type class
-        lineElement += ` ${line.line_type}`;
-
-        if (line.is_centered) {
-            lineElement += ' centered';
-        }
-
+        lineElement += ` type-${line.line_type}`;
+        if (line.is_centered) { lineElement += ' centered'; }
         lineElement += '">';
 
         // Render content based on line type
@@ -40,21 +34,21 @@ function generateMushafPageHTML(page, surah = null, ayah = null, opts = {}) {
                 lineElement += `سورۃ ${getSurahName(line.surah_number)}`;
                 break;
 
+            case 'basmallah':
+                lineElement += '﷽';
+                break;
+
             case 'ayah':
                 if (line.first_word_id && line.last_word_id) {
                     const words = getWords(line.first_word_id, line.last_word_id);
 
                     for (const [wordId, word] of words.entries()) {
-                        const highlight = opts.highlightCurrentVerse && surah && ayah && word.surah === surah && word.ayah === ayah
+                        const highlight = opts.highlightCurrentAyah && surah && ayah && word.surah === surah && word.ayah === ayah
 
-                        const cssClass = highlight ? 'word target-verse' : 'word';
+                        const cssClass = highlight ? 'word focused-ayah' : 'word';
                         lineElement += `<span class="${cssClass}" data-word-id="${wordId}" data-surah="${word.surah}" data-ayah="${word.ayah}">${word.text} </span>`;
                     }
                 }
-                break;
-
-            case 'basmallah':
-                lineElement += '﷽';
                 break;
 
             default:
@@ -67,7 +61,7 @@ function generateMushafPageHTML(page, surah = null, ayah = null, opts = {}) {
 
     html += '</div>';
     
-    // Setup function for verse highlighting
+    // Setup function for ayah highlighting
     const setupInteractions = (quranContainer) => {
         const words = quranContainer.querySelectorAll('.word');
         words.forEach(word => {
@@ -75,16 +69,16 @@ function generateMushafPageHTML(page, surah = null, ayah = null, opts = {}) {
                 const surah = word.dataset.surah;
                 const ayah = word.dataset.ayah;
 
-                // Highlight all words in the same verse
-                const verseWords = quranContainer.querySelectorAll(`[data-surah="${surah}"][data-ayah="${ayah}"]`);
-                verseWords.forEach(verseWord => {
-                    verseWord.classList.add('verse-highlighted');
+                // Highlight all words in the same ayah
+                const ayahWords = quranContainer.querySelectorAll(`[data-surah="${surah}"][data-ayah="${ayah}"]`);
+                ayahWords.forEach(ayahWord => {
+                    ayahWord.classList.add('mushaf-ayah-highlighted');
                 });
             });
             word.addEventListener('mouseleave', () => {
-                const highlightedWords = quranContainer.querySelectorAll('.verse-highlighted');
+                const highlightedWords = quranContainer.querySelectorAll('.mushaf-ayah-highlighted');
                 highlightedWords.forEach(highlightedWord => {
-                    highlightedWord.classList.remove('verse-highlighted');
+                    highlightedWord.classList.remove('mushaf-ayah-highlighted');
                 });
             });
         });
@@ -98,23 +92,23 @@ function generateMushafPageHTML(page, surah = null, ayah = null, opts = {}) {
 // Context Rendering
 // ============================================================================
 
-function generateVerseWithContextHTML(surahNumber, verseNumber, opts = {}) {
-    const startVerse = Math.max(1, verseNumber - opts.contextBefore);
-    const endVerse = verseNumber + opts.contextAfter;
+function generateContextModeHTML(surahNumber, ayahNumber, opts = {}) {
+    const startAyah = Math.max(1, ayahNumber - opts.contextBefore);
+    const endAyah = ayahNumber + opts.contextAfter;
 
-    let verses = [];
-    for (let ayah = startVerse; ayah <= endVerse; ayah++) {
-        const verseKey = `${surahNumber}:${ayah}`;
-        const verse = getVerse(verseKey);
-        if (verse) {
-            verses.push(verse);
+    let ayahs = [];
+    for (let ayahIdx = startAyah; ayahIdx <= endAyah; ayahIdx++) {
+        const ayahKey = `${surahNumber}:${ayahIdx}`;
+        const ayah = getAyah(ayahKey);
+        if (ayah) {
+            ayahs.push(ayah);
         }
     }
 
-    let html = '<div class="quran-container verse-context-container">';
+    let html = '<div class="quran-container ayah-context-container">';
 
-    const shouldIncludeSurahName = startVerse === 1;
-    const shouldIncludeBismillah = startVerse === 1 && surahNumber !== 1 && surahNumber !== 9; // TODO: basmallah not Al-Fatiha or At-Tawbah?
+    const shouldIncludeSurahName = startAyah === 1;
+    const shouldIncludeBismillah = startAyah === 1 && surahNumber !== 1 && surahNumber !== 9; // TODO: basmallah not Al-Fatiha or At-Tawbah?
 
     if (shouldIncludeSurahName) {
         html += '<div class="surah-header">';
@@ -124,16 +118,16 @@ function generateVerseWithContextHTML(surahNumber, verseNumber, opts = {}) {
     }
 
     if (shouldIncludeBismillah) {
-        html += '<div class="verse bismillah">';
+        html += '<div class="ayah bismillah">';
         html += '<div class="arabic-text">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</div>';
         html += '</div>';
     }
     
-    // Render each verse
-    verses.forEach(verse => {
-        const highlight = opts.highlightCurrentVerse && verse.ayah === verseNumber;
-        const cssClass = highlight ? 'verse target-verse' : 'verse';
-        html += generateVerseHTML(verse, cssClass, true);
+    // Render each ayah
+    ayahs.forEach(ayah => {
+        const highlight = opts.highlightCurrentAyah && ayah.ayah === ayahNumber;
+        const cssClass = highlight ? 'ayah focused-ayah' : 'ayah';
+        html += generateAyahHTML(ayah, cssClass, true);
     });
     
     html += '</div>';
@@ -145,20 +139,20 @@ function generateVerseWithContextHTML(surahNumber, verseNumber, opts = {}) {
 // Surah Rendering
 // ============================================================================
 
-function generateSurahHTML(surahNumber, verseNumber = null, opts = {}) {
-    // Get all verses for this surah
-    const surahVerses = [];
-    let verseIndex = 1;
+function generateSurahModeHTML(surahNumber, ayahNumber = null, opts = {}) {
+    // Get all ayahs for this surah
+    const surahAyahs = [];
+    let ayahIndex = 1;
     while (true) {
-        const verseKey = `${surahNumber}:${verseIndex}`;
-        const verse = getVerse(verseKey);
-        if (!verse) break;
-        surahVerses.push(verse);
-        verseIndex++;
+        const ayahKey = `${surahNumber}:${ayahIndex}`;
+        const ayah = getAyah(ayahKey);
+        if (!ayah) break;
+        surahAyahs.push(ayah);
+        ayahIndex++;
     }
 
-    if (surahVerses.length === 0) {
-        return `<div class="error">No verses found for surah ${surahNumber}</div>`;
+    if (surahAyahs.length === 0) {
+        return `<div class="error">No ayahs found for surah ${surahNumber}</div>`;
     }
 
     // Generate HTML
@@ -172,18 +166,18 @@ function generateSurahHTML(surahNumber, verseNumber = null, opts = {}) {
     
     // Add Bismillah if needed (not for Al-Fatiha or At-Tawbah)
     if (surahNumber !== 1 && surahNumber !== 9) {
-        html += '<div class="verse bismillah">';
-        html += '<div class="verse-content">';
+        html += '<div class="ayah bismillah">';
+        html += '<div class="ayah-content">';
         html += '<div class="arabic-text">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</div>';
         html += '</div>';
         html += '</div>';
     }
 
-    // Render each verse
-    surahVerses.forEach(verse => {
-        const highlight = opts.highlightCurrentVerse && verse.ayah === verseNumber;
-        const cssClass = highlight ? 'verse target-verse' : 'verse';
-        html += generateVerseHTML(verse, cssClass, false);
+    // Render each ayah
+    surahAyahs.forEach(ayah => {
+        const highlight = opts.highlightCurrentAyah && ayah.ayah === ayahNumber;
+        const cssClass = highlight ? 'ayah focused-ayah' : 'ayah';
+        html += generateAyahHTML(ayah, cssClass, false);
     });
 
     html += '</div>';
@@ -192,7 +186,7 @@ function generateSurahHTML(surahNumber, verseNumber = null, opts = {}) {
 }
 
 // ============================================================================
-// Single Verse Rendering
+// Single Ayah Rendering
 // ============================================================================
 
 // returns { globalId: localId }
@@ -217,20 +211,22 @@ function generateFootnote(header, body) {
 }
 
 
-function generateVerseHTML(verse, cssClass = 'verse', showFullReference = false) {
-    const verseText = verse.text;
-    const verseKey = `${verse.surah}:${verse.ayah}`;
+function generateAyahHTML(ayah, cssClass = 'ayah', showFullReference = false) {
+    const ayahText = ayah.text;
+    const ayahSurah = ayah.surah;
+    const ayahAyah = ayah.ayah;
+    const ayahKey = `${ayahSurah}:${ayahAyah}`;
 
-    const translation = getTranslation(verseKey);
+    const translation = getTranslation(ayahKey);
     let translationText = translation.text ? translation.text : '';
-    const verseNumberText = showFullReference ? verseKey : `${verse.ayah}`;
+    const ayahNumberText = showFullReference ? ayahKey : `${ayahAyah}`;
 
-    let html = `<div class="${cssClass}" data-surah="${verse.surah}" data-ayah="${verse.ayah}">
-                    <div class="verse-metadata">
-                        <div class="verse-number">${verseNumberText}</div>
+    let html = `<div class="${cssClass}" data-surah="${ayahSurah}" data-ayah="${ayahAyah}">
+                    <div class="ayah-metadata">
+                        <div class="ayah-number">${ayahNumberText}</div>
                     </div>
-                    <div class="verse-content">
-                        <div class="arabic-text">${verseText}</div>
+                    <div class="ayah-content">
+                        <div class="arabic-text">${ayahText}</div>
                         <div class="translation-text">${translationText}</div>`;
 
     if (translation.footnotes) {
@@ -252,8 +248,7 @@ function generateVerseHTML(verse, cssClass = 'verse', showFullReference = false)
 
 
 export {
-    // HTML generation functions
-    generateMushafPageHTML,
-    generateVerseWithContextHTML,
-    generateSurahHTML,
+    generateMushafModeHTML,
+    generateContextModeHTML,
+    generateSurahModeHTML,
 };

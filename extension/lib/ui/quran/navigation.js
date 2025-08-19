@@ -1,9 +1,91 @@
-// ============================================================================
-// Quran DOM Query Utilities
-// ============================================================================
 import { QuranState } from './state.js';
 
-function findVerseElements(surah, ayah, all = false) {
+
+// ============================================================================
+// Scrolling
+// ============================================================================
+function scrollToFocusedAyah(delay = 100) {
+    if (!QuranState.isReady()) { // TODO: remove?
+        return;
+    }
+
+    setTimeout(() => {
+        const focusedElement = findFocusedAyahElement();
+        if (focusedElement) {
+            focusedElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+    }, delay);
+}
+
+function scrollToAyah(surah, ayah, delay = 100) {
+    if (!QuranState.isReady()) {
+        return;
+    }
+
+    setTimeout(() => {
+        const ayahElement = findAyahElements(surah, ayah, false);
+
+        if (ayahElement) {
+            ayahElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+    }, delay);
+}
+
+// ============================================================================
+// Focused Ayah Management
+// ============================================================================
+
+function setFocusedAyah(newFocusedAyah, scrollIntoView = true) {
+    try {
+        if (!QuranState.isReady()) { // TODO: remove?
+            console.error('Rendering state not ready. Render content first.');
+            return false;
+        }
+
+        const currentSurah = QuranState.getSurah();
+        const currentAyah  = QuranState.getAyah();
+        
+        // Remove existing focused ayah styling
+        if (currentAyah !== null) {
+            const focusedElement = findFocusedAyahElement();
+            if (focusedElement) {
+                focusedElement.classList.remove('focused-ayah');
+            }
+        }
+        
+        // Add new focused ayah styling
+        if (newFocusedAyah !== null) {
+            const newFocusedElement = findAyahElements(currentSurah, newFocusedAyah, false);
+            if (newFocusedElement) {
+                newFocusedElement.classList.add('focused-ayah');
+            }
+
+            // Scroll to the new focused ayah
+            if (scrollIntoView) {
+                scrollToFocusedAyah(true, 100);
+            }
+        }
+        
+        // Update state
+        QuranState.setAyah(newFocusedAyah);
+        return true;
+    } catch (error) {
+        console.error('Error setting focused ayah:', error.message);
+        return false;
+    }
+}
+
+// ============================================================================
+// DOM Query Utilities
+// ============================================================================
+
+function findAyahElements(surah, ayah, all = false) {
     if (!QuranState.isReady()) {
         return all ? [] : null;
     }
@@ -18,101 +100,17 @@ function findVerseElements(surah, ayah, all = false) {
     }
 }
 
-function findTargetVerseElement() {
+function findFocusedAyahElement() {
     if (!QuranState.isReady()) {
         return null;
     }
 
     const containerElement = QuranState.getContainerElement();
-    return containerElement.querySelector('.target-verse');
-}
-
-// ============================================================================
-// Scrolling
-// ============================================================================
-function scrollToTargetVerse(delay = 100) {
-    if (!QuranState.isReady()) { // TODO: remove?
-        return;
-    }
-
-    setTimeout(() => {
-        const targetElement = findTargetVerseElement();
-        if (targetElement) {
-            targetElement.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
-        }
-    }, delay);
-}
-
-function scrollToVerse(surah, ayah, delay = 100) {
-    if (!QuranState.isReady()) {
-        return;
-    }
-
-    setTimeout(() => {
-        const verseElement = findVerseElements(surah, ayah, false);
-        if (verseElement) {
-            verseElement.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
-        }
-    }, delay);
-}
-
-// ============================================================================
-// Target Verse Management
-// ============================================================================
-
-// TODO: naming
-function setTargetVerse(newTargetVerse, scrollIntoView = true) {
-    try {
-        if (!QuranState.isReady()) { // TODO: remove?
-            console.error('Rendering state not ready. Render content first.');
-            return false;
-        }
-
-        const currentSurah = QuranState.getSurah();
-        const currentAyah  = QuranState.getAyah();
-        
-        // Remove existing target verse styling
-        if (currentAyah !== null) {
-            const targetElement = findTargetVerseElement();
-            if (targetElement) {
-                targetElement.classList.remove('target-verse');
-            }
-        }
-        
-        // Add new target verse styling
-        if (newTargetVerse !== null) {
-            const newTargetElement = findVerseElements(currentSurah, newTargetVerse, false);
-            if (newTargetElement) {
-                newTargetElement.classList.add('target-verse');
-            }
-
-            // Scroll to the new target verse
-            if (scrollIntoView) {
-                scrollToTargetVerse(true, 100);
-            }
-        }
-        
-        // Update state
-        QuranState.setTargetVerse(newTargetVerse);
-        return true;
-    } catch (error) {
-        console.error('Error setting target verse:', error.message);
-        return false;
-    }
+    return containerElement.querySelector('.focused-ayah');
 }
 
 export {
-    findVerseElements,
-    findTargetVerseElement,
+    scrollToFocusedAyah,
 
-    scrollToTargetVerse,
-    scrollToVerse,
-
-    setTargetVerse,
+    setFocusedAyah,
 };

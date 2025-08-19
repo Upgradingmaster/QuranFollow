@@ -66,8 +66,8 @@ export const QuranState = {
         return surah === null || (Number.isInteger(surah) && surah >= 1 && surah <= 114);
     },
 
-    isValidVerse(verse) {
-        return verse === null || (Number.isInteger(verse) && verse >= 1);
+    isValidAyah(ayah) {
+        return ayah === null || (Number.isInteger(ayah) && ayah >= 1);
     },
 
     isValidPage(page) {
@@ -81,7 +81,7 @@ export const QuranState = {
         if (!this.isValidSurah(surah)) {
             throw new Error(`Invalid surah: ${surah}`);
         }
-        if (!this.isValidVerse(ayah)) {
+        if (!this.isValidAyah(ayah)) {
             throw new Error(`Invalid ayah: ${ayah}`);
         }
 
@@ -109,8 +109,8 @@ export const QuranState = {
         console.log('State Changed: ', this._state);
     },
 
-    setTargetVerse(ayah) {
-        if (!this.isValidVerse(ayah)) {
+    setAyah(ayah) {
+        if (!this.isValidAyah(ayah)) {
             throw new Error(`Invalid ayah: ${ayah}`);
         }
 

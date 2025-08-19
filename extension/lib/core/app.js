@@ -42,17 +42,27 @@ export class AppModule {
 
         //TODO: naming
         this.elements = {
-            // Audio elements
-            toggleCaptureBtn      : document.getElementById('toggle-capture'),
-            captureStatus         : document.getElementById('capture-status'),
-            analyzeBtn            : document.getElementById('analyse'),
-
             // UI elements
             quranContainer        : document.getElementById('quran'),
             logel                 : document.getElementById('log'),
 
+            /* Quick Jump */
+            quickJump          : document.getElementById('quick-jump'),
+            quickJumpInput     : document.getElementById('quick-jump-input'),
+            quickJumpClose     : document.getElementById("quick-jump-close"),
+
+            /* Control Panel*/
+            // Modal
+            controlPanel       : document.getElementById('control-panel'),
+            controlPanelToggle : document.getElementById('control-panel-toggle'),
+            controlPanelClose  : document.getElementById('control-panel-close'),
+            // Audio
+            toggleCaptureBtn      : document.getElementById('toggle-capture'),
+            captureStatus         : document.getElementById('capture-status'),
+            analyzeBtn            : document.getElementById('analyse'),
+
+            // Mode
             modeSelect            : document.getElementById('mode-select'),
-            mushafControl        : document.getElementById('controls'),
 
             // Navigation elements
             surahInput      : document.getElementById('surah-input'),
@@ -60,26 +70,6 @@ export class AppModule {
             pageInput       : document.getElementById('page-input'),
             goBtn           : document.getElementById('go'),
 
-            // mushafPageInput       : document.getElementById('mushaf-page-input'),
-            // mushafSurahInput      : document.getElementById('mushaf-surah-input'),
-            // mushafVerseInput      : document.getElementById('mushaf-verse-input'),
-            // loadPageBtn           : document.getElementById('mushaf-load'),
-            //
-            // contextSurahInput     : document.getElementById('context-surah-input'),
-            // contextVerseInput     : document.getElementById('context-verse-input'),
-            // loadContextVerseBtn   : document.getElementById('context-load'),
-            //
-            // surahNumberInput      : document.getElementById('surah-number-input'),
-            // surahVerseInput       : document.getElementById('surah-verse-input'),
-            // loadSurahBtn          : document.getElementById('surah-load'),
-
-            // Modal elements
-            controlPanel       : document.getElementById('control-panel'),
-            controlPanelToggle : document.getElementById('control-panel-toggle'),
-            controlPanelClose  : document.getElementById('control-panel-close'),
-            quickJump          : document.getElementById('quick-jump'),
-            quickJumpInput     : document.getElementById('quick-jump-input'),
-            quickJumpClose     : document.getElementById("quick-jump-close")
         };
     }
 

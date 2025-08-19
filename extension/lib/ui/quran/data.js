@@ -18,7 +18,7 @@ const SURAH_NAMES = {
 
 
 // Quran Data paths
-const versesPath      = '../data/scripts/uthmani-aba.json'
+const ayatPath      = '../data/scripts/uthmani-aba.json'
 const wordsPath       = '../data/scripts/uthmani-wbw.json'
 const pagesPath       = '../data/pages/uthmani.json'
 const translationPath = '../data/translations/si-footnotes.json'
@@ -27,7 +27,7 @@ const translationPath = '../data/translations/si-footnotes.json'
 let wordsData = null;
 let pagesData = null;
 let surahNames = null;
-let versesData = null;
+let ayatData = null;
 let translationData = null;
 
 /**
@@ -48,19 +48,19 @@ async function loadWordsData() {
 }
 
 /**
- * Loads verses data from the JSON file
- * @returns {Promise<Object>} Verses data indexed by surah:ayah key
+ * Loads ayah data from the JSON file
+ * @returns {Promise<Object>} Ayat data indexed by surah:ayah key
  */
-async function loadVersesData() {
-    if (versesData) return versesData;
+async function loadAyatData() {
+    if (ayatData) return ayatData;
 
     try {
-        const response = await fetch(versesPath);
-        versesData     = await response.json();
-        console.log(`[Data] Loaded ${Object.keys(versesData).length} verses from ${versesPath}`);
-        return versesData;
+        const response = await fetch(ayatPath);
+        ayatData       = await response.json();
+        console.log(`[Data] Loaded ${Object.keys(ayatData).length} ayat from ${ayatPath}`);
+        return ayatData;
     } catch (error) {
-        console.error('Failed to load verses data:', error);
+        console.error('Failed to load ayat data:', error);
         throw error;
     }
 }
@@ -82,10 +82,6 @@ async function loadPagesData() {
     }
 }
 
-/**
- * Loads translation data from the JSON file
- * @returns {Promise<Object>} Translation data indexed by verse reference (surah:ayah)
- */
 async function loadTranslationData() {
     if (translationData) return translationData;
     try {
@@ -104,7 +100,7 @@ async function initializeQuranData() {
             console.log('Loading Quran data...');
             await Promise.all([
                 loadWordsData(),
-                loadVersesData(),
+                loadAyatData(),
                 loadPagesData(),
                 loadTranslationData()
             ]);
@@ -115,7 +111,7 @@ async function initializeQuranData() {
         }
 }
 
-function getVersesData() { return versesData; }
+function getAyatData() { return ayatData; }
 function getWordsData() { return wordsData; }
 function getPagesData() { return pagesData; }
 function getTranslationData() { return translationData; }
@@ -156,12 +152,12 @@ function getWords(firstWordId, lastWordId = null) {
     return words;
 }
 
-function getVerse(verseKey) {
-    if (!versesData) {
+function getAyah(ayah) {
+    if (!ayatData) {
         return {};
     }
 
-    return versesData[verseKey];
+    return ayatData[ayah];
 }
 
 function getPage(pageNumber) {
@@ -172,12 +168,12 @@ function getPage(pageNumber) {
     return pagesData[pageNumber] || [];
 }
 
-function getTranslation(verseKey, unescapeText = true) {
+function getTranslation(ayahKey, unescapeText = true) {
     if (!translationData) {
         return {};
     }
 
-    let translation = { ...translationData[verseKey] }; // TODO: we can actually modify the data and then the next call we can try-catch the JSON.parse()
+    let translation = { ...translationData[ayahKey] };
 
     if (unescapeText) {
         translation.text = JSON.parse(`${translation.text}`)
@@ -203,7 +199,7 @@ function getPageFromKey(surah, ayah) {
         // Check each line on the page
         for (const line of page) {
             if (line.line_type === 'ayah' && line.first_word_id && line.last_word_id) {
-                // Check if any word in this line matches our target verse
+                // Check if any word in this line matches our focused ayah
                 for (let wordId = line.first_word_id; wordId <= line.last_word_id; wordId++) {
                     const word = wordsData[wordId];
                     if (word && word.surah === surah && word.ayah === ayah) {
@@ -239,7 +235,7 @@ export {
 
     getSurahName,
     getWords,
-    getVerse,
+    getAyah,
     getPage,
     getTranslation,
 

@@ -12,16 +12,15 @@ import {
 } from './data.js';
 
 import {
-    generateMushafPageHTML,
-    generateVerseWithContextHTML,
-    generateSurahHTML,
+    generateMushafModeHTML,
+    generateContextModeHTML,
+    generateSurahModeHTML,
 } from './generators.js';
 
 import { 
-    scrollToTargetVerse,
-    scrollToVerse,
+    scrollToFocusedAyah,
 
-    setTargetVerse,
+    setFocusedAyah,
 } from './navigation.js';
 
 export class QuranModule {
@@ -29,7 +28,7 @@ export class QuranModule {
         this.log = dependencies.log;
         this.quranContainer = dependencies.elements.quranContainer;
         this.defaultGoToOpts = {
-            "highlightCurrentVerse" : true,
+            "highlightCurrentAyah" : true,
             "contextBefore"         : 4,
             "contextAfter"          : 4 };
         QuranState.initialize(this.quranContainer);
@@ -61,7 +60,7 @@ export class QuranModule {
         return QuranState.getPage();
     }
 
-    goTo(surah, ayah, mode = null, page = null, opts = this.defaultGoToOpts) {
+    goTo(mode, surah, ayah, page, opts = this.defaultGoToOpts) {
         // Ensure all params exist
 
         // Surah
@@ -80,7 +79,7 @@ export class QuranModule {
             else      { ayah = QuranState.getAyah()      }
         }
         if (ayah < 1) { // TODO use validation.js and there we need to validate this better
-            this.log(`[X] Invalid verse number: ${ayah}. Please enter a positive number.`);
+            this.log(`[X] Invalid ayah number: ${ayah}. Please enter a positive number.`);
             return;
         }
 
@@ -115,73 +114,73 @@ export class QuranModule {
         if (needsNewRender) {
             switch (mode) {
                 case 'mushaf':
-                this.renderMushafPage(surah, ayah, page, opts);
+                this.renderMushafMode(surah, ayah, page, opts);
                 break;
             case 'context':
-                this.renderVerseWithContext(surah, ayah, page, opts);
+                this.renderContextMode(surah, ayah, page, opts);
                 break;
             case 'surah':
-                this.renderSurah(surah, ayah, page, opts);
+                this.renderSurahMode(surah, ayah, page, opts);
                 break;
             }
         } else {
-            // Just update target verse if we're in the same mode and context
+            // Just update focused ayah if we're in the same mode and context
             if (currentAyah !== ayah) {
-                const success = this.setTargetVerse(ayah);
+                const success = setFocusedAyah(ayah);
                 if (success) {
                     this.log(`Move to ayah ${ayah}`);
                 } else {
-                    this.log(`[X] Failed to switch to verse ${ayah}`);
-                    console.error('setTargetVerse() failed')
+                    this.log(`[X] Failed to switch to ayah ${ayah}`);
+                    console.error('setFocusedAyah() failed')
                 }
             } else {
-                this.scrollToTargetVerse();
-                this.log(`Same verse, ${surah}:${ayah}`);
+                scrollToFocusedAyah();
+                this.log(`Same ayah, ${surah}:${ayah}`);
             }
         }
 
         return QuranState.getStateClone();
     }
 
-    renderMushafPage(surah, ayah, page, opts = {}) {
+    renderMushafMode(surah, ayah, page, opts = {}) {
         this.log(`Loading page ${page}...`);
         try {
-            const { html, setupInteractions } = generateMushafPageHTML(page, surah, ayah, opts);
+            const { html, setupInteractions } = generateMushafModeHTML(page, surah, ayah, opts);
             this.quranContainer.innerHTML = html;
             if (setupInteractions) { setupInteractions(this.quranContainer); }
             QuranState.setState('mushaf', surah, ayah, page);
             this.log(`Loaded  page ${page}`);
-            if (opts.highlightCurrentVerse) { scrollToTargetVerse(); }
+            if (opts.highlightCurrentAyah) { scrollToFocusedAyah(); }
         } catch (error) {
             this.log(`[X] failed to load page ${page}: `);
             console.error(error);
         }
     }
 
-    renderVerseWithContext(surah, ayah, page, opts = {}) {
+    renderContextMode(surah, ayah, page, opts = {}) {
         const locText = `${surah}:${ayah}`
         this.log(`Loading ${locText}...`);
         try {
-            const html = generateVerseWithContextHTML(surah, ayah, opts);
+            const html = generateContextModeHTML(surah, ayah, opts);
             this.quranContainer.innerHTML = html;
             QuranState.setState('context', surah, ayah, page, opts);
             this.log(`Loaded  ${locText}`);
-            if (opts.highlightCurrentVerse) { scrollToTargetVerse(); }
+            if (opts.highlightCurrentAyah) { scrollToFocusedAyah(); }
         } catch (error) {
-            this.log(`[X] Failed to load verse ${surah}:${ayah}`);
+            this.log(`[X] Failed to load ayah ${surah}:${ayah}`);
             console.error(error);
         }
     }
 
-    renderSurah(surah, ayah, page, opts = {}) {
+    renderSurahMode(surah, ayah, page, opts = {}) {
         const locText = `${surah}:${ayah ? ayah : '1'}`;
         this.log(`Loading ${locText}...`);
         try {
-            const html = generateSurahHTML(surah, ayah, opts);
+            const html = generateSurahModeHTML(surah, ayah, opts);
             this.quranContainer.innerHTML = html;
             QuranState.setState('surah', surah, ayah, page);
             this.log(`Loaded  ${locText}`);
-            if (opts.highlightCurrentVerse) { scrollToTargetVerse(); }
+            if (opts.highlightCurrentAyah) { scrollToFocusedAyah(); }
 
         } catch (error) {
             this.log(`[X] Failed to load ${locText}`);
@@ -189,54 +188,11 @@ export class QuranModule {
         }
     }
 
-    // TODO: use goTo instead
     reload() {
-        const currentState = QuranState.getStateClone();
-        const mode = currentState.mode;
-        switch (mode) {
-            case 'surah':
-                this.modules.quranModule.renderSurah(currentState.surah, currentState.ayah);
-                break;
-            case 'context':
-                this.modules.quranModule.renderVerseWithContext(currentState.surah, currentState.ayah);
-                break;
-            case 'mushaf':
-            this.modules.quranModule.renderMushafPage(currentState.page, currentState.surah, currentState.ayah);
-                break;
-            default:
-                console.error('Unsupported mode!');
-        }
-    }
-
-    // ========================================================================
-    // Target Verse Management
-    // ========================================================================
-
-    /**
-     * Set the target verse for highlighting
-     * @param {number} verseNumber - Verse number to target
-     * @returns {boolean} - Success status
-     */
-    setTargetVerse(verseNumber) {
-        return setTargetVerse(verseNumber);
-    }
-
-    // ========================================================================
-    // Navigation and Scrolling
-    // ========================================================================
-
-    /**
-     * Scroll to the current target verse
-     */
-    scrollToTargetVerse() {
-        return scrollToTargetVerse();
-    }
-
-    scrollToVerse(surahNumber, verseNumber) {
-        return scrollToVerse(surahNumber, verseNumber);
+        this.goTo(null, null, null, null);
     }
 
     getDefaultGoToOpts() {
-        return structuredClone(this.defaultGoToOpts);
+        return { ...this.defaultGoToOpts };
     }
 }
