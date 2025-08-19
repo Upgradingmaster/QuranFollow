@@ -3,88 +3,48 @@ import {
     getKeyFromPage
 } from './data.js';
 
-//TODO: remove the useless properties
+import {
+    isValidMode,
+    isValidSurah,
+    isValidAyah,
+    isValidPage,
+} from './validation.js'
+
 export const QuranState = {
     // Private state
     _state: {
-        mode: null, // 'mushaf', 'context', 'surah'
-        surah: null,
-        ayah: null,
-        page: null,
-        contextBefore: null, // for context mode
-        contextAfter: null, // for context mode
-        quranContainer: null,
-        lastUpdated: null
-    },
-
-    initialize(quranContainer) {
-        this._state.mode           = null;
-        this._state.surah          = 1;
-        this._state.ayah           = 1;
-        this._state.page           = 1;
-        this._state.contextBefore  = 4;
-        this._state.contextAfter   = 4;
-        this._state.quranContainer = quranContainer;
-        this._state.lastUpdated    = Date.now();
+        mode          : null, // 'mushaf', 'context', 'surah'
+        surah         : 1,
+        ayah          : 1,
+        page          : 1,
+        contextBefore : 4, // for context mode
+        contextAfter  : 4, // for context mode
+        lastUpdated   : Date.now()
     },
 
     // Getters
     getMode()             { return this._state.mode; },
     getSurah()            { return this._state.surah; },
     getAyah()             { return this._state.ayah; },
-    getContainerElement() { return this._state.quranContainer; },
     getPage()             { return this._state.page; },
-    getContextRange() {
-        return {
-            before: this._state.contextBefore,
-            after: this._state.contextAfter
-        };
-    },
-    getLastUpdated() { return this._state.lastUpdated; },
+    getContextRange()     { return {before: this._state.contextBefore, after: this._state.contextAfter}; },
+    getLastUpdated()      { return this._state.lastUpdated; },
 
-    // Get complete state (immutable copy)
-    getStateClone() { // TODO: structured clone?
-        return {
-            mode          : this._state.mode,
-            surah         : this._state.surah,
-            ayah          : this._state.ayah,
-            page          : this._state.page,
-            contextBefore : this._state.contextBefore,
-            contextAfter  : this._state.contextAfter,
-            lastUpdated   : this._state.lastUpdated,
-            hasContainer  : !!this._state.quranContainer // TODO: redundant
-        };
-    },
-
-    // Validation
-    isValidMode(mode) {
-        const validModes = ['mushaf', 'context', 'surah'];
-        return mode && mode != '' && validModes.includes(mode);
-    },
-
-    isValidSurah(surah) {
-        return surah === null || (Number.isInteger(surah) && surah >= 1 && surah <= 114);
-    },
-
-    isValidAyah(ayah) {
-        return ayah === null || (Number.isInteger(ayah) && ayah >= 1);
-    },
-
-    isValidPage(page) {
-        return page === null || (Number.isInteger(page) && page >= 1 && page <= 604);
+    // Get state (immutable copy)
+    getStateClone() {
+        return structuredClone(this._state);
     },
 
     setState(mode, surah, ayah, page, opts = {}) {
-        if (!this.isValidPage(page)) {
+        if (!isValidPage(page)) {
             throw new Error(`Invalid page: ${page}`);
         }
-        if (!this.isValidSurah(surah)) {
+        if (!isValidSurah(surah)) {
             throw new Error(`Invalid surah: ${surah}`);
         }
-        if (!this.isValidAyah(ayah)) {
+        if (!isValidAyah(ayah)) {
             throw new Error(`Invalid ayah: ${ayah}`);
         }
-
 
         switch (mode) {
         case 'mushaf':
@@ -110,7 +70,7 @@ export const QuranState = {
     },
 
     setAyah(ayah) {
-        if (!this.isValidAyah(ayah)) {
+        if (!isValidAyah(ayah)) {
             throw new Error(`Invalid ayah: ${ayah}`);
         }
 
@@ -118,12 +78,6 @@ export const QuranState = {
         this._state.lastUpdated = Date.now();
     },
 
-    // Check if state is ready for operations //TODO: useless?
-    isReady() {
-        return !!(this._state.mode && this._state.quranContainer);
-    },
-
-    // Clear state
     clear() {
         this._state.mode = null;
         this._state.surah = null;

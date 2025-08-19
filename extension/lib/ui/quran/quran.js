@@ -19,9 +19,15 @@ import {
 
 import { 
     scrollToFocusedAyah,
-
     setFocusedAyah,
 } from './navigation.js';
+
+import {
+    isValidMode,
+    isValidSurah,
+    isValidAyah,
+    isValidPage,
+} from './validation.js'
 
 export class QuranModule {
     constructor(dependencies) {
@@ -31,44 +37,30 @@ export class QuranModule {
             "highlightCurrentAyah" : true,
             "contextBefore"         : 4,
             "contextAfter"          : 4 };
-        QuranState.initialize(this.quranContainer);
     }
 
     async initialize() {
         await initializeQuranData();
     }
 
-
-    /* State */
-    getMode() {
-        return QuranState.getMode();
-    }
-
-    isValidMode(mode) {
-        return QuranState.isValidMode(mode);
-    }
-
-    getSurah() {
-        return QuranState.getSurah();
-    }
-
-    getAyah() {
-        return QuranState.getAyah();
-    }
-
-    getPage() {
-        return QuranState.getPage();
-    }
-
     goTo(mode, surah, ayah, page, opts = this.defaultGoToOpts) {
         // Ensure all params exist
+
+        // Mode
+        if (!mode) {
+            mode = QuranState.getMode();
+        }
+        if (!isValidMode(mode)) {
+            this.log(`[X] Trying to use an invalid mode`);
+            return;
+        }
 
         // Surah
         if (!surah) {
             if (page) { surah = getKeyFromPage(page).surah }
             else      { surah = QuranState.getSurah()      }
         }
-        if (surah < 1 || surah > 114) {
+        if (!isValidSurah(surah)) {
             this.log(`[X] Invalid surah number: ${surah}. Please enter 1-114.`);
             return;
         }
@@ -78,17 +70,8 @@ export class QuranModule {
             if (page) { ayah = getKeyFromPage(page).ayah }
             else      { ayah = QuranState.getAyah()      }
         }
-        if (ayah < 1) { // TODO use validation.js and there we need to validate this better
+        if (!isValidAyah(ayah)) {
             this.log(`[X] Invalid ayah number: ${ayah}. Please enter a positive number.`);
-            return;
-        }
-
-        // Mode
-        if (!mode) {
-            mode = QuranState.getMode();
-        }
-        if (!this.isValidMode(mode)) {
-            this.log(`[X] Trying to use an invalid mode`);
             return;
         }
 
@@ -96,7 +79,7 @@ export class QuranModule {
         if (!page) {
             page = getPageFromKey(surah, ayah);
         }
-        if (page < 1 || page > 604) {
+        if (!isValidPage(page)) {
             this.log(`[X] Invalid page number: ${page}. Please enter 1-604.`);
             return;
         }
@@ -108,7 +91,7 @@ export class QuranModule {
         const needsNewRender = !currentMode || currentMode != mode ||
               (mode === 'surah' && currentSurah !== surah) ||
               (mode === 'context') || // Always re-render for context mode
-              (mode === 'mushaf');    // TODO: Always re-rendering for mushaf to find correct page
+              (mode === 'mushaf');    // TODO: Always re-rendering for mushaf
 
 
         if (needsNewRender) {
@@ -126,7 +109,7 @@ export class QuranModule {
         } else {
             // Just update focused ayah if we're in the same mode and context
             if (currentAyah !== ayah) {
-                const success = setFocusedAyah(ayah);
+                const success = setFocusedAyah(this.quranContainer, ayah);
                 if (success) {
                     this.log(`Move to ayah ${ayah}`);
                 } else {
@@ -134,7 +117,7 @@ export class QuranModule {
                     console.error('setFocusedAyah() failed')
                 }
             } else {
-                scrollToFocusedAyah();
+                scrollToFocusedAyah(this.quranContainer);
                 this.log(`Same ayah, ${surah}:${ayah}`);
             }
         }
@@ -150,7 +133,7 @@ export class QuranModule {
             if (setupInteractions) { setupInteractions(this.quranContainer); }
             QuranState.setState('mushaf', surah, ayah, page);
             this.log(`Loaded  page ${page}`);
-            if (opts.highlightCurrentAyah) { scrollToFocusedAyah(); }
+            if (opts.highlightCurrentAyah) { scrollToFocusedAyah(this.quranContainer); }
         } catch (error) {
             this.log(`[X] failed to load page ${page}: `);
             console.error(error);
@@ -165,7 +148,7 @@ export class QuranModule {
             this.quranContainer.innerHTML = html;
             QuranState.setState('context', surah, ayah, page, opts);
             this.log(`Loaded  ${locText}`);
-            if (opts.highlightCurrentAyah) { scrollToFocusedAyah(); }
+            if (opts.highlightCurrentAyah) { scrollToFocusedAyah(this.quranContainer); }
         } catch (error) {
             this.log(`[X] Failed to load ayah ${surah}:${ayah}`);
             console.error(error);
@@ -180,7 +163,7 @@ export class QuranModule {
             this.quranContainer.innerHTML = html;
             QuranState.setState('surah', surah, ayah, page);
             this.log(`Loaded  ${locText}`);
-            if (opts.highlightCurrentAyah) { scrollToFocusedAyah(); }
+            if (opts.highlightCurrentAyah) { scrollToFocusedAyah(this.quranContainer); }
 
         } catch (error) {
             this.log(`[X] Failed to load ${locText}`);
@@ -194,5 +177,34 @@ export class QuranModule {
 
     getDefaultGoToOpts() {
         return { ...this.defaultGoToOpts };
+    }
+
+    /* State Getters */
+    getMode() {
+        return QuranState.getMode();
+    }
+    getSurah() {
+        return QuranState.getSurah();
+    }
+    getAyah() {
+        return QuranState.getAyah();
+    }
+    getPage() {
+        return QuranState.getPage();
+    }
+
+
+    /* Validation */
+    isValidMode(mode) {
+        return isValidMode(mode);
+    }
+    isValidSurah(surah) {
+        return isValidSurah(surah);
+    }
+    isValidAyah(ayah) {
+        return isValidAyah(ayah);
+    }
+    isValidPage(page) {
+        return isValidPage(page);
     }
 }

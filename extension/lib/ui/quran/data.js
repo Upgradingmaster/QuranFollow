@@ -121,11 +121,6 @@ function getTranslationData() { return translationData; }
 // Utility Functions
 // ============================================================================
 
-/**
- * Gets surah name by number
- * @param {number} surahNumber - Surah number (1-114)
- * @returns {string} Surah name or empty string if invalid
- */
 function getSurahName(surahNumber) {
     return SURAH_NAMES[surahNumber] || '';
 }

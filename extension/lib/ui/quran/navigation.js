@@ -4,13 +4,9 @@ import { QuranState } from './state.js';
 // ============================================================================
 // Scrolling
 // ============================================================================
-function scrollToFocusedAyah(delay = 100) {
-    if (!QuranState.isReady()) { // TODO: remove?
-        return;
-    }
-
+function scrollToFocusedAyah(quranContainer, delay = 100) {
     setTimeout(() => {
-        const focusedElement = findFocusedAyahElement();
+        const focusedElement = findFocusedAyahElement(quranContainer);
         if (focusedElement) {
             focusedElement.scrollIntoView({
                 behavior: 'smooth',
@@ -20,13 +16,9 @@ function scrollToFocusedAyah(delay = 100) {
     }, delay);
 }
 
-function scrollToAyah(surah, ayah, delay = 100) {
-    if (!QuranState.isReady()) {
-        return;
-    }
-
+function scrollToAyah(quranContainer, surah, ayah, delay = 100) {
     setTimeout(() => {
-        const ayahElement = findAyahElements(surah, ayah, false);
+        const ayahElement = findAyahElements(quranContainer, surah, ayah, false);
 
         if (ayahElement) {
             ayahElement.scrollIntoView({
@@ -41,19 +33,14 @@ function scrollToAyah(surah, ayah, delay = 100) {
 // Focused Ayah Management
 // ============================================================================
 
-function setFocusedAyah(newFocusedAyah, scrollIntoView = true) {
+function setFocusedAyah(quranContainer, newFocusedAyah, scrollIntoView = true) {
     try {
-        if (!QuranState.isReady()) { // TODO: remove?
-            console.error('Rendering state not ready. Render content first.');
-            return false;
-        }
-
         const currentSurah = QuranState.getSurah();
         const currentAyah  = QuranState.getAyah();
         
         // Remove existing focused ayah styling
         if (currentAyah !== null) {
-            const focusedElement = findFocusedAyahElement();
+            const focusedElement = findFocusedAyahElement(quranContainer);
             if (focusedElement) {
                 focusedElement.classList.remove('focused-ayah');
             }
@@ -61,14 +48,14 @@ function setFocusedAyah(newFocusedAyah, scrollIntoView = true) {
         
         // Add new focused ayah styling
         if (newFocusedAyah !== null) {
-            const newFocusedElement = findAyahElements(currentSurah, newFocusedAyah, false);
+            const newFocusedElement = findAyahElements(quranContainer, currentSurah, newFocusedAyah, false);
             if (newFocusedElement) {
                 newFocusedElement.classList.add('focused-ayah');
             }
 
             // Scroll to the new focused ayah
             if (scrollIntoView) {
-                scrollToFocusedAyah(true, 100);
+                scrollToFocusedAyah(quranContainer, 100);
             }
         }
         
@@ -85,32 +72,21 @@ function setFocusedAyah(newFocusedAyah, scrollIntoView = true) {
 // DOM Query Utilities
 // ============================================================================
 
-function findAyahElements(surah, ayah, all = false) {
-    if (!QuranState.isReady()) {
-        return all ? [] : null;
-    }
-
-    const containerElement = QuranState.getContainerElement();
+function findAyahElements(quranContainer, surah, ayah, all = false) {
     const selector = `[data-surah="${surah}"][data-ayah="${ayah}"]`;
 
     if (all) {
-        return containerElement.querySelectorAll(selector);
+        return quranContainer.querySelectorAll(selector);
     } else {
-        return containerElement.querySelector(selector);
+        return quranContainer.querySelector(selector);
     }
 }
 
-function findFocusedAyahElement() {
-    if (!QuranState.isReady()) {
-        return null;
-    }
-
-    const containerElement = QuranState.getContainerElement();
-    return containerElement.querySelector('.focused-ayah');
+function findFocusedAyahElement(quranContainer) {
+    return quranContainer.querySelector('.focused-ayah');
 }
 
 export {
     scrollToFocusedAyah,
-
     setFocusedAyah,
 };

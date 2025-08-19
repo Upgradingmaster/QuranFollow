@@ -3,8 +3,8 @@
 - Tests
 - Footnote dropdown
 - findSurahFromPage
-* Better notifications for the backend in the extension
 - What is the word sub-field in uthmani-wbw.json?
+- Better notifications for the backend in the extension
 - (surah, ayah) XOR (page) not OR will make the control panel simple
 - Fix css classes
 - Simple logging functions to write to the user and the console properly
