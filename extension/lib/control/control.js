@@ -20,10 +20,10 @@ export class ControlModule {
         if (!pred) return;
 
         if (pred.status == 'matched') {
-            const surahNumber = parseInt(pred.surah);
-            const ayahNumber = parseInt(pred.ayah);
-            this.log(`Found: ${surahNumber}:${ayahNumber}`);
-            this.modules.quranModule.goTo(surahNumber, ayahNumber);
+            const surah = parseInt(pred.surah);
+            const ayah  = parseInt(pred.ayah);
+            this.log(`Found: ${surah}:${ayah}`);
+            this.goTo(surah, ayah);
         } else {
             this.log("[?] Couldn't find a matching verse")
         }
@@ -57,7 +57,7 @@ export class ControlModule {
     controlPanelGoTo() {
         const { surahInput, ayahInput, pageInput } = this.elements;
 
-        this.goTo(Number(surahInput.value), Number(ayahInput.value), null, Number(pageInput.value));
+        this.goTo(parseInt(surahInput.value), parseInt(ayahInput.value), null, parseInt(pageInput.value));
     }
 
     quickJumpGoTo() {
