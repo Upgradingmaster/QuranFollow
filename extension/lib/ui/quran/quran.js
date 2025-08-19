@@ -39,15 +39,27 @@ export class QuranModule {
         await initializeQuranData();
     }
 
-    isValidMode(mode) {
-        const validModes = ['mushaf', 'context', 'surah'];
-        return mode && mode != '' && validModes.includes(mode);
-    }
 
+    /* State */
     getMode() {
-        return QuranState.getStateClone().mode;
+        return QuranState.getMode();
     }
 
+    isValidMode(mode) {
+        return QuranState.isValidMode(mode);
+    }
+
+    getSurah() {
+        return QuranState.getSurah();
+    }
+
+    getAyah() {
+        return QuranState.getAyah();
+    }
+
+    getPage() {
+        return QuranState.getPage();
+    }
 
     goTo(surah, ayah, mode = null, page = null, opts = this.defaultGoToOpts) {
         // Ensure all params exist
@@ -76,6 +88,10 @@ export class QuranModule {
         if (!mode) {
             mode = QuranState.getMode();
         }
+        if (!this.isValidMode(mode)) {
+            this.log(`[X] Trying to use an invalid mode`);
+            return;
+        }
 
         // Page
         if (!page) {
@@ -88,6 +104,7 @@ export class QuranModule {
 
         const currentMode  = QuranState.getMode();
         const currentSurah = QuranState.getSurah();
+        const currentAyah  = QuranState.getAyah();
 
         const needsNewRender = !currentMode || currentMode != mode ||
               (mode === 'surah' && currentSurah !== surah) ||
@@ -109,7 +126,7 @@ export class QuranModule {
             }
         } else {
             // Just update target verse if we're in the same mode and context
-            if (currentState.targetVerse !== ayah) {
+            if (currentAyah !== ayah) {
                 const success = this.setTargetVerse(ayah);
                 if (success) {
                     this.log(`Move to ayah ${ayah}`);
@@ -122,6 +139,8 @@ export class QuranModule {
                 this.log(`Same verse, ${surah}:${ayah}`);
             }
         }
+
+        return QuranState.getStateClone();
     }
 
     renderMushafPage(surah, ayah, page, opts = {}) {

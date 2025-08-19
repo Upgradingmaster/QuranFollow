@@ -79,5 +79,4 @@ export class ModalModule {
             this.showControlPanel();
         }
     }
-
 }

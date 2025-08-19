@@ -113,11 +113,12 @@ export class AppModule {
             predict: async () => await this.modules.controlModule.predict(),
             
             // Navigation
-            goToMushaf: () =>  this.modules.controlModule.modalGoTo('mushaf'),
-            goToContext: () => this.modules.controlModule.modalGoTo('context'),
-            goToSurah: () => this.modules.controlModule.modalGoTo('surah'),
+            // TODO
+            // goToMushaf: () =>  this.modules.controlModule.modalGoTo('mushaf'),
+            // goToContext: () => this.modules.controlModule.modalGoTo('context'),
+            // goToSurah: () => this.modules.controlModule.modalGoTo('surah'),
 
-            goTo: () => this.modules.controlModule.modalGoTo(),
+            // goTo: () => this.modules.controlModule.modalGoTo(),
             
             // View modes
             setMode: (mode) => this.modules.controlModule.updateMode(mode),
@@ -139,14 +140,14 @@ export class AppModule {
         const { elements } = this;
 
         // Button click handlers
-        elements.toggleCaptureBtn.onclick = () => this.modules.controlModule.toggleAudioCapture();
-        elements.analyzeBtn.onclick = () => this.modules.controlModule.predict();
-        elements.goBtn.onclick = () => this.modules.controlModule.controlPanelGoTo();
-        elements.modeSelect.onchange = async () => this.modules.controlModule.updateMode();
+        elements.toggleCaptureBtn.onclick      = () => this.modules.controlModule.toggleAudioCapture();
+        elements.analyzeBtn.onclick            = () => this.modules.controlModule.predict();
+        elements.goBtn.onclick                 = () => this.modules.controlModule.controlPanelGoTo();
+        elements.modeSelect.onchange           = async () => this.modules.controlModule.updateMode();
 
         // Modal handlers
         elements.toggleControlPanelBtn.onclick = () => this.modules.controlModule.showControlPanel();
-        elements.closeControlPanelBtn.onclick = () => this.modules.controlModule.hideControlPanel();
+        elements.closeControlPanelBtn.onclick  = () => this.modules.controlModule.hideControlPanel();
 
         // Backdrop click
         elements.controlModalBackdrop.onclick = (e) => {
@@ -172,7 +173,7 @@ export class AppModule {
         // Global escape key for modal
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && elements.controlModalBackdrop.classList.contains('show')) {
-                this.modules.uiModule.hideControlPanel();
+                this.modules.controlModule.hideControlPanel();
             }
         });
         

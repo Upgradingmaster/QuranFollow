@@ -14,3 +14,5 @@
 - Mushaf mode should be (surah, ayah) XOR (page) not OR
 - Show the page number input just for the mushaf mode
 - Fix css classes
+- Fix the order of params in quranModule.goTo
+- Simple logging functions to write to the user and the console properly

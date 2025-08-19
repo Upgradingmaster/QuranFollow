@@ -58,7 +58,8 @@ export const QuranState = {
 
     // Validation
     isValidMode(mode) {
-        return ['mushaf', 'context', 'surah'].includes(mode);
+        const validModes = ['mushaf', 'context', 'surah'];
+        return mode && mode != '' && validModes.includes(mode);
     },
 
     isValidSurah(surah) {
