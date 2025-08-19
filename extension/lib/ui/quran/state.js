@@ -1,9 +1,4 @@
 import {
-    getPageFromKey,
-    getKeyFromPage
-} from './data.js';
-
-import {
     isValidMode,
     isValidSurah,
     isValidAyah,

@@ -1,4 +1,4 @@
-export class GlobalKeybinds {
+export class KeybindsModule {
     constructor(options = {}) {
         this.actions = options.actions || {};
         this.enabled = true;

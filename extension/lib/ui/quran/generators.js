@@ -108,7 +108,7 @@ function generateContextModeHTML(surahNumber, ayahNumber, opts = {}) {
     let html = '<div class="quran-container ayah-context-container">';
 
     const shouldIncludeSurahName = startAyah === 1;
-    const shouldIncludeBismillah = startAyah === 1 && surahNumber !== 1 && surahNumber !== 9; // TODO: basmallah not Al-Fatiha or At-Tawbah?
+    const shouldIncludeBismillah = startAyah === 1 && surahNumber !== 1 && surahNumber !== 9; // TODO: verify basmallah required in Al-Fatiha && At-Tawbah?
 
     if (shouldIncludeSurahName) {
         html += '<div class="surah-header">';

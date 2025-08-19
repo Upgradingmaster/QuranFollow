@@ -10,7 +10,6 @@ export class UIModule {
 
     setSelectedMode(mode) {
         this.elements.modeSelect.value = mode;
-        // TODO we can show the page number field for the mushaf mode exclusively here
     }
 
     setControlPanelInputs(surah, ayah, page) {

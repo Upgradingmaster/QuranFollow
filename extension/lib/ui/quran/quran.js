@@ -6,10 +6,12 @@ import { QuranState } from './state.js'
 
 import {
     initializeQuranData,
+} from './data.js';
+
+import {
     getPageFromKey,
     getKeyFromPage,
-
-} from './data.js';
+} from './utils.js'
 
 import {
     generateMushafModeHTML,

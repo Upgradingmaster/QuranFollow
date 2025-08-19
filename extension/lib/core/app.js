@@ -2,7 +2,7 @@ import { QuranModule }    from '../ui/quran/quran.js';
 import { AudioCapture }   from '../audio/capture.js';
 import { AudioModule }    from '../audio/audio.js';
 import { UIModule }       from '../ui/ui.js';
-import { GlobalKeybinds } from '../control/keybinds.js';
+import { KeybindsModule }       from '../control/keybinds.js';
 import { ModalModule }    from '../ui/modal.js';
 import { ControlModule }  from '../control/control.js';
 
@@ -40,7 +40,6 @@ export class AppModule {
 
     initializeElements() {
 
-        //TODO: naming
         this.elements = {
             // UI elements
             quranContainer        : document.getElementById('quran'),
@@ -86,12 +85,11 @@ export class AppModule {
 
         this.modules.audioModule = new AudioModule(dependencies);
 
-        // TODO: this is strange
-        this.globalKeybinds = new GlobalKeybinds({
+        this.keybindsModule = new KeybindsModule({
             actions: this.makeActionTable()
         });
 
-        this.modules.modalModule = new ModalModule(this.globalKeybinds.getHelpText(), this.elements);
+        this.modules.modalModule = new ModalModule(this.keybindsModule.getHelpText(), this.elements);
 
         //TODO: rename control to controller and take this out
         this.modules.controlModule = new ControlModule(dependencies, this.modules);
@@ -218,8 +216,8 @@ export class AppModule {
     }
 
     destroy() {
-        if (this.globalKeybinds) {
-            this.globalKeybinds.destroy();
+        if (this.keybindsModule) {
+            this.keybindsModule.destroy();
         }
         if (this.modules.audioModule) {
             this.modules.audioModule.stopCapture();
