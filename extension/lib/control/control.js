@@ -5,6 +5,14 @@ export class ControlModule {
         this.modules = modules;
     }
 
+    goTo(surah, ayah, mode = null, page = null) {
+        this.surahInput.value = surah;
+        this.ayahInput.value  = ayah;
+        this.pageInput.value  = page;
+        this.goBtn.value      = surah;
+        this.modules.quranModule.goTo(surah, ayah, mode, page);
+    }
+
     loadMushafPage(page, surah, ayah) {
         const { loadPageBtn } = this.elements;
 
@@ -82,6 +90,11 @@ export class ControlModule {
         const verseNumber = surahVerseInput && surahVerseInput.value ? parseInt(surahVerseInput.value) : null;
         
         this.loadSurah(surahNumber, verseNumber);
+    }
+
+    controlPanelGoTo(mode = null) {
+        if (!mode) { mode = this.modules.quranModule.getMode(); }
+        throw new Error("TODO: controlPanelGoTo");
     }
 
     modalGoTo(mode = null) {
@@ -195,28 +208,29 @@ export class ControlModule {
         this.modules.modalModule.toggleHelp();
     }
 
-    //TODO: !! try to perist location on switch of modes, this could be done without changing anything here, but having shared input between modes
-    updateMode(mode = null) {
-        if (mode != null) {
-            this.modules.uiModule.setMode(mode);
-        } else {
-            mode = this.modules.uiModule.updateMode();
+    updateMode(mode, firstRun = false) {
+        if (!mode) { mode = this.modules.uiModule.getSelectedMode(); }
+        if (!this.modules.quranModule.isValidMode(mode)) {
+            throw new Error('Invalid mode');
+        }
+        const currentMode = this.modules.quranModule.getMode();
+        if (mode == currentMode) { return; }
+
+        this.modules.uiModule.setSelectedMode(mode);
+
+        // TODO: this will go away when we have a better startup screen
+        let opts = this.modules.quranModule.getDefaultGoToOpts();
+        if (firstRun) { // don't highlight
+            opts.highlightCurrentVerse = false;
         }
 
-        switch (mode) {
-        case 'mushaf':
-            this.loadMushafPageFromControlPanel();
-            break;
-        case 'context':
-            this.loadVerseWithContextFromControlPanel();
-            break;
-        case 'surah':
-            this.loadSurahFromControlPanel();
-            break;
-        }
+        this.modules.quranModule.goTo(null, null, mode, null, opts);
     }
 
-
+    showStartupScreen(mode) {
+        // TODO: better startup screen
+        this.updateMode(mode, true);
+    }
 
     toggleAudioCapture() {
         this.modules.audioModule.toggleAudioCapture();

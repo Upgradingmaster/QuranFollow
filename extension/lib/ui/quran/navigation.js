@@ -31,7 +31,7 @@ function findTargetVerseElement() {
 // Scrolling
 // ============================================================================
 function scrollToTargetVerse(delay = 100) {
-    if (!QuranState.isReady()) {
+    if (!QuranState.isReady()) { // TODO: remove?
         return;
     }
 
@@ -75,7 +75,7 @@ function setTargetVerse(newTargetVerse, scrollIntoView = true) {
         }
 
         const currentSurah = QuranState.getSurah();
-        const currentTargetVerse = QuranState.getTargetVerse();
+        const currentAyah = QuranState.getAyah();
         
         // Remove existing target verse styling
         if (currentTargetVerse !== null) {

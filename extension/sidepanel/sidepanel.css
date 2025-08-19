@@ -40,7 +40,7 @@ h2 {
     text-shadow: 0 2px 4px var(--sepia-shadow);
 }
 
-input[type="number"] {
+input[type="number"], input[type="text"] {
     background: var(--sepia-paper);
     border: 2px solid var(--sepia-border);
     border-radius: 6px;
@@ -52,7 +52,7 @@ input[type="number"] {
     margin: 0 0.25rem;
 }
 
-input[type="number"]:focus {
+input[type="number"]:focus, input[type="text"]:focus {
     outline: none;
     border-color: var(--sepia-accent);
     box-shadow: 0 0 0 3px rgba(139, 115, 85, 0.1);
@@ -556,7 +556,7 @@ audio {
     opacity: 0.8;
 }
 
-.surah-controls {
+.controls {
     display: flex;
     align-items: center;
     gap: 1rem;

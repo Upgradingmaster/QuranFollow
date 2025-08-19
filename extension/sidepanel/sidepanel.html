@@ -34,9 +34,8 @@
             <button id="analyse" disabled>Analyse Audio</button>
           </div>
         </div>
-        
+
         <div class="control-section">
-          <h3>View Mode</h3>
           <div class="mode-controls">
             <select id="mode-select">
               <option value="surah">Surah</option>
@@ -45,55 +44,35 @@
             </select>
           </div>
         </div>
+
         
-        <div class="control-section" id="mushaf-controls" style="display: none;">
-          <h3>Mushaf View</h3>
-          <div class="mushaf-controls">
+        <div class="control-section">
+          <h3>Navigate</h3>
+          <div class="controls">
+
+            <!-- <div class="input-group"> -->
+            <!--   <label for="key-input">Key:</label> -->
+            <!--   <input type="text" id="key-input" value="" placeholder="eg. 18:3" /> -->
+            <!-- </div> -->
+
             <div class="input-group">
-              <label for="mushaf-page-input">Page:</label>
-              <input type="number" id="mushaf-page-input" min="1" max="604" value="1" />
+              <label for="surah-input">Surah:</label>
+              <input type="number" id="surah-input" min="1" max="114" value="1" />
             </div>
             <div class="input-group">
-              <label for="mushaf-surah-input">Surah:</label>
-              <input type="number" id="mushaf-surah-input" min="1" max="114" value="1" />
+              <label for="ayah-input">Ayah:</label>
+              <input type="number" id="ayah-input" min="1" max="286" value="1" />
             </div>
+
             <div class="input-group">
-              <label for="mushaf-verse-input">Verse:</label>
-              <input type="number" id="mushaf-verse-input" min="1" max="286" value="1" />
+              <label for="page-input">Page:</label>
+              <input class="page-input", type="number" id="page-input" min="1" max="604" value="1" />
             </div>
-            <button id="mushaf-load">Load Page</button>
+
+            <button id="go">Go</button>
           </div>
         </div>
         
-        <div class="control-section" id="context-controls" style="display: none;">
-          <h3>Verse Context</h3>
-          <div class="verse-controls">
-            <div class="input-group">
-              <label for="context-surah-input">Surah:</label>
-              <input type="number" id="context-surah-input" min="1" max="114" value="1" />
-            </div>
-            <div class="input-group">
-              <label for="context-verse-input">Verse:</label>
-              <input type="number" id="context-verse-input" min="1" max="286" value="1" />
-            </div>
-            <button id="context-load">Load Verse</button>
-          </div>
-        </div>
-        
-        <div class="control-section" id="surah-controls">
-          <h3>Surah View</h3>
-          <div class="surah-controls">
-            <div class="input-group">
-              <label for="surah-number-input">Surah:</label>
-              <input type="number" id="surah-number-input" min="1" max="114" value="1" />
-            </div>
-            <div class="input-group">
-              <label for="surah-verse-input">Verse:</label>
-              <input type="number" id="surah-verse-input" min="1" max="286" value="" placeholder="Optional" />
-            </div>
-            <button id="surah-load">Load Surah</button>
-          </div>
-        </div>
       </div>
     </div>
   </div>

@@ -6,7 +6,9 @@ import { QuranState } from './state.js'
 
 import {
     initializeQuranData,
-    findPageContainingVerse,
+    getPageFromKey,
+    getKeyFromPage,
+
 } from './data.js';
 
 import {
@@ -26,40 +28,84 @@ export class QuranModule {
     constructor(dependencies) {
         this.log = dependencies.log;
         this.quranContainer = dependencies.elements.quranContainer;
-        QuranState.setQuranContainer(this.quranContainer);
+        this.defaultGoToOpts = {
+            "highlightCurrentVerse" : true,
+            "contextBefore"         : 4,
+            "contextAfter"          : 4 };
+        QuranState.initialize(this.quranContainer);
     }
 
     async initialize() {
         await initializeQuranData();
     }
 
+    isValidMode(mode) {
+        const validModes = ['mushaf', 'context', 'surah'];
+        return mode && mode != '' && validModes.includes(mode);
+    }
+
     getMode() {
         return QuranState.getStateClone().mode;
     }
 
-    goTo(surah, ayah, mode = null, page = null) {
 
-        const currentState = QuranState.getStateClone();
-        if (mode == null) { mode = currrentState.mode; }
-        const currentMode = currentState.mode;
+    goTo(surah, ayah, mode = null, page = null, opts = this.defaultGoToOpts) {
+        // Ensure all params exist
 
-        // Check if we need to render new content or just update target verse
+        // Surah
+        if (!surah) {
+            if (page) { surah = getKeyFromPage(page).surah }
+            else      { surah = QuranState.getSurah()      }
+        }
+        if (surah < 1 || surah > 114) {
+            this.log(`[X] Invalid surah number: ${surah}. Please enter 1-114.`);
+            return;
+        }
+
+        // Ayah
+        if (!ayah) {
+            if (page) { ayah = getKeyFromPage(page).ayah }
+            else      { ayah = QuranState.getAyah()      }
+        }
+        if (ayah < 1) { // TODO use validation.js and there we need to validate this better
+            this.log(`[X] Invalid verse number: ${ayah}. Please enter a positive number.`);
+            return;
+        }
+
+        // Mode
+        if (!mode) {
+            mode = QuranState.getMode();
+        }
+
+        // Page
+        if (!page) {
+            page = getPageFromKey(surah, ayah);
+        }
+        if (page < 1 || page > 604) {
+            this.log(`[X] Invalid page number: ${page}. Please enter 1-604.`);
+            return;
+        }
+
+        const currentMode  = QuranState.getMode();
+        const currentSurah = QuranState.getSurah();
+
         const needsNewRender = !currentMode || currentMode != mode ||
-              (mode === 'surah' && currentState.surah !== surah) ||
+              (mode === 'surah' && currentSurah !== surah) ||
               (mode === 'context') || // Always re-render for context mode
               (mode === 'mushaf');    // TODO: Always re-rendering for mushaf to find correct page
 
+
         if (needsNewRender) {
             switch (mode) {
-                case 'surah':
-                    this.renderSurah(surah, ayah);
-                    break;
-                case 'context':
-                    this.renderVerseWithContext(surah, ayah);
-                    break;
                 case 'mushaf':
-                    this.renderMushafPage(page, surah, ayah);
-                    break;
+                this.renderMushafPage(surah, ayah, page, opts);
+                break;
+            case 'context':
+                this.renderVerseWithContext(surah, ayah, page, opts);
+                break;
+            case 'surah':
+                this.renderSurah(surah, ayah, page, opts);
+                break;
             }
         } else {
             // Just update target verse if we're in the same mode and context
@@ -78,95 +124,53 @@ export class QuranModule {
         }
     }
 
-    renderMushafPage(page, surah, ayah) {
-        if (!page && !(surah && ayah)) {
-            console.error(`[X] no combination of information to locate the page: got Page: ${page}, Surah: ${surah}, Ayah: ${ayah}`);
-        }
-
-        if (page && (page < 1 || page > 604)) {
-            this.log(`[X] Invalid page number: ${page}. Please enter 1-604.`);
-            return;
-        }
-
-        if (surah && (surah < 1 || surah > 114)) {
-            this.log(`[X] Invalid surah number: ${surah}. Please enter 1-114.`);
-            return;
-        }
-
-        if (ayah && ayah < 1) {
-            this.log(`[X] Invalid verse number: ${ayah}. Please enter a positive number.`);
-            return;
-        }
-
-
-        if (surah && ayah && !page) {
-            page = findPageContainingVerse(surah, ayah);
-        }
-
+    renderMushafPage(surah, ayah, page, opts = {}) {
         this.log(`Loading page ${page}...`);
         try {
-            const { html, setupInteractions } = generateMushafPageHTML(page, surah, ayah);
+            const { html, setupInteractions } = generateMushafPageHTML(page, surah, ayah, opts);
             this.quranContainer.innerHTML = html;
             if (setupInteractions) { setupInteractions(this.quranContainer); }
-            scrollToTargetVerse();
-            QuranState.setMushafState(page);
+            QuranState.setState('mushaf', surah, ayah, page);
             this.log(`Loaded  page ${page}`);
+            if (opts.highlightCurrentVerse) { scrollToTargetVerse(); }
         } catch (error) {
             this.log(`[X] failed to load page ${page}: `);
             console.error(error);
         }
     }
 
-    renderVerseWithContext(surah, ayah, contextBefore = 4, contextAfter = 4, options = {}) {
-        if (isNaN(surah) || surah < 1 || surah > 114) {
-            this.log(`[X] Invalid surah number: ${surah}. Please enter 1-114.`);
-            return;
-        }
-
-        if (isNaN(ayah) || ayah < 1) {
-            this.log(`[X] Invalid verse number: ${ayah}. Please enter a positive number.`);
-            return;
-        }
-
+    renderVerseWithContext(surah, ayah, page, opts = {}) {
         const locText = `${surah}:${ayah}`
         this.log(`Loading ${locText}...`);
         try {
-            const html = generateVerseWithContextHTML(surah, ayah, contextBefore, contextAfter, options);
+            const html = generateVerseWithContextHTML(surah, ayah, opts);
             this.quranContainer.innerHTML = html;
-            scrollToTargetVerse();
-            QuranState.setContextState(surah, ayah, contextBefore, contextAfter);
+            QuranState.setState('context', surah, ayah, page, opts);
             this.log(`Loaded  ${locText}`);
+            if (opts.highlightCurrentVerse) { scrollToTargetVerse(); }
         } catch (error) {
             this.log(`[X] Failed to load verse ${surah}:${ayah}`);
             console.error(error);
         }
     }
 
-    renderSurah(surahNumber, verseNumber = null, options = {}) {
-        if (isNaN(surahNumber) || surahNumber < 1 || surahNumber > 114) {
-            this.log(`[X] Invalid surah number: ${surah}. Please enter 1-114.`);
-            return;
-        }
-
-        if (verseNumber !== null && (isNaN(verseNumber) || verseNumber < 1)) {
-            this.log(`[X] Invalid verse number: ${ayah}. Please enter a positive number.`);
-            return;
-        }
-
-        const locText = `${surahNumber}:${verseNumber ? verseNumber : '1'}`;
+    renderSurah(surah, ayah, page, opts = {}) {
+        const locText = `${surah}:${ayah ? ayah : '1'}`;
         this.log(`Loading ${locText}...`);
         try {
-            const html = generateSurahHTML(surahNumber, verseNumber, options);
+            const html = generateSurahHTML(surah, ayah, opts);
             this.quranContainer.innerHTML = html;
-            scrollToTargetVerse();
-            QuranState.setSurahState(surahNumber, verseNumber);
+            QuranState.setState('surah', surah, ayah, page);
             this.log(`Loaded  ${locText}`);
+            if (opts.highlightCurrentVerse) { scrollToTargetVerse(); }
+
         } catch (error) {
             this.log(`[X] Failed to load ${locText}`);
             console.error(error);
         }
     }
 
+    // TODO: use goTo instead
     reload() {
         const currentState = QuranState.getStateClone();
         const mode = currentState.mode;
@@ -209,27 +213,11 @@ export class QuranModule {
         return scrollToTargetVerse();
     }
 
-    /**
-     * Scroll to a specific verse
-     * @param {number} surahNumber - Surah number
-     * @param {number} verseNumber - Verse number
-     */
     scrollToVerse(surahNumber, verseNumber) {
         return scrollToVerse(surahNumber, verseNumber);
     }
 
-    // ========================================================================
-    // Utility Methods
-    // ========================================================================
-
-    /**
-     * Find which page contains a specific verse
-     * @param {number} surahNumber - Surah number
-     * @param {number} verseNumber - Verse number
-     * @returns {number|null} - Page number containing the verse
-     */
-    findPageContainingVerse(surah, verse) {
-        return findPageContainingVerse(surah, verse);
+    getDefaultGoToOpts() {
+        return structuredClone(this.defaultGoToOpts);
     }
-
 }

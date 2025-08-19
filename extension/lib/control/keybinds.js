@@ -213,10 +213,10 @@ export class GlobalKeybinds {
         this.bind('Ctrl+f', 'goTo', 'Go to a location in the current mode');
         
         // View modes
-        this.bind('1', 'setMode', 'Switch to Surah view', ['surah']);
+        this.bind('1', 'setMode', 'Switch to Mushaf view', ['mushaf']);
         this.bind('2', 'setMode', 'Switch to Context view', ['context']);
-        this.bind('3', 'setMode', 'Switch to Mushaf view', ['mushaf']);
-        
+        this.bind('3', 'setMode', 'Switch to Surah view', ['surah']);
+
         // Quick navigation
         this.bind('j', 'nextItem', 'Next verse/page');
         this.bind('k', 'previousItem', 'Previous verse/page');

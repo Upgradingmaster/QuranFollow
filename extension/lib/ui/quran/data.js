@@ -1,6 +1,4 @@
-// ============================================================================
-// Data
-// ============================================================================
+import { QuranState } from './state.js'
 
 // Surah names in Arabic
 const SURAH_NAMES = {
@@ -136,9 +134,16 @@ function getSurahName(surahNumber) {
     return SURAH_NAMES[surahNumber] || '';
 }
 
-function getWords(firstWordId, lastWordId) {
+function getWords(firstWordId, lastWordId = null) {
     if (!wordsData) {
         return [];
+    }
+    if (!firstWordId) {
+        return [];
+    }
+
+    if (!lastWordId) {
+        return wordsData[firstWordId.toString()];
     }
 
     const words = [];
@@ -181,14 +186,10 @@ function getTranslation(verseKey, unescapeText = true) {
     return translation;
 }
 
-//TODO: can we avoid this, if not optimize
-/**
- * Finds which page contains a specific verse
- * @param {number} surahNumber - Surah number (1-114)
- * @param {number} verseNumber - Verse number within surah
- * @returns {number|null} Page number containing the verse, or null if not found
- */
-function findPageContainingVerse(surahNumber, verseNumber) {
+// TODO: Move  the following fuctions to a seperate module
+function getPageFromKey(surah, ayah) {
+    // TODO: can we avoid this, if not optimize
+
     if (!pagesData || !wordsData) {
         console.error('Pages or words data not loaded');
         return null;
@@ -205,7 +206,7 @@ function findPageContainingVerse(surahNumber, verseNumber) {
                 // Check if any word in this line matches our target verse
                 for (let wordId = line.first_word_id; wordId <= line.last_word_id; wordId++) {
                     const word = wordsData[wordId];
-                    if (word && word.surah === surahNumber && word.ayah === verseNumber) {
+                    if (word && word.surah === surah && word.ayah === ayah) {
                         return pageNumber;
                     }
                 }
@@ -213,9 +214,25 @@ function findPageContainingVerse(surahNumber, verseNumber) {
         }
     }
 
-    console.error('findPageContainingVerse() failed');
+    console.error('getPageFromKey() failed');
     return null;
 }
+
+function getKeyFromPage(pageNumber) {
+    const page = pagesData[pageNumber];
+    let line = 0;
+    while (page[line].line_type != 'ayah') {
+        line++;
+    }
+    const firstAyah = page[line];
+    const firstWord = getWords(firstAyah.first_word_id);
+
+    const surah = firstWord.surah;
+    const ayah  = firstWord.ayah;
+    return { surah, ayah };
+}
+
+
 
 export {
     initializeQuranData,
@@ -228,5 +245,6 @@ export {
 
 
     // Utility functions
-    findPageContainingVerse,
+    getPageFromKey,
+    getKeyFromPage,
 };

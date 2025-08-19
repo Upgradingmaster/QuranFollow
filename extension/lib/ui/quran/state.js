@@ -1,27 +1,39 @@
-//TODO: remove the useless elements
+import {
+    getPageFromKey,
+    getKeyFromPage
+} from './data.js';
+
+//TODO: remove the useless properties
 export const QuranState = {
     // Private state
     _state: {
         mode: null, // 'mushaf', 'context', 'surah'
         surah: null,
         ayah: null,
-        quranContainer: null,
-        page: null, // for mushaf mode
+        page: null,
         contextBefore: null, // for context mode
         contextAfter: null, // for context mode
+        quranContainer: null,
         lastUpdated: null
     },
 
-    setQuranContainer(quranContainer) {
+    initialize(quranContainer) {
+        this._state.mode           = null;
+        this._state.surah          = 1;
+        this._state.ayah           = 1;
+        this._state.page           = 1;
+        this._state.contextBefore  = 4;
+        this._state.contextAfter   = 4;
         this._state.quranContainer = quranContainer;
+        this._state.lastUpdated    = Date.now();
     },
 
     // Getters
-    getMode() { return this._state.mode; },
-    getSurah() { return this._state.surah; },
-    getTargetVerse() { return this._state.ayah; },
+    getMode()             { return this._state.mode; },
+    getSurah()            { return this._state.surah; },
+    getAyah()             { return this._state.ayah; },
     getContainerElement() { return this._state.quranContainer; },
-    getPage() { return this._state.page; },
+    getPage()             { return this._state.page; },
     getContextRange() {
         return {
             before: this._state.contextBefore,
@@ -33,14 +45,14 @@ export const QuranState = {
     // Get complete state (immutable copy)
     getStateClone() { // TODO: structured clone?
         return {
-            mode: this._state.mode,
-            surah: this._state.surah,
-            ayah: this._state.ayah,
-            page: this._state.page,
-            contextBefore: this._state.contextBefore,
-            contextAfter: this._state.contextAfter,
-            lastUpdated: this._state.lastUpdated,
-            hasContainer: !!this._state.quranContainer // TODO: redundant
+            mode          : this._state.mode,
+            surah         : this._state.surah,
+            ayah          : this._state.ayah,
+            page          : this._state.page,
+            contextBefore : this._state.contextBefore,
+            contextAfter  : this._state.contextAfter,
+            lastUpdated   : this._state.lastUpdated,
+            hasContainer  : !!this._state.quranContainer // TODO: redundant
         };
     },
 
@@ -61,8 +73,7 @@ export const QuranState = {
         return page === null || (Number.isInteger(page) && page >= 1 && page <= 604);
     },
 
-    // State setters with validation
-    setMushafState(page, surah = null, ayah = null) {
+    setState(mode, surah, ayah, page, opts = {}) {
         if (!this.isValidPage(page)) {
             throw new Error(`Invalid page: ${page}`);
         }
@@ -73,56 +84,28 @@ export const QuranState = {
             throw new Error(`Invalid ayah: ${ayah}`);
         }
 
-        this._state.mode = 'mushaf';
-        this._state.surah = surah;
-        this._state.ayah = ayah;
-        this._state.page = page;
-        this._state.contextBefore = null;
-        this._state.contextAfter = null;
-        this._state.lastUpdated = Date.now();
-    },
 
-    setContextState(surah, ayah, contextBefore, contextAfter) {
-        if (!this.isValidSurah(surah)) {
-            throw new Error(`Invalid surah: ${surah}`);
-        }
-        if (!this.isValidVerse(ayah)) {
-            throw new Error(`Invalid ayah: ${ayah}`);
-        }
-
-        this._state.mode = 'context';
-        this._state.surah = surah;
-        this._state.ayah = ayah;
-        this._state.page = null;
-        this._state.contextBefore = contextBefore;
-        this._state.contextAfter = contextAfter;
-        this._state.lastUpdated = Date.now();
-    },
-
-    setSurahState(surah, ayah) {
-        if (!this.isValidSurah(surah)) {
-            throw new Error(`Invalid surah: ${surah}`);
-        }
-        if (!this.isValidVerse(ayah)) {
-            throw new Error(`Invalid ayah: ${ayah}`);
-        }
-
-        this._state.mode = 'surah';
-        this._state.surah = surah;
-        this._state.ayah = ayah;
-        this._state.page = null;
-        this._state.contextBefore = null;
-        this._state.contextAfter = null;
-        this._state.lastUpdated = Date.now();
-    },
-
-    setState(mode, state) {
         switch (mode) {
-        case 'mushaf':  this.setMushafState(state.page); break;
-        case 'context': this.setContextState(state.surah, state.ayah, state.contextBefore, state.contextAfter); break;
-        case 'surah':   this.setSurahState(state.surah, state.ayah); break;
-        default: console.error('Unsupported Mode!');
+        case 'mushaf':
+            this._state.mode = 'mushaf';
+            break;
+        case 'context':
+            this._state.mode = 'context';
+            this._state.contextBefore = opts.contextBefore;
+            this._state.contextAfter = opts.contextAfter;
+            break;
+        case 'surah':
+            this._state.mode = 'surah';
+            break;
+        default:
+            console.error('Unsupported Mode!');
         }
+
+        this._state.surah         = surah;
+        this._state.ayah          = ayah;
+        this._state.page          = page;
+        this._state.lastUpdated   = Date.now();
+        console.log('State Changed: ', this._state);
     },
 
     setTargetVerse(ayah) {

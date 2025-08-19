@@ -14,7 +14,7 @@ import {
 // Mushaf Rendering
 // ============================================================================
 
-function generateMushafPageHTML(page, surah = null, ayah = null) {
+function generateMushafPageHTML(page, surah = null, ayah = null, opts = {}) {
     const pageData = getPage(page);
     if (!pageData.length) {
         return { html: `<div class="error">Page ${page} not found</div>`, setupInteractions: null };
@@ -45,10 +45,9 @@ function generateMushafPageHTML(page, surah = null, ayah = null) {
                     const words = getWords(line.first_word_id, line.last_word_id);
 
                     for (const [wordId, word] of words.entries()) {
-                        let cssClass = 'word';
-                        if (surah && ayah && word.surah === surah && word.ayah === ayah) {
-                            cssClass += ' target-verse'; //TODO: what class to give
-                        }
+                        const highlight = opts.highlightCurrentVerse && surah && ayah && word.surah === surah && word.ayah === ayah
+
+                        const cssClass = highlight ? 'word target-verse' : 'word';
                         lineElement += `<span class="${cssClass}" data-word-id="${wordId}" data-surah="${word.surah}" data-ayah="${word.ayah}">${word.text} </span>`;
                     }
                 }
@@ -96,7 +95,104 @@ function generateMushafPageHTML(page, surah = null, ayah = null) {
 
 
 // ============================================================================
-// Shared Verse Rendering
+// Context Rendering
+// ============================================================================
+
+function generateVerseWithContextHTML(surahNumber, verseNumber, opts = {}) {
+    const startVerse = Math.max(1, verseNumber - opts.contextBefore);
+    const endVerse = verseNumber + opts.contextAfter;
+
+    let verses = [];
+    for (let ayah = startVerse; ayah <= endVerse; ayah++) {
+        const verseKey = `${surahNumber}:${ayah}`;
+        const verse = getVerse(verseKey);
+        if (verse) {
+            verses.push(verse);
+        }
+    }
+
+    let html = '<div class="quran-container verse-context-container">';
+
+    const shouldIncludeSurahName = startVerse === 1;
+    const shouldIncludeBismillah = startVerse === 1 && surahNumber !== 1 && surahNumber !== 9; // TODO: basmallah not Al-Fatiha or At-Tawbah?
+
+    if (shouldIncludeSurahName) {
+        html += '<div class="surah-header">';
+        html += `<div class="surah-name">سورۃ ${getSurahName(surahNumber)}</div>`;
+        html += `<div class="surah-number">Surah ${surahNumber}</div>`;
+        html += '</div>';
+    }
+
+    if (shouldIncludeBismillah) {
+        html += '<div class="verse bismillah">';
+        html += '<div class="arabic-text">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</div>';
+        html += '</div>';
+    }
+    
+    // Render each verse
+    verses.forEach(verse => {
+        const highlight = opts.highlightCurrentVerse && verse.ayah === verseNumber;
+        const cssClass = highlight ? 'verse target-verse' : 'verse';
+        html += generateVerseHTML(verse, cssClass, true);
+    });
+    
+    html += '</div>';
+    
+    return html;
+}
+
+// ============================================================================
+// Surah Rendering
+// ============================================================================
+
+function generateSurahHTML(surahNumber, verseNumber = null, opts = {}) {
+    // Get all verses for this surah
+    const surahVerses = [];
+    let verseIndex = 1;
+    while (true) {
+        const verseKey = `${surahNumber}:${verseIndex}`;
+        const verse = getVerse(verseKey);
+        if (!verse) break;
+        surahVerses.push(verse);
+        verseIndex++;
+    }
+
+    if (surahVerses.length === 0) {
+        return `<div class="error">No verses found for surah ${surahNumber}</div>`;
+    }
+
+    // Generate HTML
+    let html = `<div class="quran-container surah-container" data-surah="${surahNumber}">`;
+    
+    // Add Surah header
+    html += '<div class="surah-header">';
+    html += `<div class="surah-name">سورۃ ${getSurahName(surahNumber)}</div>`;
+    html += `<div class="surah-number">Surah ${surahNumber}</div>`;
+    html += '</div>';
+    
+    // Add Bismillah if needed (not for Al-Fatiha or At-Tawbah)
+    if (surahNumber !== 1 && surahNumber !== 9) {
+        html += '<div class="verse bismillah">';
+        html += '<div class="verse-content">';
+        html += '<div class="arabic-text">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</div>';
+        html += '</div>';
+        html += '</div>';
+    }
+
+    // Render each verse
+    surahVerses.forEach(verse => {
+        const highlight = opts.highlightCurrentVerse && verse.ayah === verseNumber;
+        const cssClass = highlight ? 'verse target-verse' : 'verse';
+        html += generateVerseHTML(verse, cssClass, false);
+    });
+
+    html += '</div>';
+    
+    return html;
+}
+
+// ============================================================================
+// Single Verse Rendering
 // ============================================================================
 
 // returns { globalId: localId }
@@ -153,122 +249,7 @@ function generateVerseHTML(verse, cssClass = 'verse', showFullReference = false)
     return html;
 }
 
-// ============================================================================
-// Context Rendering
-// ============================================================================
 
-/**
- * Generates HTML for a single verse with context (surrounding verses)
- * @param {number} surahNumber - Surah number (1-114)
- * @param {number} verseNumber - Verse number within surah (1-based)
- * @param {number} contextBefore - Number of verses before to include
- * @param {number} contextAfter - Number of verses after to include
- * @param {Object} options - Rendering options
- * @returns {string} HTML string of verse with context
- */
-function generateVerseWithContextHTML(surahNumber, verseNumber, contextBefore = 4, contextAfter = 4, options = {}) {
-
-    // Calculate range of verses to include
-    const startVerse = Math.max(1, verseNumber - contextBefore);
-    const endVerse = verseNumber + contextAfter;
-    
-    // Collect verses in the range
-    let versesToRender = [];
-    for (let ayah = startVerse; ayah <= endVerse; ayah++) {
-        const verseKey = `${surahNumber}:${ayah}`;
-        const verse = getVerse(verseKey);
-        if (verse) {
-            versesToRender.push(verse);
-        }
-    }
-
-    // Generate HTML
-    let html = '<div class="quran-container verse-context-container">';
-
-    // TODO: Add surah name if needed
-    // Add Bismillah if needed
-    const shouldIncludeBismillah = startVerse === 1 &&
-          surahNumber !== 1 &&
-          surahNumber !== 9; // If we're starting from verse 1, include Bismillah if not Al-Fatiha or At-Tawbah
-    if (shouldIncludeBismillah) {
-        html += '<div class="verse bismillah">';
-        html += '<div class="arabic-text">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</div>';
-        html += '</div>';
-    }
-    
-    // Render each verse
-    versesToRender.forEach(verse => {
-        const isTarget = verse.ayah === verseNumber;
-        const cssClass = isTarget ? 'verse target-verse' : 'verse';
-        html += generateVerseHTML(verse, cssClass, true);
-    });
-    
-    html += '</div>';
-    
-    return html;
-}
-
-
-// ============================================================================
-// Surah Rendering
-// ============================================================================
-
-/**
- * Generates HTML for an entire surah
- * @param {number} surahNumber - Surah number (1-114)
- * @param {number} targetVerse - Target verse to highlight (optional)
- * @param {Object} options - Rendering options
- * @returns {string} HTML string of rendered surah
- */
-function generateSurahHTML(surahNumber, targetVerse = null, options = {}) {
-    if (surahNumber < 1 || surahNumber > 114) {
-        return `<div class="error">Invalid surah number: ${surahNumber}</div>`;
-    }
-
-    // Get all verses for this surah
-    const surahVerses = [];
-    let verseNumber = 1;
-    while (true) {
-        const verseKey = `${surahNumber}:${verseNumber}`;
-        const verse = getVerse(verseKey);
-        if (!verse) break;
-        surahVerses.push(verse);
-        verseNumber++;
-    }
-
-    if (surahVerses.length === 0) {
-        return `<div class="error">No verses found for surah ${surahNumber}</div>`;
-    }
-
-    // Generate HTML
-    let html = `<div class="quran-container surah-container" data-surah="${surahNumber}">`;
-    
-    // Add Surah header
-    html += '<div class="surah-header">';
-    html += `<div class="surah-name">سورۃ ${getSurahName(surahNumber)}</div>`;
-    html += `<div class="surah-number">Surah ${surahNumber}</div>`;
-    html += '</div>';
-    
-    // Add Bismillah if needed (not for Al-Fatiha or At-Tawbah)
-    if (surahNumber !== 1 && surahNumber !== 9) {
-        html += '<div class="verse bismillah">';
-        html += '<div class="verse-content">';
-        html += '<div class="arabic-text">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</div>';
-        html += '</div>';
-        html += '</div>';
-    }
-
-    // Render each verse
-    surahVerses.forEach(verse => {
-        const isTarget = targetVerse && verse.ayah === targetVerse;
-        const cssClass = isTarget ? 'verse target-verse' : 'verse';
-        html += generateVerseHTML(verse, cssClass, false);
-    });
-
-    html += '</div>';
-    
-    return html;
-}
 
 export {
     // HTML generation functions

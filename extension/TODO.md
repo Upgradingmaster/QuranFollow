@@ -12,3 +12,5 @@
 - standardize (chapter, verse) -> (surah, ayah)
 - What is the word sub-field in uthmani-wbw.json?
 - Mushaf mode should be (surah, ayah) XOR (page) not OR
+- Show the page number input just for the mushaf mode
+- Fix css classes

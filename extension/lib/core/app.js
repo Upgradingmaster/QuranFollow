@@ -52,23 +52,28 @@ export class AppModule {
             logel                 : document.getElementById('log'),
             controlModalBackdrop  : document.getElementById('control-modal-backdrop'),
 
-            // Mode elements
+
             modeSelect            : document.getElementById('mode-select'),
-            mushafControls        : document.getElementById('mushaf-controls'),
-            contextControls       : document.getElementById('context-controls'),
-            surahControls         : document.getElementById('surah-controls'),
+            mushafControl        : document.getElementById('controls'),
 
             // Navigation elements
-            mushafPageInput       : document.getElementById('mushaf-page-input'),
-            mushafSurahInput      : document.getElementById('mushaf-surah-input'),
-            mushafVerseInput      : document.getElementById('mushaf-verse-input'),
-            loadPageBtn           : document.getElementById('mushaf-load'),
-            contextSurahInput     : document.getElementById('context-surah-input'),
-            contextVerseInput     : document.getElementById('context-verse-input'),
-            loadContextVerseBtn   : document.getElementById('context-load'),
-            surahNumberInput      : document.getElementById('surah-number-input'),
-            surahVerseInput       : document.getElementById('surah-verse-input'),
-            loadSurahBtn          : document.getElementById('surah-load'),
+            surahInput      : document.getElementById('surah-input'),
+            ayahInput       : document.getElementById('ayah-input'),
+            pageInput       : document.getElementById('page-input'),
+            goBtn           : document.getElementById('go'),
+
+            // mushafPageInput       : document.getElementById('mushaf-page-input'),
+            // mushafSurahInput      : document.getElementById('mushaf-surah-input'),
+            // mushafVerseInput      : document.getElementById('mushaf-verse-input'),
+            // loadPageBtn           : document.getElementById('mushaf-load'),
+            //
+            // contextSurahInput     : document.getElementById('context-surah-input'),
+            // contextVerseInput     : document.getElementById('context-verse-input'),
+            // loadContextVerseBtn   : document.getElementById('context-load'),
+            //
+            // surahNumberInput      : document.getElementById('surah-number-input'),
+            // surahVerseInput       : document.getElementById('surah-verse-input'),
+            // loadSurahBtn          : document.getElementById('surah-load'),
 
             // Modal elements
             toggleControlPanelBtn : document.getElementById('toggle-control-panel'),
@@ -136,9 +141,7 @@ export class AppModule {
         // Button click handlers
         elements.toggleCaptureBtn.onclick = () => this.modules.controlModule.toggleAudioCapture();
         elements.analyzeBtn.onclick = () => this.modules.controlModule.predict();
-        elements.loadPageBtn.onclick = () => this.modules.controlModule.loadMushafPageFromControlPanel();
-        elements.loadContextVerseBtn.onclick = () => this.modules.controlModule.loadVerseWithContextFromControlPanel();
-        elements.loadSurahBtn.onclick = () => this.modules.controlModule.loadSurahFromControlPanel();
+        elements.goBtn.onclick = () => this.modules.controlModule.controlPanelGoTo();
         elements.modeSelect.onchange = async () => this.modules.controlModule.updateMode();
 
         // Modal handlers
@@ -153,27 +156,17 @@ export class AppModule {
         };
 
         // Keyboard handlers for inputs
-        // Mushaf view
-        elements.mushafPageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.modules.controlModule.loadMushafPageFromControlPanel();
+
+        elements.surahInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.modules.controlModule.controlPanelGoTo();
         });
 
-        //ContextView
-        elements.contextSurahInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.modules.controlModule.loadVerseWithContextFromControlPanel();
+        elements.ayahInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.modules.controlModule.controlPanelGoTo();
         });
 
-        elements.contextVerseInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.modules.controlModule.loadVerseWithContextFromControlPanel();
-        });
-
-        // Surah View
-        elements.surahNumberInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.modules.controlModule.loadSurahFromControlPanel();
-        });
-
-        elements.surahVerseInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.modules.controlModule.loadSurahFromControlPanel();
+        elements.pageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.modules.controlModule.controlPanelGoTo();
         });
 
         // Global escape key for modal
@@ -213,7 +206,7 @@ export class AppModule {
         try {
             await this.initializeModules();
 
-            this.modules.controlModule.updateMode('context');
+            this.modules.controlModule.showStartupScreen('surah');
 
             this.log('Initialization successfully, Press q or F1 help');
 
