@@ -60,59 +60,24 @@ export class ControlModule {
         this.goTo(Number(surahInput.value), Number(ayahInput.value), null, Number(pageInput.value));
     }
 
-    modalGoTo(mode = null) { // TODO:
-        if (!mode) { mode = this.modules.quranModule.getMode(); }
-        const { mushafPageInput,
-                contextSurahInput, contextVerseInput,
-                surahNumberInput, surahVerseInput } = this.elements;
-
-        let prompt, handler;
-        let surah, ayah, page;
-        
-        switch (mode) {
-            case 'mushaf':
-                prompt = 'Enter page number (1-604):';
-                handler = (value) => {
-                    page = parseInt(value);
-                    if (mushafPageInput) mushafPageInput.value = page;
-                };
-                break;
-                
-            case 'context':
-                prompt = 'Enter verse (format: surah:verse, e.g., 18:10):';
-                handler = (value) => {
-                    const parts = value.split(':');
-                    if (parts.length === 2) {
-                        surah = parseInt(parts[0]);
-                        ayah = parseInt(parts[1]);
-                        if (contextSurahInput) contextSurahInput.value = surah;
-                        if (contextVerseInput) contextVerseInput.value = ayah;
-                    } else {
-                        this.log(`[X] Invalid verse format: ${value}. Use format surah:verse (e.g., 18:10)`);
-                    }
-                };
-                break;
-                
-            case 'surah':
-                prompt = 'Enter surah number (1-114):';
-                handler = (value) => {
-                    surah = parseInt(value);
-                    if (surahNumberInput) surahNumberInput.value = surah;
-                };
-                break;
-                
-            default:
-                console.error('Unsupported Mode!');
-                return;
+    quickJumpGoTo() {
+        const key = this.elements.quickJumpInput.value?.trim();
+        if (key && key != '') {
+            this.goToKey(key);
         }
-
-        const result = window.prompt(prompt)?.trim();
-        if (result && result != '') {
-            handler(result);
-            this.modules.quranModule.goTo(surah, ayah, mode, page);
-        }
+        this.hideQuickJump();
     }
 
+    goToKey(key) {
+        const parts = key.split(':');
+        if (parts.length === 2) {
+            let surah = parseInt(parts[0]);
+            let ayah  = parseInt(parts[1]);
+            this.goTo(surah, ayah, null, null);
+        } else {
+            this.log(`[X] Invalid verse format: ${key}. Use format surah:verse (e.g., 18:10)`);
+        }
+    }
 
     reloadQuranView() {
         this.modules.quranModule.reload();
@@ -134,6 +99,18 @@ export class ControlModule {
         this.log('TODO: goToEnd');
     }
 
+
+    showQuickJump() {
+        this.modules.modalModule.showQuickJump();
+    }
+
+    hideQuickJump() {
+        this.modules.modalModule.hideQuickJump();
+    }
+
+    toggleQuickJump() {
+        this.modules.modalModule.toggleQuickJump();
+    }
 
     showControlPanel() {
         this.modules.modalModule.showControlPanel();
@@ -163,48 +140,3 @@ export class ControlModule {
         this.modules.audioModule.toggleAudioCapture();
     }
 }
-
-
-    // loadMushafPageFromControlPanel() {
-    //     const {mushafPageInput, mushafSurahInput, mushafVerseInput} = this.elements;
-    //
-    //     if (!mushafPageInput || !mushafSurahInput || !mushafVerseInput) {
-    //         console.error(`Required input elements not found`);
-    //         return;
-    //     }
-    //
-    //     const page  = parseInt(mushafPageInput.value);
-    //     const surah = parseInt(mushafSurahInput.value);
-    //     const ayah  = parseInt(mushafVerseInput.value);
-    //     this.loadMushafPage(page, surah, ayah);
-    // }
-
-
-    // loadVerseWithContextFromControlPanel() {
-    //     const { contextSurahInput, contextVerseInput } = this.elements;
-
-    //     if (!contextSurahInput || !contextVerseInput) {
-    //         console.error(`Required input elements not found`);
-    //         return;
-    //     }
-
-    //     const surah = parseInt(contextSurahInput.value);
-    //     const ayah  = parseInt(contextVerseInput.value);
-
-    //     this.loadVerseWithContext(surah, ayah);
-    // }
-
-
-    // loadSurahFromControlPanel() {
-    //     const { surahNumberInput, surahVerseInput } = this.elements;
-
-    //     if (!surahNumberInput) {
-    //         console.error(`Surah number input element not found`);
-    //         return;
-    //     }
-
-    //     const surahNumber = parseInt(surahNumberInput.value);
-    //     const verseNumber = surahVerseInput && surahVerseInput.value ? parseInt(surahVerseInput.value) : null;
-
-    //     this.loadSurah(surahNumber, verseNumber);
-    // }

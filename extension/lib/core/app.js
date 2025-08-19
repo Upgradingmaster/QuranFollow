@@ -50,8 +50,6 @@ export class AppModule {
             // UI elements
             quranContainer        : document.getElementById('quran'),
             logel                 : document.getElementById('log'),
-            controlModalBackdrop  : document.getElementById('control-modal-backdrop'),
-
 
             modeSelect            : document.getElementById('mode-select'),
             mushafControl        : document.getElementById('controls'),
@@ -76,8 +74,12 @@ export class AppModule {
             // loadSurahBtn          : document.getElementById('surah-load'),
 
             // Modal elements
-            toggleControlPanelBtn : document.getElementById('toggle-control-panel'),
-            closeControlPanelBtn  : document.getElementById('close-control-panel')
+            controlPanel       : document.getElementById('control-panel'),
+            controlPanelToggle : document.getElementById('control-panel-toggle'),
+            controlPanelClose  : document.getElementById('control-panel-close'),
+            quickJump          : document.getElementById('quick-jump'),
+            quickJumpInput     : document.getElementById('quick-jump-input'),
+            quickJumpClose     : document.getElementById("quick-jump-close")
         };
     }
 
@@ -99,11 +101,10 @@ export class AppModule {
             actions: this.makeActionTable()
         });
 
-        this.modules.modalModule = new ModalModule(this.globalKeybinds.getHelpText(), this.elements.controlModalBackdrop);
+        this.modules.modalModule = new ModalModule(this.globalKeybinds.getHelpText(), this.elements);
 
         //TODO: rename control to controller and take this out
         this.modules.controlModule = new ControlModule(dependencies, this.modules);
-
     }
 
     makeActionTable() {
@@ -113,12 +114,7 @@ export class AppModule {
             predict: async () => await this.modules.controlModule.predict(),
             
             // Navigation
-            // TODO
-            // goToMushaf: () =>  this.modules.controlModule.modalGoTo('mushaf'),
-            // goToContext: () => this.modules.controlModule.modalGoTo('context'),
-            // goToSurah: () => this.modules.controlModule.modalGoTo('surah'),
-
-            // goTo: () => this.modules.controlModule.modalGoTo(),
+            toggleQuickJump: () => this.modules.controlModule.toggleQuickJump(),
             
             // View modes
             setMode: (mode) => this.modules.controlModule.updateMode(mode),
@@ -146,18 +142,25 @@ export class AppModule {
         elements.modeSelect.onchange           = async () => this.modules.controlModule.updateMode();
 
         // Modal handlers
-        elements.toggleControlPanelBtn.onclick = () => this.modules.controlModule.showControlPanel();
-        elements.closeControlPanelBtn.onclick  = () => this.modules.controlModule.hideControlPanel();
+        elements.controlPanelToggle.onclick = () => this.modules.controlModule.showControlPanel();
+        elements.controlPanelClose.onclick  = () => this.modules.controlModule.hideControlPanel();
+
+        elements.quickJumpClose.onclick  = () => this.modules.controlModule.hideQuickJump();
 
         // Backdrop click
-        elements.controlModalBackdrop.onclick = (e) => {
-            if (e.target === elements.controlModalBackdrop) {
+        elements.controlPanel.onclick = (e) => {
+            if (e.target === elements.controlPanel) {
                 this.modules.controlModule.hideControlPanel();
             }
         };
 
-        // Keyboard handlers for inputs
+        elements.quickJump.onclick = (e) => {
+            if (e.target === elements.quickJump) {
+                this.modules.controlModule.hideQuickJump();
+            }
+        };
 
+        // Keyboard handlers for inputs
         elements.surahInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.modules.controlModule.controlPanelGoTo();
         });
@@ -170,10 +173,15 @@ export class AppModule {
             if (e.key === 'Enter') this.modules.controlModule.controlPanelGoTo();
         });
 
+        elements.quickJumpInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.modules.controlModule.quickJumpGoTo();
+        });
+
         // Global escape key for modal
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && elements.controlModalBackdrop.classList.contains('show')) {
+            if (e.key === 'Escape') {
                 this.modules.controlModule.hideControlPanel();
+                this.modules.controlModule.hideQuickJump();
             }
         });
         

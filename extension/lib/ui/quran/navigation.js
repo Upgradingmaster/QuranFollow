@@ -66,19 +66,19 @@ function scrollToVerse(surah, ayah, delay = 100) {
 // Target Verse Management
 // ============================================================================
 
-//TODO: Why so much error handling
+// TODO: naming
 function setTargetVerse(newTargetVerse, scrollIntoView = true) {
     try {
-        if (!QuranState.isReady()) {
+        if (!QuranState.isReady()) { // TODO: remove?
             console.error('Rendering state not ready. Render content first.');
             return false;
         }
 
         const currentSurah = QuranState.getSurah();
-        const currentAyah = QuranState.getAyah();
+        const currentAyah  = QuranState.getAyah();
         
         // Remove existing target verse styling
-        if (currentTargetVerse !== null) {
+        if (currentAyah !== null) {
             const targetElement = findTargetVerseElement();
             if (targetElement) {
                 targetElement.classList.remove('target-verse');

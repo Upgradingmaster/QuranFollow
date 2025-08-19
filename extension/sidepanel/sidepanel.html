@@ -11,18 +11,18 @@
 
 <!-- Footer Control Button -->
 <div id="footer-controls">
-  <button id="toggle-control-panel" class="footer-button">
+  <button id="control-panel-toggle" class="footer-button">
     <span class="controls-icon">⚙️</span>
     <span class="controls-text">Controls</span>
   </button>
 </div>
 
 <!-- Control Panel Modal -->
-<div id="control-modal-backdrop" class="modal-backdrop">
+<div id="control-panel" class="modal-backdrop">
   <div id="control-modal" class="control-modal">
     <div class="modal-header">
       <h3>Control Panel</h3>
-      <button id="close-control-panel" class="close-button">×</button>
+      <button id="control-panel-close" class="close-button">×</button>
     </div>
     <div id="control-panel">
       <div class="control-row">
@@ -45,7 +45,6 @@
           </div>
         </div>
 
-        
         <div class="control-section">
           <h3>Navigate</h3>
           <div class="controls">
@@ -74,6 +73,19 @@
         </div>
         
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Jump Modal -->
+<div id="quick-jump" class="modal-backdrop">
+  <div class="quick-jump-modal">
+    <div class="modal-header">
+      <h3>Quick Jump</h3>
+      <button id="quick-jump-close" class="close-button" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="text" id="quick-jump-input" placeholder="Enter key..." />
     </div>
   </div>
 </div>

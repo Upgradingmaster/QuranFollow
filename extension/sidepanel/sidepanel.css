@@ -767,3 +767,50 @@ audio {
     opacity: 0.9;
     text-align: left;
 }
+
+/* Quick Jump Modal Styles */
+.modal-backdrop.hidden {
+    display: none;
+}
+
+.quick-jump-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--sepia-paper);
+    border-radius: 12px;
+    border: 1px solid var(--sepia-border);
+    box-shadow: 0 16px 48px var(--sepia-dark-shadow);
+    width: 90%;
+    max-width: 350px;
+    z-index: 2001;
+}
+
+.quick-jump-modal .modal-body {
+    padding: 1.5rem;
+}
+
+#quick-jump-input {
+    width: 100%;
+    background: var(--sepia-paper);
+    border: 2px solid var(--sepia-border);
+    border-radius: 6px;
+    padding: 1rem;
+    font-size: 1.1rem;
+    color: var(--sepia-text);
+    text-align: center;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#quick-jump-input:focus {
+    border-color: var(--sepia-accent);
+    box-shadow: 0 0 0 3px rgba(139, 115, 85, 0.1);
+}
+
+#quick-jump-input::placeholder {
+    color: var(--sepia-text);
+    opacity: 0.6;
+}

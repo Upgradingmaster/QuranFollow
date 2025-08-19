@@ -1,8 +1,8 @@
 export class ModalModule {
-    constructor(helpText, controlPanelModal) {
+    constructor(helpText, elements) {
         this.helpText = helpText;
-        this.controlPanelModal = controlPanelModal;
         this.helpModal = null;
+        this.elements = elements;
     }
 
     showHelp() {
@@ -65,18 +65,38 @@ export class ModalModule {
     }
 
     showControlPanel() {
-        this.controlPanelModal.classList.add('show');
+        this.elements.controlPanel.classList.add('show');
     }
 
     hideControlPanel() {
-        this.controlPanelModal.classList.remove('show');
+        this.elements.controlPanel.classList.remove('show');
     }
 
     toggleControlPanel() {
-        if (this.controlPanelModal.classList.contains('show')) {
+        if (this.elements.controlPanel.classList.contains('show')) {
             this.hideControlPanel();
         } else {
             this.showControlPanel();
         }
     }
+
+    showQuickJump() {
+        this.elements.quickJump.classList.add('show');
+        setTimeout(() => {
+            this.elements.quickJumpInput.focus();
+        }, 100);
+    }
+
+    hideQuickJump() {
+        this.elements.quickJump.classList.remove('show');
+    }
+
+    toggleQuickJump() {
+        if (this.elements.quickJump.classList.contains('show')) {
+            this.hideQuickJump();
+        } else {
+            this.showQuickJump();
+        }
+    }
+
 }

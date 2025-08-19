@@ -207,10 +207,7 @@ export class GlobalKeybinds {
         this.bind('a', 'predict', 'Analyze current audio');
         
         // Navigation
-        this.bind('Ctrl+g', 'goToMushaf', 'Go to page number');
-        this.bind('Ctrl+v', 'goToContext', 'Go to verse (surah:verse)');
-        this.bind('Ctrl+s', 'goToSurah', 'Go to surah');
-        this.bind('Ctrl+f', 'goTo', 'Go to a location in the current mode');
+        this.bind('Ctrl+f', 'toggleQuickJump', 'Go to a location in the current mode');
         
         // View modes
         this.bind('1', 'setMode', 'Switch to Mushaf view', ['mushaf']);
