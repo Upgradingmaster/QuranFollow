@@ -225,7 +225,7 @@ export class KeybindsModule {
         // UI controls
         this.bind('Ctrl+p', 'toggleControlPanel', 'Toggle control panel');
         this.bind('q', 'toggleHelp', 'Toggle keyboard shortcuts');
-        this.bind('F1', 'toggleHelp', 'Toggle keyboard shortcuts');
+        this.bind('i', 'toggleTheme', 'Toggle theme');
         
         // Quick access
         this.bind('h', 'goHome', 'Go to beginning of current surah');

@@ -168,4 +168,37 @@ export class ControlModule {
     toggleAudioCapture() {
         this.modules.audioModule.toggleAudioCapture();
     }
+
+    setTheme(theme) {
+        if (!this.isValidTheme(theme)) {
+            console.error(`Invalid Theme ${theme}`);
+            return;
+        }
+
+        document.body.setAttribute('data-theme' , theme);
+        localStorage.setItem('data-theme'       , theme);
+        this.log(`Set theme to: '{theme}'`);
+    }
+
+    setThemeFromLocalStorage() {
+        const themeFromLocalStorage = localStorage.getItem('data-theme');
+        this.setTheme(themeFromLocalStorage);
+    };
+
+    toggleTheme() {
+        let currentTheme = document.body.getAttribute('data-theme');
+        switch (currentTheme) {
+            case 'dark':
+                this.setTheme('sepia');
+                break;
+            case 'sepia':
+                this.setTheme('dark');
+                break;
+            default: console.error(`Invalid Theme ${theme}`);
+        }
+    }
+
+    isValidTheme(theme) {
+        return theme && theme != '' && ['dark', 'sepia'].includes(theme);
+    }
 }

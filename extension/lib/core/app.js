@@ -1,5 +1,4 @@
 import { QuranModule }    from '../ui/quran/quran.js';
-import { AudioCapture }   from '../audio/capture.js';
 import { AudioModule }    from '../audio/audio.js';
 import { UIModule }       from '../ui/ui.js';
 import { KeybindsModule }       from '../control/keybinds.js';
@@ -14,36 +13,13 @@ export class AppModule {
         this.modules = {};
     }
 
-    log(msg) {
-        if (this.elements.logel) {
-            // Store full history in data attribute
-            const currentHistory = this.elements.logel.dataset.history || '';
-            const newHistory = currentHistory + msg + '\n';
-            this.elements.logel.dataset.history = newHistory;
-            
-            // Update status bar with latest message
-            const statusBar = this.elements.logel.querySelector('.log-status-bar');
-            if (statusBar) {
-                statusBar.textContent = msg;
-            }
-            
-            // Update full content if expanded
-            const fullContent = this.elements.logel.querySelector('.log-full-content');
-            if (fullContent) {
-                fullContent.textContent = newHistory;
-                fullContent.scrollTop = fullContent.scrollHeight;
-            }
-        } else {
-            console.log(msg);
-        }
-    }
-
     initializeElements() {
 
         this.elements = {
             // UI elements
             quranContainer        : document.getElementById('quran'),
             logel                 : document.getElementById('log'),
+            toggleThemeBtn        : document.getElementById('toggle-theme'),
 
             /* Quick Jump */
             quickJump          : document.getElementById('quick-jump'),
@@ -71,6 +47,65 @@ export class AppModule {
 
         };
     }
+
+    log(msg) {
+        if (this.elements.logel) {
+            // Store full history in data attribute
+            const currentHistory = this.elements.logel.dataset.history || '';
+            const newHistory = currentHistory + msg + '\n';
+            this.elements.logel.dataset.history = newHistory;
+            
+            // Update status bar with latest message
+            const statusBar = this.elements.logel.querySelector('.log-status-bar');
+            if (statusBar) {
+                statusBar.textContent = msg;
+            }
+            
+            // Update full content if expanded
+            const fullContent = this.elements.logel.querySelector('.log-full-content');
+            if (fullContent) {
+                fullContent.textContent = newHistory;
+                fullContent.scrollTop = fullContent.scrollHeight;
+            }
+        } else {
+            console.log(msg);
+        }
+    }
+
+    /* Theme */
+    setTheme(theme) {
+        if (!this.isValidTheme(theme)) {
+            console.error(`Invalid Theme ${theme}`);
+            return;
+        }
+
+        document.body.setAttribute('data-theme' , theme);
+        localStorage.setItem('data-theme'       , theme);
+        this.log(`Set theme to '${theme}'`);
+    }
+
+    setThemeFromLocalStorage() {
+        const themeFromLocalStorage = localStorage.getItem('data-theme');
+        this.setTheme(themeFromLocalStorage);
+    };
+
+    toggleTheme() {
+        let currentTheme = document.body.getAttribute('data-theme');
+        switch (currentTheme) {
+            case 'dark':
+                this.setTheme('sepia');
+                break;
+            case 'sepia':
+                this.setTheme('dark');
+                break;
+            default: console.error(`Invalid Theme ${theme}`);
+        }
+    }
+
+    isValidTheme(theme) {
+        return theme && theme != '' && ['dark', 'sepia'].includes(theme);
+    }
+
 
     async initializeModules() {
         let dependencies = {
@@ -118,6 +153,7 @@ export class AppModule {
             // UI controls
             toggleControlPanel: () => this.modules.controlModule.toggleControlPanel(),
             toggleHelp: () => this.modules.controlModule.toggleHelp(),
+            toggleTheme: () => this.toggleTheme(),
             reload: () => this.modules.controlModule.reloadQuranView()
         };
     }
@@ -127,6 +163,7 @@ export class AppModule {
 
         // Button click handlers
         elements.toggleCaptureBtn.onclick      = () => this.modules.controlModule.toggleAudioCapture();
+        elements.toggleThemeBtn.onclick        = () => this.toggleTheme();
         elements.analyzeBtn.onclick            = () => this.modules.controlModule.predict();
         elements.goBtn.onclick                 = () => this.modules.controlModule.controlPanelGoTo();
         elements.modeSelect.onchange           = async () => this.modules.controlModule.updateMode();
@@ -203,6 +240,8 @@ export class AppModule {
 
     async initialize() {
         try {
+            this.setThemeFromLocalStorage();
+
             await this.initializeModules();
 
             this.modules.controlModule.showStartupScreen('surah');
