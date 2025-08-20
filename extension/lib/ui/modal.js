@@ -11,9 +11,9 @@ export class ModalModule {
 
         // Create help modal
         this.helpModal = document.createElement('div');
-        this.helpModal.className = 'keybind-help-modal modal-backdrop show';
+        this.helpModal.className = 'modal-backdrop show';
         this.helpModal.innerHTML = `
-            <div class="keybind-help-content control-modal">
+            <div class="keybind-help">
                 <div class="modal-header">
                     <h3>Keyboard Shortcuts</h3>
                     <button class="close-button">×</button>

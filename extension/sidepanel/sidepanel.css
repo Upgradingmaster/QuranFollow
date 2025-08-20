@@ -276,9 +276,13 @@ button:disabled {
 }
 
 /* Keybind Help Modal */
-.keybind-help-content {
-    max-width: 600px;
-    margin: 2rem auto;
+.keybind-help {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    max-width: 80vw;
     max-height: 80vh;
 }
 
@@ -286,6 +290,25 @@ button:disabled {
     padding: 1.5rem;
     max-height: 60vh;
     overflow-y: auto;
+    background: var(--sepia-bg);
+}
+
+.keybind-help-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.keybind-help-body::-webkit-scrollbar-track {
+    background: rgba(139, 115, 85, 0.1);
+    border-radius: 4px;
+}
+
+.keybind-help-body::-webkit-scrollbar-thumb {
+    background: var(--sepia-accent);
+    border-radius: 4px;
+}
+
+.keybind-help-body::-webkit-scrollbar-thumb:hover {
+    background: var(--sepia-button);
 }
 
 .keybind-help-body pre {
@@ -342,28 +365,6 @@ input[type="file"]:focus {
     box-shadow: 0 0 0 3px rgba(139, 115, 85, 0.1);
 }
 
-.page-controls {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-.context-controls {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
-.mushaf-controls {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
 .input-group {
     display: flex;
     align-items: center;
@@ -371,7 +372,7 @@ input[type="file"]:focus {
     justify-content: center;
 }
 
-.page-controls label, .input-group label {
+.input-group label {
     font-weight: 600;
     color: var(--sepia-accent);
     min-width: 50px;
@@ -558,12 +559,6 @@ audio {
     align-items: center;
     gap: 1rem;
     flex-wrap: wrap;
-}
-
-.mushaf-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
 }
 
 .mode-controls {
@@ -766,10 +761,6 @@ audio {
 }
 
 /* Quick Jump Modal Styles */
-.modal-backdrop.hidden {
-    display: none;
-}
-
 .quick-jump-modal {
     position: fixed;
     top: 50%;
