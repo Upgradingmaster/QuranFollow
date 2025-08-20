@@ -8,10 +8,9 @@ export class ControlModule {
     // Wrapper around quranModule.goTo to update the control panel with the state
     goTo(mode, surah, ayah, page, opts = this.defaultGoToOpts) {
         const newState = this.modules.quranModule.goTo(mode, surah, ayah, page, opts);
-
-        const newSurah = this.modules.quranModule.getSurah();
-        const newAyah  = this.modules.quranModule.getAyah();
-        const newPage  = this.modules.quranModule.getPage();
+        const newSurah = newState.surah;
+        const newAyah  = newState.ayah;
+        const newPage  = newState.page;
         this.modules.uiModule.setControlPanelInputs(newSurah, newAyah, newPage);
     }
 
@@ -83,14 +82,44 @@ export class ControlModule {
         this.modules.quranModule.reload();
     }
 
-    navigateNext() {
-        this.log('TODO: navigateNext');
+    up() {
+        this.goTo(null, null, this.modules.quranModule.getAyah() - 1, null);
     }
 
-    navigatePrevious() {
-        this.log('TODO: navigatePrevious');
+    down() {
+        this.goTo(null, null, this.modules.quranModule.getAyah() + 1, null);
     }
 
+    next() {
+        const state = this.modules.quranModule.getState();
+        switch (state.mode) {
+            case 'mushaf':
+                this.goTo(null, null, null, state.page + 1);
+                break;
+            case 'context':
+                this.goTo(null, null, state.ayah + state.contextAfter, null);
+                break;
+            case 'surah':
+                this.goTo(null, state.surah + 1, 1, null);
+                break;
+        }
+    }
+
+    prev() {
+        const state = this.modules.quranModule.getState();
+        switch (state.mode) {
+            case 'mushaf':
+                this.goTo(null, null, null, state.page - 1);
+                break;
+            case 'context':
+                this.goTo(null, null, state.ayah - state.contextBefore, null);
+                break;
+            case 'surah':
+                this.goTo(null, state.surah - 1, null, null);
+                break;
+        }
+
+    }
     goToHome() {
         this.log('TODO: goToHome');
     }

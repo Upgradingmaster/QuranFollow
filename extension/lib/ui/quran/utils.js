@@ -1,22 +1,18 @@
+import { getPage, getWords } from './data.js'
+
 function getPageFromKey(surah, ayah) {
     // TODO: can we avoid this, if not optimize
 
-    if (!pagesData || !wordsData) {
-        console.error('Pages or words data not loaded');
-        return null;
-    }
-
     // Search through all pages
     for (let pageNumber = 1; pageNumber <= 604; pageNumber++) {
-        const page = pagesData[pageNumber];
-        if (!page) continue;
+        const page = getPage(pageNumber);
 
         // Check each line on the page
         for (const line of page) {
             if (line.line_type === 'ayah' && line.first_word_id && line.last_word_id) {
                 // Check if any word in this line matches our focused ayah
                 for (let wordId = line.first_word_id; wordId <= line.last_word_id; wordId++) {
-                    const word = wordsData[wordId];
+                    const word = getWords(wordId);
                     if (word && word.surah === surah && word.ayah === ayah) {
                         return pageNumber;
                     }
@@ -30,7 +26,7 @@ function getPageFromKey(surah, ayah) {
 }
 
 function getKeyFromPage(pageNumber) {
-    const page = pagesData[pageNumber];
+    const page = getPage(pageNumber);
     let line = 0;
     while (page[line].line_type != 'ayah') {
         line++;

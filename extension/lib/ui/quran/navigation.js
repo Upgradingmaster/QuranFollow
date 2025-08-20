@@ -4,7 +4,7 @@ import { QuranState } from './state.js';
 // ============================================================================
 // Scrolling
 // ============================================================================
-function scrollToFocusedAyah(quranContainer, delay = 100) {
+function scrollToFocusedAyah(quranContainer, delay = 50) {
     setTimeout(() => {
         const focusedElement = findFocusedAyahElement(quranContainer);
         if (focusedElement) {
@@ -55,7 +55,7 @@ function setFocusedAyah(quranContainer, newFocusedAyah, scrollIntoView = true) {
 
             // Scroll to the new focused ayah
             if (scrollIntoView) {
-                scrollToFocusedAyah(quranContainer, 100);
+                scrollToFocusedAyah(quranContainer);
             }
         }
         

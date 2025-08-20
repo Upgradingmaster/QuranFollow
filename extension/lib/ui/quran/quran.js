@@ -173,6 +173,7 @@ export class QuranModule {
         }
     }
 
+
     reload() {
         this.goTo(null, null, null, null);
     }
@@ -193,6 +194,9 @@ export class QuranModule {
     }
     getPage() {
         return QuranState.getPage();
+    }
+    getState() {
+        return QuranState.getStateClone();
     }
 
 

@@ -108,8 +108,10 @@ export class AppModule {
             setMode: (mode) => this.modules.controlModule.updateMode(mode),
             
             // Quick navigation
-            nextItem: () => this.modules.controlModule.navigateNext(),
-            previousItem: () => this.modules.controlModule.navigatePrevious(),
+            up: () => this.modules.controlModule.up(),
+            down: () => this.modules.controlModule.down(),
+            next: () => this.modules.controlModule.next(),
+            prev: () => this.modules.controlModule.prev(),
             goHome: () => this.modules.controlModule.goToHome(),
             goEnd: () => this.modules.controlModule.goToEnd(),
             

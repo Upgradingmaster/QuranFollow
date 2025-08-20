@@ -215,8 +215,10 @@ export class KeybindsModule {
         this.bind('3', 'setMode', 'Switch to Surah view', ['surah']);
 
         // Quick navigation
-        this.bind('j', 'nextItem', 'Next');
-        this.bind('k', 'previousItem', 'Previous');
+        this.bind('j', 'down', 'Next');
+        this.bind('k', 'up', 'Previous');
+        this.bind('n', 'next', 'Next');
+        this.bind('p', 'prev', 'Previous');
         this.bind('ArrowDown', 'nextItem', 'Next');
         this.bind('ArrowUp', 'previousItem', 'Previous');
         

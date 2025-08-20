@@ -23,10 +23,10 @@ const wordsPath       = '../data/scripts/uthmani-wbw.json'
 const pagesPath       = '../data/pages/uthmani.json'
 const translationPath = '../data/translations/si-footnotes.json'
 
+let surahNames = null; // TODO:
 // Global Quran data stores
 let wordsData = null;
 let pagesData = null;
-let surahNames = null;
 let ayatData = null;
 let translationData = null;
 
