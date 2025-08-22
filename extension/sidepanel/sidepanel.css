@@ -4,6 +4,13 @@
     font-display: swap;
 }
 
+@font-face {
+  font-family: 'surah-name-v2-icon';
+  src: url('../assets/fonts/surah-name-v2.woff2');
+  font-display: swap;
+}
+
+
 [data-theme="dark"] {
     --theme-bg: #121212;
     --theme-paper: #1e1e1e;
@@ -419,8 +426,11 @@ audio {
 }
 
 .line.type-surah_name {
-    font-weight: 600;
+    font-family: 'surah-name-v2-icon', 'qpc-hafs', 'Traditional Arabic', 'Arabic Typesetting', serif;
+    font-size: 4rem;
     color: var(--theme-accent);
+    margin-bottom: 0.5rem;
+
     background: linear-gradient(135deg, rgba(139, 115, 85, 0.1) 0%, rgba(139, 115, 85, 0.05) 100%);
     border-radius: 8px;
     border: 1px solid rgba(139, 115, 85, 0.2);
@@ -552,11 +562,10 @@ audio {
 }
 
 .surah-name {
-    font-family: 'qpc-hafs', 'Traditional Arabic', 'Arabic Typesetting', serif;
-    font-size: 2.5rem;
+    font-family: 'surah-name-v2-icon', 'qpc-hafs', 'Traditional Arabic', 'Arabic Typesetting', serif;
+    font-size: 4rem;
     color: var(--theme-accent);
     margin-bottom: 0.5rem;
-    direction: rtl;
 }
 
 .surah-number {

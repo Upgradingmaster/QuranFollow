@@ -31,7 +31,7 @@ function generateMushafModeHTML(page, surah = null, ayah = null, opts = {}) {
         // Render content based on line type
         switch (line.line_type) {
             case 'surah_name':
-                lineElement += `سورۃ ${getSurahName(line.surah_number)}`;
+                lineElement += `${getSurahName(line.surah_number)}`;
                 break;
 
             case 'basmallah':
@@ -112,7 +112,7 @@ function generateContextModeHTML(surahNumber, ayahNumber, opts = {}) {
 
     if (shouldIncludeSurahName) {
         html += '<div class="surah-header">';
-        html += `<div class="surah-name">سورۃ ${getSurahName(surahNumber)}</div>`;
+        html += `<div class="surah-name">${getSurahName(surahNumber)}</div>`;
         html += `<div class="surah-number">Surah ${surahNumber}</div>`;
         html += '</div>';
     }
@@ -160,7 +160,7 @@ function generateSurahModeHTML(surahNumber, ayahNumber = null, opts = {}) {
     
     // Add Surah header
     html += '<div class="surah-header">';
-    html += `<div class="surah-name">سورۃ ${getSurahName(surahNumber)}</div>`;
+    html += `<div class="surah-name">${getSurahName(surahNumber)}</div>`;
     html += `<div class="surah-number">Surah ${surahNumber}</div>`;
     html += '</div>';
     

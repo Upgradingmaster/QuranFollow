@@ -122,7 +122,7 @@ function getTranslationData() { return translationData; }
 // ============================================================================
 
 function getSurahName(surahNumber) {
-    return SURAH_NAMES[surahNumber] || '';
+    return "surah" + String(surahNumber).padStart(3, "0");
 }
 
 function getWords(firstWordId, lastWordId = null) {
