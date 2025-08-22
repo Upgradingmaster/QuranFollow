@@ -19,4 +19,8 @@ export class UIModule {
         ayahInput.value  = ayah;
         pageInput.value  = page;
     }
+    setLocationInfo(surah, ayah) {
+        const { locationInfo } = this.elements;
+        locationInfo.textContent = `${surah}:${ayah}`;
+    }
 }

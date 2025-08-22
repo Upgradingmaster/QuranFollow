@@ -173,11 +173,6 @@ export class QuranModule {
         }
     }
 
-
-    reload() {
-        this.goTo(null, null, null, null);
-    }
-
     getDefaultGoToOpts() {
         return { ...this.defaultGoToOpts };
     }

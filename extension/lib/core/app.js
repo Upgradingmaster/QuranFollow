@@ -1,7 +1,7 @@
 import { QuranModule }    from '../ui/quran/quran.js';
 import { AudioModule }    from '../audio/audio.js';
 import { UIModule }       from '../ui/ui.js';
-import { KeybindsModule }       from '../control/keybinds.js';
+import { KeybindsModule } from '../control/keybinds.js';
 import { ModalModule }    from '../ui/modal.js';
 import { ControlModule }  from '../control/control.js';
 
@@ -17,9 +17,9 @@ export class AppModule {
 
         this.elements = {
             // UI elements
-            quranContainer        : document.getElementById('quran'),
-            logel                 : document.getElementById('log'),
-            toggleThemeBtn        : document.getElementById('toggle-theme'),
+            quranContainer     : document.getElementById('quran'),
+            logel              : document.getElementById('log'),
+            locationInfo       : document.getElementById('location-info'),
 
             /* Quick Jump */
             quickJump          : document.getElementById('quick-jump'),
@@ -32,18 +32,20 @@ export class AppModule {
             controlPanelToggle : document.getElementById('control-panel-toggle'),
             controlPanelClose  : document.getElementById('control-panel-close'),
             // Audio
-            toggleCaptureBtn      : document.getElementById('toggle-capture'),
-            captureStatus         : document.getElementById('capture-status'),
-            analyzeBtn            : document.getElementById('analyse'),
+            toggleCaptureBtn   : document.getElementById('toggle-capture'),
+            captureStatus      : document.getElementById('capture-status'),
+            analyzeBtn         : document.getElementById('analyse'),
 
             // Mode
-            modeSelect            : document.getElementById('mode-select'),
+            modeSelect         : document.getElementById('mode-select'),
 
             // Navigation elements
-            surahInput      : document.getElementById('surah-input'),
-            ayahInput       : document.getElementById('ayah-input'),
-            pageInput       : document.getElementById('page-input'),
-            goBtn           : document.getElementById('go'),
+            surahInput         : document.getElementById('surah-input'),
+            ayahInput          : document.getElementById('ayah-input'),
+            pageInput          : document.getElementById('page-input'),
+            goBtn              : document.getElementById('go'),
+
+            toggleThemeBtn     : document.getElementById('toggle-theme'),
 
         };
     }

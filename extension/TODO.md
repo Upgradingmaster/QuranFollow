@@ -12,3 +12,4 @@
 - Jump list
 - Location floating text
 - Look at the other resources in QUL
+- Websockets

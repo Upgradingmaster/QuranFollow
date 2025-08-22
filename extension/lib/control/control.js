@@ -12,6 +12,7 @@ export class ControlModule {
         const newAyah  = newState.ayah;
         const newPage  = newState.page;
         this.modules.uiModule.setControlPanelInputs(newSurah, newAyah, newPage);
+        this.modules.uiModule.setLocationInfo(newSurah, newAyah);
     }
 
     async predict() {
@@ -79,7 +80,7 @@ export class ControlModule {
     }
 
     reloadQuranView() {
-        this.modules.quranModule.reload();
+        this.goTo(null, null, null, null);
     }
 
     up() {

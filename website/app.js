@@ -20,7 +20,7 @@ async function decodeArrayBuffer(ab, token) {
 }
 
 async function loadAudio() {
-    if (!btn || !player) {
+            if (!btn || !player) {
         log(`❌ Required DOM elements not found`);
         return;
     }
