@@ -9,7 +9,5 @@
 - Jump list
 - Websockets
 
-
-- Better notifications for the backend in the extension
 - Simple logging functions to write to the user and the console properly
 - Better error handling at least for core functions like goto

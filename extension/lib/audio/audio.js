@@ -35,18 +35,18 @@ export class AudioModule {
 
         try {
             const r = await fetch('http://localhost:5000/process_chunk', {method:'POST', body:fd});
-            
-            if (!r.ok) {
-                throw new Error(`Server error: ${r.status} ${r.statusText}`);
-            }
-            
-            const js = await r.json();
-            console.log("Received response from the backend: ", js);
-            return js;
         } catch (error) {
-            this.log(`[X] Failed to process audio chunk`);
+            this.log(`[X] Couldn't get prediction from backend. Make sure it is running.`);
             console.error(error);
         }
+            
+        if (!r.ok) {
+            throw new Error(`Server error: ${r.status} ${r.statusText}`);
+        }
+
+        const js = await r.json();
+        console.log("Received response from the backend: ", js);
+        return js;
     }
 
     async toggleAudioCapture() {

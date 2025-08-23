@@ -228,7 +228,6 @@ async function predictCurrentPosition() {
         
         const js = await r.json();
         
-        // log(JSON.stringify(js, null, 2));
         await updateCurrentVerse(js);
     } catch (error) {
         log(`❌ Failed to process audio chunk: ${error.message}`);
