@@ -1,27 +1,14 @@
 import { QuranState } from './state.js';
-
+import { isValidAyah } from './validation.js';
 
 // ============================================================================
 // Scrolling
 // ============================================================================
 function scrollToFocusedAyah(quranContainer, delay = 50) {
     setTimeout(() => {
-        const focusedElement = findFocusedAyahElement(quranContainer);
+        const focusedElement = findFocusedAyahElement(quranContainer, false);
         if (focusedElement) {
             focusedElement.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
-        }
-    }, delay);
-}
-
-function scrollToAyah(quranContainer, surah, ayah, delay = 100) {
-    setTimeout(() => {
-        const ayahElement = findAyahElements(quranContainer, surah, ayah, false);
-
-        if (ayahElement) {
-            ayahElement.scrollIntoView({
                 behavior: 'smooth',
                 block: 'center'
             });
@@ -33,38 +20,34 @@ function scrollToAyah(quranContainer, surah, ayah, delay = 100) {
 // Focused Ayah Management
 // ============================================================================
 
-function setFocusedAyah(quranContainer, newFocusedAyah, surah, scrollIntoView = true) {
-    try {
-        const currentSurah = QuranState.getSurah();
-        const currentAyah  = QuranState.getAyah();
-        
-        // Remove existing focused ayah styling
-        if (currentAyah !== null) {
-            const focusedElement = findFocusedAyahElement(quranContainer);
-            if (focusedElement) {
-                focusedElement.classList.remove('focused-ayah');
-            }
-        }
-        
-        // Add new focused ayah styling
-        if (newFocusedAyah !== null) {
-            const newFocusedElement = findAyahElements(quranContainer, currentSurah, newFocusedAyah, false);
-            if (newFocusedElement) {
-                newFocusedElement.classList.add('focused-ayah');
-            }
+function setFocusedAyah(quranContainer, surah, ayah, scrollIntoView = true) {
+    if (!isValidAyah(ayah, surah)) {
+        throw new Error(`Can't highlight invalid key ${surah}:${ayah}`);
+    }
 
-            // Scroll to the new focused ayah
-            if (scrollIntoView) {
-                scrollToFocusedAyah(quranContainer);
-            }
+    try {
+        // Remove existing focused ayah styling
+        const focusedAyat = findFocusedAyahElement(quranContainer, true);
+        for (const el of focusedAyat ) {
+            console.log('Removing');
+            el.classList.remove('focused-ayah');
+        };
+
+        // Add new focused ayah styling
+        const toFocus = findAyahElement(quranContainer, surah, ayah, true);
+        for (const el of toFocus) {
+            console.log('Adding');
+            el.classList.add('focused-ayah');
         }
-        
+
+        // Scroll to the new focused ayah
+        if (scrollIntoView) {
+            scrollToFocusedAyah(quranContainer);
+        }
         // Update state
-        QuranState.setAyah(newFocusedAyah, surah);
-        return true;
+        QuranState.setAyah(ayah, surah);
     } catch (error) {
-        console.error('Error setting focused ayah:', error.message);
-        return false;
+        throw new Error();
     }
 }
 
@@ -72,7 +55,7 @@ function setFocusedAyah(quranContainer, newFocusedAyah, surah, scrollIntoView = 
 // DOM Query Utilities
 // ============================================================================
 
-function findAyahElements(quranContainer, surah, ayah, all = false) {
+function findAyahElement(quranContainer, surah, ayah, all = false) {
     const selector = `[data-surah="${surah}"][data-ayah="${ayah}"]`;
 
     if (all) {
@@ -82,11 +65,15 @@ function findAyahElements(quranContainer, surah, ayah, all = false) {
     }
 }
 
-function findFocusedAyahElement(quranContainer) {
-    return quranContainer.querySelector('.focused-ayah');
+function findFocusedAyahElement(quranContainer, all = false) {
+    if (all) {
+        return quranContainer.querySelectorAll('.focused-ayah');
+    } else {
+        return document.querySelector('.focused-ayah');
+    }
 }
 
 export {
-    scrollToFocusedAyah,
     setFocusedAyah,
+    scrollToFocusedAyah,
 };

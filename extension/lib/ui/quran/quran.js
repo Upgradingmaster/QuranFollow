@@ -84,12 +84,12 @@ export class QuranModule {
         const currentMode  = QuranState.getMode();
         const currentSurah = QuranState.getSurah();
         const currentAyah  = QuranState.getAyah();
+        const currentPage = QuranState.getPage();
 
-        const needsNewRender = !currentMode || currentMode != mode ||
-              (mode === 'surah' && currentSurah !== surah) ||
+        const needsNewRender = currentMode != mode ||
+              (mode === 'mushaf' && currentPage !== page) ||
               (mode === 'context') || // Always re-render for context mode
-              (mode === 'mushaf');    // TODO: Always re-rendering for mushaf
-
+              (mode === 'surah' && currentSurah !== surah);
 
         if (needsNewRender) {
             switch (mode) {
@@ -104,17 +104,17 @@ export class QuranModule {
                 break;
             }
         } else {
-            // Just update focused ayah if we're in the same mode and context
             if (currentAyah !== ayah) {
-                const success = setFocusedAyah(this.quranContainer, ayah, surah);
-                if (success) {
+                try {
+                    setFocusedAyah(this.quranContainer, surah, ayah);
                     this.log(`Move to ayah ${ayah}`);
-                } else {
-                    this.log(`[X] Failed to switch to ayah ${ayah}`);
                 }
-            } else {
+                catch(error) {
+                    this.log(`[X] Failed to switch to ayah ${ayah}`, error);
+                }
+            } else { // same position
                 scrollToFocusedAyah(this.quranContainer);
-                this.log(`Same ayah, ${surah}:${ayah}`);
+                this.log(`Same key, ${surah}:${ayah}`);
             }
         }
 

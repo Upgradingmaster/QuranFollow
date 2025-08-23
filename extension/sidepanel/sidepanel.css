@@ -217,7 +217,6 @@ button:disabled {
     align-items: center;
     padding: 1rem 1.5rem;
     border-bottom: 2px solid var(--theme-border);
-    background: linear-gradient(135deg, var(--theme-bg) 0%, #ede8dc 100%);
     border-top-left-radius: 16px;
     border-top-right-radius: 16px;
 }
