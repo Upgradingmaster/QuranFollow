@@ -1,6 +1,4 @@
-import { QuranState } from './state.js'
-
-
+import { isValidSurah } from './validation.js'
 // Quran Data paths
 const ayatPath      = '../data/scripts/uthmani-aba.json';
 const wordsPath       = '../data/scripts/uthmani-wbw.json';
@@ -104,10 +102,6 @@ async function initializeQuranData() {
 // Utility Functions
 // ============================================================================
 
-function getSurahName(surahNumber) {
-    return "surah" + String(surahNumber).padStart(3, "0");
-}
-
 function getWords(firstWordId, lastWordId = null) {
     if (!wordsData) {
         return [];
@@ -138,20 +132,20 @@ function getAyah(ayah) {
     return ayatData[ayah];
 }
 
-function getPage(pageNumber) {
+function getPage(page) {
     if (!pagesData) {
         return [];
     }
 
-    return pagesData[pageNumber] || [];
+    return pagesData[page] || [];
 }
 
-function getTranslation(ayahKey, unescapeText = true) {
+function getTranslation(key, unescapeText = true) {
     if (!translationData) {
         return {};
     }
 
-    let translation = { ...translationData[ayahKey] };
+    let translation = { ...translationData[key] };
 
     if (unescapeText) {
         translation.text = JSON.parse(`${translation.text}`)
@@ -161,22 +155,34 @@ function getTranslation(ayahKey, unescapeText = true) {
 }
 
 function getSurahMetadata(surah) {
-    return surahMetadata[surah].verses_count;
+    if (!isValidSurah(surah)) throw new Error();
+    return surahMetadata[surah];
 }
 
 function getSurahLength(surah) {
-    if (!surah) return 0;
+    if (!isValidSurah(surah)) throw new Error();
     return surahMetadata[surah].verses_count;
+}
+
+function getSurahName(surah) {
+    if (!isValidSurah(surah)) throw new Error();
+    return surahMetadata[surah].name_simple;
+}
+
+function getSurahNameForFont(surahNumber) {
+    return "surah" + String(surahNumber).padStart(3, "0");
 }
 
 export {
     initializeQuranData,
 
-    getSurahName,
     getWords,
     getAyah,
     getPage,
     getTranslation,
+    getSurahMetadata,
 
     getSurahLength,
+    getSurahName,
+    getSurahNameForFont,
 };

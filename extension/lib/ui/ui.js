@@ -15,12 +15,11 @@ export class UIModule {
     setControlPanelInputs(surah, ayah, page) {
         const { surahInput, ayahInput, pageInput } = this.elements;
 
-        surahInput.value = surah;
-        ayahInput.value  = ayah;
-        pageInput.value  = page;
+        if (surah !== null) surahInput.value = surah;
+        if (ayah  !== null) ayahInput.value  = ayah;
+        if (page  !== null) pageInput.value  = page;
     }
-    setLocationInfo(surah, ayah) {
-        const { locationInfo } = this.elements;
-        locationInfo.textContent = `${surah}:${ayah}`;
+    setLocationInfo(surahName, surah, ayah) {
+        this.elements.locationInfo.textContent = `${surahName} ${surah}:${ayah}`;
     }
 }

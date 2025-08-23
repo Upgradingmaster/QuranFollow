@@ -13,8 +13,11 @@ export class ControlModule {
             const newSurah = newState.surah;
             const newAyah  = newState.ayah;
             const newPage  = newState.page;
+            const newSurahName = this.modules.quranModule.getSurahName(newSurah)
+
+            // TODO: only update ui elements if they've changed
             this.modules.uiModule.setControlPanelInputs(newSurah, newAyah, newPage);
-            this.modules.uiModule.setLocationInfo(newSurah, newAyah);
+            this.modules.uiModule.setLocationInfo(newSurahName, newSurah, newAyah);
         } else {
             this.log(obj.error);
         }
