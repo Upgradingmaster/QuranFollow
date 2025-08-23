@@ -1,8 +1,7 @@
 import { getPage, getWords } from './data.js'
 
+// TODO: optimize
 function getPageFromKey(surah, ayah) {
-    // TODO: can we avoid this, if not optimize
-
     // Search through all pages
     for (let pageNumber = 1; pageNumber <= 604; pageNumber++) {
         const page = getPage(pageNumber);

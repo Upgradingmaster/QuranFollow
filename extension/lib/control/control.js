@@ -7,12 +7,18 @@ export class ControlModule {
 
     // Wrapper around quranModule.goTo to update the control panel with the state
     goTo(mode, surah, ayah, page, opts = this.defaultGoToOpts) {
-        const newState = this.modules.quranModule.goTo(mode, surah, ayah, page, opts);
-        const newSurah = newState.surah;
-        const newAyah  = newState.ayah;
-        const newPage  = newState.page;
-        this.modules.uiModule.setControlPanelInputs(newSurah, newAyah, newPage);
-        this.modules.uiModule.setLocationInfo(newSurah, newAyah);
+        console.log('controlModule.goto', mode, surah, ayah, page, opts);
+        const obj = this.modules.quranModule.goTo(mode, surah, ayah, page, opts);
+        if (obj.ok) {
+            const newState = obj.value;
+            const newSurah = newState.surah;
+            const newAyah  = newState.ayah;
+            const newPage  = newState.page;
+            this.modules.uiModule.setControlPanelInputs(newSurah, newAyah, newPage);
+            this.modules.uiModule.setLocationInfo(newSurah, newAyah);
+        } else {
+            console.log(obj.error);
+        }
     }
 
     async predict() {

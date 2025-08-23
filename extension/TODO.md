@@ -4,12 +4,12 @@
 - Footnote dropdown
 - findSurahFromPage
 - What is the word sub-field in uthmani-wbw.json?
-- Better notifications for the backend in the extension
 - (surah, ayah) XOR (page) not OR will make the control panel simple
 - Fix html and css classes
-- Simple logging functions to write to the user and the console properly
-- Out of bounds ayah access
 - Jump list
-- Location floating text
-- Look at the other resources in QUL
 - Websockets
+
+
+- Better notifications for the backend in the extension
+- Simple logging functions to write to the user and the console properly
+- Better error handling at least for core functions like goto

@@ -33,7 +33,7 @@ function scrollToAyah(quranContainer, surah, ayah, delay = 100) {
 // Focused Ayah Management
 // ============================================================================
 
-function setFocusedAyah(quranContainer, newFocusedAyah, scrollIntoView = true) {
+function setFocusedAyah(quranContainer, newFocusedAyah, surah, scrollIntoView = true) {
     try {
         const currentSurah = QuranState.getSurah();
         const currentAyah  = QuranState.getAyah();
@@ -60,7 +60,7 @@ function setFocusedAyah(quranContainer, newFocusedAyah, scrollIntoView = true) {
         }
         
         // Update state
-        QuranState.setAyah(newFocusedAyah);
+        QuranState.setAyah(newFocusedAyah, surah);
         return true;
     } catch (error) {
         console.error('Error setting focused ayah:', error.message);

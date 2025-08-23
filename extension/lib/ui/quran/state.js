@@ -37,7 +37,7 @@ export const QuranState = {
         if (!isValidSurah(surah)) {
             throw new Error(`Invalid surah: ${surah}`);
         }
-        if (!isValidAyah(ayah)) {
+        if (!isValidAyah(ayah, surah)) {
             throw new Error(`Invalid ayah: ${ayah}`);
         }
 
@@ -64,13 +64,14 @@ export const QuranState = {
         console.log('State Changed: ', this._state);
     },
 
-    setAyah(ayah) {
-        if (!isValidAyah(ayah)) {
+    setAyah(ayah, surah) {
+        if (!isValidAyah(ayah, surah)) {
             throw new Error(`Invalid ayah: ${ayah}`);
         }
 
         this._state.ayah = ayah;
         this._state.lastUpdated = Date.now();
+        console.log('State Changed: ', this._state);
     },
 
     clear() {

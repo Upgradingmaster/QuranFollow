@@ -47,43 +47,44 @@ export class QuranModule {
 
     goTo(mode, surah, ayah, page, opts = this.defaultGoToOpts) {
         // Ensure all params exist
+        console.log('quranModule.goto', mode, surah, ayah, page, opts);
 
         // Mode
-        if (!mode) {
+        if (mode === null) {
             mode = QuranState.getMode();
         }
         if (!isValidMode(mode)) {
             this.log(`[X] Trying to use an invalid mode`);
-            return;
+            return {ok: false, error: 'invalid mode'};
         }
 
         // Surah
-        if (!surah) {
+        if (surah === null) {
             if (page) { surah = getKeyFromPage(page).surah }
             else      { surah = QuranState.getSurah()      }
         }
         if (!isValidSurah(surah)) {
             this.log(`[X] Invalid surah number: ${surah}. Please enter 1-114.`);
-            return;
+            return {ok: false, error: 'invalid surah'};
         }
 
         // Ayah
-        if (!ayah) {
+        if (ayah === null) {
             if (page) { ayah = getKeyFromPage(page).ayah }
-            else      { ayah = QuranState.getAyah()      }
+            else      { ayah = QuranState.getAyah(); }
         }
-        if (!isValidAyah(ayah)) {
-            this.log(`[X] Invalid ayah number: ${ayah}. Please enter a positive number.`);
-            return;
+        if (!isValidAyah(ayah, surah)) {
+            this.log(`[X] Invalid ayah number, ${ayah} for surah, ${surah}`);
+            return {ok: false, error: 'invalid ayah'};
         }
 
         // Page
-        if (!page) {
+        if (page === null) {
             page = getPageFromKey(surah, ayah);
         }
         if (!isValidPage(page)) {
             this.log(`[X] Invalid page number: ${page}. Please enter 1-604.`);
-            return;
+            return {ok: false, error: 'invalid ayah'};
         }
 
         const currentMode  = QuranState.getMode();
@@ -111,7 +112,7 @@ export class QuranModule {
         } else {
             // Just update focused ayah if we're in the same mode and context
             if (currentAyah !== ayah) {
-                const success = setFocusedAyah(this.quranContainer, ayah);
+                const success = setFocusedAyah(this.quranContainer, ayah, surah);
                 if (success) {
                     this.log(`Move to ayah ${ayah}`);
                 } else {
@@ -124,7 +125,7 @@ export class QuranModule {
             }
         }
 
-        return QuranState.getStateClone();
+        return { ok: true, value: QuranState.getStateClone() };
     }
 
     renderMushafMode(surah, ayah, page, opts = {}) {
@@ -202,8 +203,8 @@ export class QuranModule {
     isValidSurah(surah) {
         return isValidSurah(surah);
     }
-    isValidAyah(ayah) {
-        return isValidAyah(ayah);
+    isValidAyah(ayah, surah) {
+        return isValidAyah(ayah, surah);
     }
     isValidPage(page) {
         return isValidPage(page);
