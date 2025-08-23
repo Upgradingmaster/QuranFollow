@@ -229,8 +229,8 @@ export class KeybindsModule {
         this.bind('i', 'toggleTheme', 'Toggle theme');
         
         // Quick access
-        this.bind('h', 'goHome', 'Go to beginning of current surah');
-        this.bind('e', 'goEnd', 'Go to end of current surah');
+        this.bind('g', 'home', 'Go to beginning of current surah');
+        this.bind('Shift+g', 'end', 'Go to end of current surah');
         this.bind('r', 'reload', 'Reload current view');
     }
 }

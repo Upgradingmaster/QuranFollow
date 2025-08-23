@@ -149,8 +149,8 @@ export class AppModule {
             down: () => this.modules.controlModule.down(),
             next: () => this.modules.controlModule.next(),
             prev: () => this.modules.controlModule.prev(),
-            goHome: () => this.modules.controlModule.goToHome(),
-            goEnd: () => this.modules.controlModule.goToEnd(),
+            home: () => this.modules.controlModule.home(),
+            end: () => this.modules.controlModule.end(),
             
             // UI controls
             toggleControlPanel: () => this.modules.controlModule.toggleControlPanel(),

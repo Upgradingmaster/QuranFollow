@@ -6,6 +6,7 @@
 
 # Short Term
 - Tests
+- Magic numbers -> constants.js (wait for typescript)
 - Fix html and css classes
 - Optimize findKeyFromPage
 - Footnote dropdown
@@ -13,5 +14,5 @@
 
 # Now
 - Firefox support
-- Context Mode magic context window numbers
 - Add quick jump to page 
+- Click to set focusedAyah

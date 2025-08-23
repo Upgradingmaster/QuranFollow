@@ -141,14 +141,15 @@ export class ControlModule {
         }
 
     }
-    goToHome() {
-        this.log('TODO: goToHome');
+    home() {
+        this.goTo(null, null, 1, null);
     }
 
-    goToEnd() {
-        this.log('TODO: goToEnd');
+    end() {
+        const surah = this.modules.quranModule.getSurah();
+        const lastAyah =  this.modules.quranModule.getSurahLength(surah);
+        this.goTo(null, null, lastAyah, null);
     }
-
 
     showQuickJump() {
         this.modules.modalModule.showQuickJump();
