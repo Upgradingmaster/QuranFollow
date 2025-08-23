@@ -79,6 +79,14 @@ input[type="number"]:focus, input[type="text"]:focus {
     box-shadow: 0 0 0 3px rgba(139, 115, 85, 0.1);
 }
 
+input[type="number"]:disabled, input[type="text"]:disabled {
+    background: #ccc;
+    color: #666;
+    border-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
 button {
     background: linear-gradient(135deg, var(--theme-button) 0%, var(--theme-accent) 100%);
     color: white;

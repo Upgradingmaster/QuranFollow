@@ -37,16 +37,17 @@ export class AudioModule {
             const r = await fetch('http://localhost:5000/process_chunk', {method:'POST', body:fd});
         } catch (error) {
             this.log(`[X] Couldn't get prediction from backend. Make sure it is running.`);
-            console.error(error);
+            this.log(undefined, error);
         }
             
         if (!r.ok) {
             throw new Error(`Server error: ${r.status} ${r.statusText}`);
         }
 
-        const js = await r.json();
-        console.log("Received response from the backend: ", js);
-        return js;
+        const json = await r.json();
+        this.log(`Received response from the backend:`, undefined, true);
+        this.log(json, undefined, true);
+        return json;
     }
 
     async toggleAudioCapture() {
@@ -83,8 +84,7 @@ export class AudioModule {
             
             this.log('Started capturing audio from current tab');
         } catch (error) {
-            this.log(`[X] Failed to start capture`);
-            console.error(error);
+            this.log(`[X] Failed to start capture`, error);
             if (captureStatus) {
                 captureStatus.textContent = 'Failed to start capture';
             }

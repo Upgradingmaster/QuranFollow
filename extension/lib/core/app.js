@@ -50,8 +50,9 @@ export class AppModule {
         };
     }
 
-    log(msg) {
-        if (this.elements.logel) {
+    log(msg, error = null, internal = false) {
+        if (msg) console.log(msg);
+        if (msg && this.elements.logel && !internal) {
             // Store full history in data attribute
             const currentHistory = this.elements.logel.dataset.history || '';
             const newHistory = currentHistory + msg + '\n';
@@ -69,15 +70,16 @@ export class AppModule {
                 fullContent.textContent = newHistory;
                 fullContent.scrollTop = fullContent.scrollHeight;
             }
-        } else {
-            console.log(msg);
         }
+
+        if (error) { console.error(error); }
+
     }
 
     /* Theme */
     setTheme(theme) {
         if (!this.isValidTheme(theme)) {
-            console.error(`Invalid Theme ${theme}`);
+            this.log(undefined, `Invalid Theme ${theme}`);
             return;
         }
 
@@ -100,7 +102,7 @@ export class AppModule {
             case 'sepia':
                 this.setTheme('dark');
                 break;
-            default: console.error(`Invalid Theme ${theme}`);
+            default: this.error(`Invalid Theme ${theme}`);
         }
     }
 
@@ -122,9 +124,7 @@ export class AppModule {
 
         this.modules.audioModule = new AudioModule(dependencies);
 
-        this.keybindsModule = new KeybindsModule({
-            actions: this.makeActionTable()
-        });
+        this.keybindsModule = new KeybindsModule(this.makeActionTable(), dependencies);
 
         this.modules.modalModule = new ModalModule(this.keybindsModule.getHelpText(), this.elements);
 
@@ -206,6 +206,19 @@ export class AppModule {
             if (e.key === 'Enter') this.modules.controlModule.quickJumpGoTo();
         });
 
+        // Input syncing handlers
+        elements.surahInput.addEventListener('input', (e) => {
+            this.modules.controlModule.onControlPanelKeyInput();
+        });
+
+        elements.ayahInput.addEventListener('input', (e) => {
+            this.modules.controlModule.onControlPanelKeyInput();
+        });
+
+        elements.pageInput.addEventListener('input', (e) => {
+            this.modules.controlModule.onControlPanelPageInput();
+        });
+
         // Global escape key for modal
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -248,12 +261,11 @@ export class AppModule {
 
             this.modules.controlModule.showStartupScreen('surah');
 
-            this.log('Initialization successfully, Press q or F1 help');
+            this.log('Initialization successfully, Press q for help');
 
             return true;
         } catch (error) {
-            this.log(`[X] Failed to initialize application`);
-            console.error(error);
+            this.log(`[X] Failed to initialize application`, error);
             return false;
         }
     }

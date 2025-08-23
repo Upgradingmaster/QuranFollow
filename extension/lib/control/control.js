@@ -7,7 +7,6 @@ export class ControlModule {
 
     // Wrapper around quranModule.goTo to update the control panel with the state
     goTo(mode, surah, ayah, page, opts = this.defaultGoToOpts) {
-        console.log('controlModule.goto', mode, surah, ayah, page, opts);
         const obj = this.modules.quranModule.goTo(mode, surah, ayah, page, opts);
         if (obj.ok) {
             const newState = obj.value;
@@ -17,7 +16,7 @@ export class ControlModule {
             this.modules.uiModule.setControlPanelInputs(newSurah, newAyah, newPage);
             this.modules.uiModule.setLocationInfo(newSurah, newAyah);
         } else {
-            console.log(obj.error);
+            this.log(obj.error);
         }
     }
 
@@ -176,36 +175,37 @@ export class ControlModule {
         this.modules.audioModule.toggleAudioCapture();
     }
 
-    setTheme(theme) {
-        if (!this.isValidTheme(theme)) {
-            console.error(`Invalid Theme ${theme}`);
-            return;
-        }
-
-        document.body.setAttribute('data-theme' , theme);
-        localStorage.setItem('data-theme'       , theme);
-        this.log(`Set theme to: '{theme}'`);
-    }
-
-    setThemeFromLocalStorage() {
-        const themeFromLocalStorage = localStorage.getItem('data-theme');
-        this.setTheme(themeFromLocalStorage);
-    };
-
-    toggleTheme() {
-        let currentTheme = document.body.getAttribute('data-theme');
-        switch (currentTheme) {
-            case 'dark':
-                this.setTheme('sepia');
-                break;
-            case 'sepia':
-                this.setTheme('dark');
-                break;
-            default: console.error(`Invalid Theme ${theme}`);
+    onControlPanelKeyInput () {
+        const surah = parseInt(this.elements.surahInput.value);
+        const ayah  = parseInt(this.elements.ayahInput.value);
+        if (!this.modules.quranModule.isValidSurah(surah)) {
+            this.elements.ayahInput.disabled = true;
+            this.elements.pageInput.disabled = true;
+        } else if (!this.modules.quranModule.isValidAyah(ayah, surah))  {
+            this.elements.surahInput.disabled = true;
+            this.elements.pageInput.disabled = true;
+        } else {
+            const page  = this.modules.quranModule.getPageFromKey(surah, ayah);
+            this.elements.surahInput.disabled = false;
+            this.elements.ayahInput.disabled  = false;
+            this.elements.pageInput.disabled  = false;
+            this.elements.pageInput.value = page;
         }
     }
 
-    isValidTheme(theme) {
-        return theme && theme != '' && ['dark', 'sepia'].includes(theme);
+    onControlPanelPageInput () {
+        const page = parseInt(this.elements.pageInput.value);
+        if (!this.modules.quranModule.isValidPage(page)) {
+            this.elements.surahInput.disabled = true;
+            this.elements.ayahInput.disabled  = true;
+        } else {
+            const key  = this.modules.quranModule.getKeyFromPage(page);
+            this.elements.surahInput.disabled = false;
+            this.elements.ayahInput.disabled  = false;
+            this.elements.surahInput.value    = key.surah;
+            this.elements.ayahInput.value     = key.ayah;
+        }
+
     }
+
 }

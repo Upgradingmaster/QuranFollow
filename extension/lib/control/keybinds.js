@@ -1,6 +1,7 @@
 export class KeybindsModule {
-    constructor(options = {}) {
-        this.actions = options.actions || {};
+    constructor(actions, dependencies) {
+        this.actions = actions || {};
+        this.log = dependencies.log;
         this.enabled = true;
         this.keybinds = new Map();
         this.pressedKeys = new Set();
@@ -91,15 +92,15 @@ export class KeybindsModule {
             const { action, args = [], description } = keybind;
             
             if (typeof this.actions[action] === 'function') {
-                console.log(`[Keybind] Executing: ${description || action}`);
+                this.log(`[Keybind] Executing: ${description || action}`, undefined, true);
                 this.showToast(`⌨️ ${description || action}`, 'info');
                 this.actions[action](...args);
             } else {
-                console.warn(`[Keybind] Action not found: ${action}`);
+                this.log(`[Keybind] Action not found: ${action}`, undefined, true);
                 this.showToast(`[X] Action not found: ${action}`, 'error');
             }
         } catch (error) {
-            console.error(`[Keybind] Error executing action:`, error);
+            this.log('[Keybind] Error executing action:', error);
         }
     }
 
@@ -146,12 +147,12 @@ export class KeybindsModule {
 
     enable() {
         this.enabled = true;
-        console.log('[Keybind] Enabled global keybinds');
+        this.log('[Keybind] Enabled global keybinds');
     }
 
     disable() {
         this.enabled = false;
-        console.log('[Keybind] Disabled global keybinds');
+        this.log('[Keybind] Disabled global keybinds');
     }
 
     getKeybinds() {

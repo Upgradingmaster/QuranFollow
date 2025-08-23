@@ -47,15 +47,12 @@ export class QuranModule {
 
     goTo(mode, surah, ayah, page, opts = this.defaultGoToOpts) {
         // Ensure all params exist
-        console.log('quranModule.goto', mode, surah, ayah, page, opts);
-
         // Mode
         if (mode === null) {
             mode = QuranState.getMode();
         }
         if (!isValidMode(mode)) {
-            this.log(`[X] Trying to use an invalid mode`);
-            return {ok: false, error: 'invalid mode'};
+            return {ok: false, error: `[X] Invalid mode: '${mode}'`};
         }
 
         // Surah
@@ -64,8 +61,7 @@ export class QuranModule {
             else      { surah = QuranState.getSurah()      }
         }
         if (!isValidSurah(surah)) {
-            this.log(`[X] Invalid surah number: ${surah}. Please enter 1-114.`);
-            return {ok: false, error: 'invalid surah'};
+            return {ok: false, error: `[X] Invalid surah number: ${surah}.`};
         }
 
         // Ayah
@@ -74,8 +70,7 @@ export class QuranModule {
             else      { ayah = QuranState.getAyah(); }
         }
         if (!isValidAyah(ayah, surah)) {
-            this.log(`[X] Invalid ayah number, ${ayah} for surah, ${surah}`);
-            return {ok: false, error: 'invalid ayah'};
+            return {ok: false, error: `[X] Invalid key, ${surah}:${ayah}.`};
         }
 
         // Page
@@ -83,8 +78,7 @@ export class QuranModule {
             page = getPageFromKey(surah, ayah);
         }
         if (!isValidPage(page)) {
-            this.log(`[X] Invalid page number: ${page}. Please enter 1-604.`);
-            return {ok: false, error: 'invalid ayah'};
+            return {ok: false, error:`[X] Invalid page number: ${page}.`};
         }
 
         const currentMode  = QuranState.getMode();
@@ -117,7 +111,6 @@ export class QuranModule {
                     this.log(`Move to ayah ${ayah}`);
                 } else {
                     this.log(`[X] Failed to switch to ayah ${ayah}`);
-                    console.error('setFocusedAyah() failed')
                 }
             } else {
                 scrollToFocusedAyah(this.quranContainer);
@@ -138,8 +131,7 @@ export class QuranModule {
             this.log(`Loaded  page ${page}`);
             if (opts.highlightCurrentAyah) { scrollToFocusedAyah(this.quranContainer); }
         } catch (error) {
-            this.log(`[X] failed to load page ${page}: `);
-            console.error(error);
+            this.log(`[X] failed to load page ${page}: `, error);
         }
     }
 
@@ -153,8 +145,7 @@ export class QuranModule {
             this.log(`Loaded  ${locText}`);
             if (opts.highlightCurrentAyah) { scrollToFocusedAyah(this.quranContainer); }
         } catch (error) {
-            this.log(`[X] Failed to load ayah ${surah}:${ayah}`);
-            console.error(error);
+            this.log(`[X] Failed to load ayah ${surah}:${ayah}`, error);
         }
     }
 
@@ -169,8 +160,7 @@ export class QuranModule {
             if (opts.highlightCurrentAyah) { scrollToFocusedAyah(this.quranContainer); }
 
         } catch (error) {
-            this.log(`[X] Failed to load ${locText}`);
-            console.error(error);
+            this.log(`[X] Failed to load ${locText}`, error);
         }
     }
 
@@ -208,5 +198,12 @@ export class QuranModule {
     }
     isValidPage(page) {
         return isValidPage(page);
+    }
+    /* Utils */
+    getPageFromKey(surah, ayah) {
+        return getPageFromKey(surah, ayah);
+    }
+    getKeyFromPage(page) {
+        return getKeyFromPage(page);
     }
 }
