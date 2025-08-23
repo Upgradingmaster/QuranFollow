@@ -88,9 +88,13 @@ export class AppModule {
         this.log(`Set theme to '${theme}'`);
     }
 
-    setThemeFromLocalStorage() {
+    setThemeFromLocalStorage(defaultTheme = null) {
         const themeFromLocalStorage = localStorage.getItem('data-theme');
-        this.setTheme(themeFromLocalStorage);
+        if (!themeFromLocalStorage) {
+            this.setTheme(defaultTheme);
+        } else {
+            this.setTheme(themeFromLocalStorage);
+        }
     };
 
     toggleTheme() {
@@ -255,7 +259,7 @@ export class AppModule {
 
     async initialize() {
         try {
-            this.setThemeFromLocalStorage();
+            this.setThemeFromLocalStorage('sepia');
 
             await this.initializeModules();
 
