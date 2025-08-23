@@ -164,7 +164,7 @@ function getSurahMetadata(surah) {
     return surahMetadata[surah].verses_count;
 }
 
-function getSurahTotalAyat(surah) {
+function getSurahLength(surah) {
     if (!surah) return 0;
     return surahMetadata[surah].verses_count;
 }
@@ -178,5 +178,5 @@ export {
     getPage,
     getTranslation,
 
-    getSurahTotalAyat,
+    getSurahLength,
 };

@@ -89,11 +89,23 @@ export class ControlModule {
     }
 
     up() {
-        this.goTo(null, null, this.modules.quranModule.getAyah() - 1, null);
+        const state = this.modules.quranModule.getState();
+        if (state.ayah == 1) {
+            const prevSurah = state.surah - 1;
+            const lastAyah = this.modules.quranModule.getSurahLength(prevSurah);
+            this.goTo(null, prevSurah, lastAyah, null);
+        } else {
+            this.goTo(null, null, state.ayah - 1, null);
+        }
     }
 
     down() {
-        this.goTo(null, null, this.modules.quranModule.getAyah() + 1, null);
+        const state = this.modules.quranModule.getState();
+        if (state.ayah == this.modules.quranModule.getSurahLength(state.surah)) {
+            this.goTo(null, state.surah + 1, 1, null);
+        } else {
+            this.goTo(null, null, state.ayah + 1, null);
+        }
     }
 
     next() {

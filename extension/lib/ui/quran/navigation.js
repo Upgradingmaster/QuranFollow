@@ -29,14 +29,12 @@ function setFocusedAyah(quranContainer, surah, ayah, scrollIntoView = true) {
         // Remove existing focused ayah styling
         const focusedAyat = findFocusedAyahElement(quranContainer, true);
         for (const el of focusedAyat ) {
-            console.log('Removing');
             el.classList.remove('focused-ayah');
         };
 
         // Add new focused ayah styling
         const toFocus = findAyahElement(quranContainer, surah, ayah, true);
         for (const el of toFocus) {
-            console.log('Adding');
             el.classList.add('focused-ayah');
         }
 

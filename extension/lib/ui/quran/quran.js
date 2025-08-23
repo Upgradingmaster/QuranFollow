@@ -6,6 +6,7 @@ import { QuranState } from './state.js'
 
 import {
     initializeQuranData,
+    getSurahLength,
 } from './data.js';
 
 import {
@@ -205,5 +206,9 @@ export class QuranModule {
     }
     getKeyFromPage(page) {
         return getKeyFromPage(page);
+    }
+
+    getSurahLength(surah) {
+        return getSurahLength(surah);
     }
 }

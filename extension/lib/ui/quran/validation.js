@@ -1,4 +1,4 @@
-import { getSurahTotalAyat } from './data.js'
+import { getSurahLength } from './data.js'
 
 function isValidMode(mode) {
     const validModes = ['mushaf', 'context', 'surah'];
@@ -10,7 +10,7 @@ function isValidSurah(surah) {
 }
 
 function isValidAyah(ayah, surah) {
-    return Number.isInteger(ayah) && ayah > 0 && ayah <= getSurahTotalAyat(surah);
+    return Number.isInteger(ayah) && ayah > 0 && ayah <= getSurahLength(surah);
 }
 
 function isValidPage(page) {
