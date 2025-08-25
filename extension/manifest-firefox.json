@@ -1,34 +1,35 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 2,
   "name": "Qurʾān Locator",
   "version": "1.0.0",
   "description": "Audio-based Quran ayah locator and reader",
   
   "permissions": [
-    "storage",
-    "tabCapture",
-    "sidePanel"
-  ],
-  
-  "host_permissions": [
+    "storage", 
     "http://localhost:5000/*"
   ],
+
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+
+  // "content_scripts": [
+  //   {
+  //     "matches": ["<all_urls>"],
+  //     "js": ["sidepanel/content.js"],
+  //     "run_at": "document_idle"
+  //   }
+  // ],
   
-  "action": {
+  "sidebar_action": {
     "default_title": "Qurʾān Locator",
+    "default_panel": "sidepanel/sidepanel.html",
     "default_icon": {
       "16": "assets/icons/icon-16.png",
       "48": "assets/icons/icon-48.png",
       "128": "assets/icons/icon-128.png"
     }
-  },
-
-  "background": {
-    "service_worker": "background.js"
-  },
-
-  "side_panel": {
-    "default_path": "sidepanel/sidepanel.html"
   },
   
   "icons": {
@@ -38,13 +39,10 @@
   },
   
   "web_accessible_resources": [
-    {
-      "resources": ["data/*", "assets/*", "lib/*"],
-      "matches": ["<all_urls>"]
-    }
+    "data/*", 
+    "assets/*", 
+    "lib/*"
   ],
   
-  "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'"
-  }
+  "content_security_policy": "script-src 'self'; object-src 'self'"
 }

@@ -3,6 +3,8 @@
 - Websockets
 - Better Quran Search engine
 - Typescript
+- Native Messaging + Efficient Backend w/ Browser Agnostic Audio Capture
+- Local model option for chrome users 
 
 # Short Term
 - Tests
