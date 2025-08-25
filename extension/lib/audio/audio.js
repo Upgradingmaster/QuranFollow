@@ -33,13 +33,15 @@ export class AudioModule {
         fd.append('chunk', blob, 'chunk.wav');
         this.log(`Sending past ${CHUNK_DURATION}s of audio to backend…`);
 
+        let r;
         try {
-            const r = await fetch('http://localhost:5000/process_chunk', {method:'POST', body:fd});
+            r = await fetch('http://localhost:5000/process_chunk', {method:'POST', body:fd});
         } catch (error) {
             this.log(`[X] Couldn't get prediction from backend. Make sure it is running.`);
-            this.log(undefined, error);
+            throw new Error(error);
         }
-            
+
+
         if (!r.ok) {
             throw new Error(`Server error: ${r.status} ${r.statusText}`);
         }
@@ -50,67 +52,23 @@ export class AudioModule {
         return json;
     }
 
-    async toggleAudioCapture() {
-        if (this.audioCapture.isCapturing) {
-            this.stopCapture();
-        } else {
-            await this.startCapture();
-        }
-    }
-
     async startCapture() {
-        const { toggleCaptureBtn, captureStatus, analyzeBtn } = this.elements;
-        
         try {
-            if (toggleCaptureBtn) {
-                toggleCaptureBtn.disabled = true;
-            }
-            if (captureStatus) {
-                captureStatus.textContent = 'Starting capture...';
-            }
-            
             await this.audioCapture.startCapture();
-            
-            if (toggleCaptureBtn) {
-                toggleCaptureBtn.textContent = 'Stop Capture';
-                toggleCaptureBtn.classList.add('capturing');
-            }
-            if (captureStatus) {
-                captureStatus.textContent = 'Capturing live audio from tab';
-            }
-            if (analyzeBtn) {
-                analyzeBtn.disabled = false;
-            }
-            
             this.log('Started capturing audio from current tab');
         } catch (error) {
             this.log(`[X] Failed to start capture`, error);
-            if (captureStatus) {
-                captureStatus.textContent = 'Failed to start capture';
-            }
-        } finally {
-            if (toggleCaptureBtn) {
-                toggleCaptureBtn.disabled = false;
-            }
+            throw new Error(error);
         }
     }
 
     stopCapture() {
-        const { toggleCaptureBtn, captureStatus, analyzeBtn } = this.elements;
-        
         this.audioCapture.stopCapture();
-        
-        if (toggleCaptureBtn) {
-            toggleCaptureBtn.textContent = 'Start Capture';
-            toggleCaptureBtn.classList.remove('capturing');
-        }
-        if (captureStatus) {
-            captureStatus.textContent = 'Capture stopped';
-        }
-        if (analyzeBtn) {
-            analyzeBtn.disabled = true;
-        }
-        
         this.log('Stopped capturing audio from current tab');
     }
+
+    isCapturing() {
+        return this.audioCapture.isCapturing;
+    }
+
 }

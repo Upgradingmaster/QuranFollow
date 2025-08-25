@@ -22,4 +22,58 @@ export class UIModule {
     setLocationInfo(surahName, surah, ayah) {
         this.elements.locationInfo.textContent = `${surahName} ${surah}:${ayah}`;
     }
+
+    startAudioCapture() {
+        const { toggleCaptureBtn, captureStatus } = this.elements;
+
+        if (toggleCaptureBtn) {
+            toggleCaptureBtn.disabled = true;
+        }
+
+        if (captureStatus) {
+            captureStatus.textContent = 'Starting capture...';
+        }
+    }
+
+    startedAudioCapture () {
+        const { toggleCaptureBtn, captureStatus, analyzeBtn } = this.elements;
+        if (toggleCaptureBtn) {
+            toggleCaptureBtn.textContent = 'Stop Capture';
+            toggleCaptureBtn.classList.add('capturing');
+        }
+        if (captureStatus) {
+            captureStatus.textContent = 'Capturing live audio from tab';
+        }
+        if (analyzeBtn) {
+            analyzeBtn.disabled = false;
+        }
+        if (toggleCaptureBtn) {
+            toggleCaptureBtn.disabled = false;
+        }
+    }
+
+    stoppedAudioCapture() {
+        const { toggleCaptureBtn, captureStatus, analyzeBtn } = this.elements;
+
+        if (toggleCaptureBtn) {
+            toggleCaptureBtn.textContent = 'Start Capture';
+            toggleCaptureBtn.classList.remove('capturing');
+        }
+
+        if (captureStatus) {
+            captureStatus.textContent = 'Capture stopped';
+        }
+        if (analyzeBtn) {
+            analyzeBtn.disabled = true;
+        }
+    }
+
+    failedAudioCapture() {
+        if (captureStatus) {
+            captureStatus.textContent = 'Failed to start capture';
+        }
+        if (toggleCaptureBtn) {
+            toggleCaptureBtn.disabled = false;
+        }
+    }
 }

@@ -188,7 +188,31 @@ export class ControlModule {
     }
 
     toggleAudioCapture() {
-        this.modules.audioModule.toggleAudioCapture();
+        if (!this.modules.audioModule.isCapturing()) {
+            this.startAudioCapture();
+        } else {
+            this.stopAudioCapture();
+        }
+    }
+
+    startAudioCapture() {
+        if (!this.browserSupportsAudioCapture()) {
+            this.log(`Audio Capture is not supported on '${this.getBrowser()}'. You must use the local backend to use this feature.`);
+            return;
+        }
+
+        this.modules.uiModule.startAudioCapture();
+        try {
+            this.modules.audioModule.startCapture();
+            this.modules.uiModule.startedAudioCapture();
+        } catch {
+            this.modules.uiModule.failedAudioCapture();
+        }
+    }
+
+    stopAudioCapture() {
+        this.modules.audioModule.stopCapture();
+        this.modules.uiModule.stoppedAudioCapture();
     }
 
     onControlPanelKeyInput () {
@@ -224,4 +248,26 @@ export class ControlModule {
 
     }
 
+    getBrowser() {
+        const userAgent = navigator.userAgent;
+
+        if (userAgent.includes('Firefox')) {
+            return 'Firefox';
+        } else if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
+            return 'Chrome';
+        } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+            return 'Safari';
+        } else if (userAgent.includes('Edg')) {
+            return 'Edge';
+        } else if (userAgent.includes('Opera') || userAgent.includes('OPR')) {
+            return 'Opera';
+        }
+
+        return 'Unknown';
+    }
+
+    // TODO: Test with other Chromium browsers
+    browserSupportsAudioCapture() {
+        return this.getBrowser() == 'Chrome';
+    }
 }

@@ -160,7 +160,7 @@ function getSurahMetadata(surah) {
 }
 
 function getSurahLength(surah) {
-    if (!isValidSurah(surah)) throw new Error();
+    if (!isValidSurah(surah)) return 0;
     return surahMetadata[surah].verses_count;
 }
 
