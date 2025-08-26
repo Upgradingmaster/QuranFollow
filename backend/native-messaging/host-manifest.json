@@ -1,0 +1,7 @@
+{
+    "name": "com.armaan.quran_locater",
+    "description": "Follow Quran Recitations with a sync'd translation side-by-side",
+    "path": "/home/upgrade/Development/probe/quran_locater/backend/native-messaging/run.sh",
+    "type": "stdio",
+    "allowed_origins": ["chrome-extension://lkfikejgbbkgohajbkipnjicmahacdco/"]
+}

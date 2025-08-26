@@ -1,6 +1,8 @@
 import * as WavEncoder from './wav-encoder.js';
 import { AudioCapture } from './capture.js';
 
+import { sendWavToNativeHost } from './native-host.js'
+
 export class AudioModule {
     constructor(dependencies) {
         this.audioCapture = new AudioCapture();
@@ -14,42 +16,30 @@ export class AudioModule {
             return;
         }
 
-        const CHUNK_DURATION = 8.0; // seconds - grab 8 seconds of recent audio
+        const CHUNK_DURATION = 8.0;
         const pcm = this.audioCapture.getAudioChunk(CHUNK_DURATION);
-        
         if (!pcm || pcm.length === 0) {
             this.log(`[X] No audio data available`);
             return;
         }
 
-        // encode mono WAV at 16kHz
         const wav = WavEncoder.encodeSync({
             sampleRate: 16000,
             channelData: [pcm]
-        });
+        }); // encode mono WAV at 16kHz
 
-        const blob = new Blob([wav], {type:'audio/wav'});
-        const fd = new FormData(); 
-        fd.append('chunk', blob, 'chunk.wav');
         this.log(`Sending past ${CHUNK_DURATION}s of audio to backend…`);
-
-        let r;
+        let res;
         try {
-            r = await fetch('http://localhost:5000/process_chunk', {method:'POST', body:fd});
+            res = await sendWavToNativeHost(wav);
         } catch (error) {
-            this.log(`[X] Couldn't get prediction from backend. Make sure it is running.`);
-            throw new Error(error);
+            this.log(`[X] Couldn't get prediction from backend.`);
+            throw error;
         }
 
-
-        if (!r.ok) {
-            throw new Error(`Server error: ${r.status} ${r.statusText}`);
-        }
-
-        const json = await r.json();
         this.log(`Received response from the backend:`, undefined, true);
-        this.log(json, undefined, true);
-        return json;
+        this.log(res, undefined, true);
+        return res;
     }
 
     async startCapture() {

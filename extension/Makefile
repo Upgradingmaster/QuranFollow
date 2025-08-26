@@ -7,6 +7,7 @@ all: chrome firefox
 clean:
 	rm -rf dist/
 
+native-messenger:
 # Build Chrome extension
 chrome: clean-chrome
 	@echo "Building Chrome extension..."

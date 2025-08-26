@@ -3,15 +3,12 @@
   "name": "Qurʾān Locator",
   "version": "1.0.0",
   "description": "Follow Quran Recitations with a sync'd translation side-by-side",
-  
+
   "permissions": [
     "storage",
     "tabCapture",
-    "sidePanel"
-  ],
-  
-  "host_permissions": [
-    "http://localhost:5000/*"
+    "sidePanel",
+    "nativeMessaging"
   ],
   
   "action": {
@@ -36,14 +33,7 @@
     "48": "assets/icons/icon-48.png",
     "128": "assets/icons/icon-128.png"
   },
-  
-  "web_accessible_resources": [
-    {
-      "resources": ["data/*", "assets/*", "lib/*"],
-      "matches": ["<all_urls>"]
-    }
-  ],
-  
+
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   }

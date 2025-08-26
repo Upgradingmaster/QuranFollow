@@ -1,4 +1,8 @@
 import { AudioBuffer } from './buffer.js';
+import {
+    startHost,
+    stopHost,
+    hostStarted } from './native-host.js';
 
 export class AudioCapture {
     constructor() {
@@ -21,6 +25,10 @@ export class AudioCapture {
         }
 
         try {
+            if (!hostStarted()) {
+                startHost();
+            }
+
             // Get stream ID from current tab
             const streamId = await chrome.tabCapture.getMediaStreamId();
             
@@ -87,11 +95,16 @@ export class AudioCapture {
     }
 
     cleanup() {
+        if (hostStarted()) {
+            stopHost();
+        }
+
         if (this.audioWorkletNode) {
             this.audioWorkletNode.disconnect();
             this.audioWorkletNode = null;
         }
-        
+
+
         if (this.audioContext) {
             this.audioContext.close();
             this.audioContext = null;

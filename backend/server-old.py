@@ -8,8 +8,7 @@ from asr import RealTimeQuranASR, Config
 import mimetypes
 
 # ---------------------------------------------------------------------------
-# SCRIPT_DB     =  Path("./website/data/scripts/uthmani-aba.json")
-SCRIPT_DB     =  Path("./extension/data/scripts/uthmani-aba.json")
+SCRIPT_DB     =  Path("../extension/data/scripts/uthmani-aba.json")
 MODEL_NAME    = "OdyAsh/faster-whisper-base-ar-quran"
 # MODEL_NAME    = "tarteel-ai/whisper-base-ar-quran"
 # TODO: try the normal whisper models
@@ -21,9 +20,9 @@ CORS(app)  # simple open CORS policy
 mimetypes.add_type('application/javascript', '.js')
 mimetypes.add_type('application/javascript', '.mjs')
 
-print("Bootstrapping recognizer (takes a few seconds the first time)")
+print("Starting Backend...")
 recognizer = RealTimeQuranASR(script_db=SCRIPT_DB, model_name=MODEL_NAME)
-print("Ready ✔")
+print("Backend Ready.")
 
 # ---------------------------------------------------------------------------
 @app.route("/")

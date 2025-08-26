@@ -10,6 +10,7 @@ from time import perf_counter
 import numpy as np
 from rapidfuzz import fuzz
 import unicodedata
+import logging
 
 
 # ============================ Data Structures ================================
@@ -143,7 +144,7 @@ class QuranDatabase:
             with json_file.open(encoding="utf-8") as f:
                 data = json.load(f)
         except Exception as e:
-            print(f"Error reading json db {json_file}: {e}")
+            logging.info(f"Error reading json db {json_file}: {e}")
             return
 
         for key, verse in data.items():
@@ -151,7 +152,7 @@ class QuranDatabase:
             try:
                 surah_num, ayah_num = map(int, key.split(":"))
             except ValueError:
-                print(f"Skipping malformed key {key!r}")
+                logging.info(f"Skipping malformed key {key!r}")
                 continue
 
             original_text = verse.get("text", "").strip()
@@ -164,7 +165,7 @@ class QuranDatabase:
                 original_text=original_text,
             )
 
-        print(f"Loaded {len(self.verses)} verses from {json_file.name}")
+        logging.info(f"Loaded {len(self.verses)} verses from {json_file.name}")
 
     def _load_from_sqlite_aba(self, db_file: Path) -> None:
         try:
@@ -174,7 +175,7 @@ class QuranDatabase:
                 "SELECT verse_key, surah, ayah, text FROM verses ORDER BY surah, ayah"
             )
         except Exception as e:
-            print(f"Error reading sqlite aba db {db_file}: {e}")
+            logging.info(f"Error reading sqlite aba db {db_file}: {e}")
             return
 
         # for surah, ayah, word_idx, txt in cur:
@@ -182,7 +183,7 @@ class QuranDatabase:
             self._add_verse(surah_number=surah, ayah_number=ayah, original_text=txt)
 
         con.close()
-        print(f"Loaded {len(self.verses)} verses from {db_file.name}")
+        logging.info(f"Loaded {len(self.verses)} verses from {db_file.name}")
 
     def _load_from_sqlite_wbw(self, db_file: Path) -> None:
         """
@@ -196,7 +197,7 @@ class QuranDatabase:
                 "SELECT surah, ayah, word, text FROM words ORDER BY surah, ayah, word"
             )
         except Exception as e:
-            print(f"Error reading sqlite wbw db {db_file}: {e}")
+            logging.info(f"Error reading sqlite wbw db {db_file}: {e}")
             return
 
         current_key: tuple[int, int] | None = None
@@ -225,7 +226,7 @@ class QuranDatabase:
             )
 
         con.close()
-        print(f"Loaded {len(self.verses)} verses from {db_file.name}")
+        logging.info(f"Loaded {len(self.verses)} verses from {db_file.name}")
 
     def _add_verse(
         self, *, surah_number: int, ayah_number: int, original_text: str
@@ -286,9 +287,9 @@ class ASREngine:
         device = "cpu"
         compute_type = "float16" if device == "cuda" else "int8"
 
-        print(f"Loading model: {model_name}")
+        logging.info(f"Loading model: {model_name}")
         self.model = WhisperModel(model_name, device=device, compute_type=compute_type)
-        print("ASR model loaded.")
+        logging.info("ASR model loaded.")
 
     def transcribe_chunk(self, audio_chunk: np.ndarray) -> str:
         """Transcribe a single audio chunk."""
@@ -305,10 +306,10 @@ class ASREngine:
 # ============================ Real-time Recognizer ===========================
 class RealTimeQuranASR:
     def __init__(self, script_db: Path, model_name: str):
-        print("Initializing...")
+        logging.info("Initializing...")
         self.quran_db = QuranDatabase(script_db)
         self.asr = ASREngine(model_name)
-        print("Initialization done.\n")
+        logging.info("Initialization done.\n")
 
     def process_chunk(self, chunk: np.ndarray):
         """
