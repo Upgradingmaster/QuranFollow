@@ -3,7 +3,6 @@
 - Websockets
 - Quran Search engine
 - Typescript
-- Native Messaging + Efficient Backend w/ Browser Agnostic Audio Capture
 - Local model option for chrome users 
 - Content Script
 
@@ -14,9 +13,12 @@
 - Optimize findKeyFromPage
 - Footnote dropdown
 - Jump list
-- quick jump should be flexible with its inputs. ex:
-    - `66<RET>` -> `66:1` 
+- Slow download step on first run for the model 
 
 # Now
+- Settings
+- quick jump should be flexible with its inputs. ex:
+    - `66<RET>` -> `66:1` 
 - Add quick jump to page 
 - Click to set focusedAyah
+- Performant Backend w/ Browser Agnostic Audio Capture

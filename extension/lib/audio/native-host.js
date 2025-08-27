@@ -6,6 +6,7 @@ function startHost() {
     try {
         nativePort = chrome.runtime.connectNative(HOST_NAME);
         nativePort.onDisconnect.addListener(() => {
+            console.log('[Native Host] Crashed');
             stopHost();
         });
         console.log(`[Native Host] Connected '${HOST_NAME}'`);
@@ -65,7 +66,7 @@ async function sendToNativeHostSync(message) {
             if (response.ok) {
                 resolve(response.result || response);
             } else {
-                reject(new Error('[Native Host] Error: ', response.error || '[Native]Unknown error from native host'));
+                reject(new Error('[Native Host] Error: ', response.error || '[Native Host] Unknown error from native host'));
             }
         };
 

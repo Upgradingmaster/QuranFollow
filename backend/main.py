@@ -24,10 +24,6 @@ logging.basicConfig(
     ]
 )
 
-def log_message(message):
-    """Log using Python's logging module"""
-    logging.info(message)
-
 def read_message():
     """Read a message from the extension"""
     # Read length
@@ -49,19 +45,14 @@ def send_message(message):
 def process_audio_data(audio_data_b64):
     """Process base64-encoded WAV audio data"""
     try:
-        # Decode base64 audio data
         audio_bytes = base64.b64decode(audio_data_b64)
-
-        # Read audio data
         data, sr = sf.read(io.BytesIO(audio_bytes), dtype='float32')
-
         if sr != Config.SAMPLE_RATE:
             return {
                 "ok": False,
                 "error": f"sample-rate {sr} != {Config.SAMPLE_RATE}"
             }
 
-        # Process with recognizer
         result = recognizer.process_chunk(data)
 
         return {
@@ -70,7 +61,7 @@ def process_audio_data(audio_data_b64):
         }
 
     except Exception as e:
-        log_message(f"Error processing audio: {str(e)}")
+        logging.info(f"Error processing audio: {str(e)}")
         return {
             "ok": False,
             "error": str(e)
@@ -78,15 +69,16 @@ def process_audio_data(audio_data_b64):
 
 SCRIPT_DB = Path("../../extension/data/scripts/uthmani-aba.json")
 MODEL_NAME = "OdyAsh/faster-whisper-base-ar-quran"
+# MODEL_NAME = "tarteel-ai/whisper-base-ar-quran" TODO: code doesn't support other models
 
 def main():
     """Main message processing loop"""
-    log_message("Native messaging host started")
+    logging.info("Native messaging host started")
 
-    log_message("Starting Backend...")
+    logging.info("Starting Backend...")
     global recognizer
     recognizer = RealTimeQuranASR(script_db=SCRIPT_DB, model_name=MODEL_NAME)
-    log_message("Backend ready.")
+    logging.info("Backend ready.")
 
     try:
         while True:
@@ -94,7 +86,7 @@ def main():
             if message is None:
                 break
 
-            log_message(f"Received message: {message.get('action', 'unknown')}")
+            logging.info(f"Received message: {message.get('action', 'unknown')}")
 
             if message.get('action') == 'process_audio':
                 audio_data = message.get('data')
@@ -118,7 +110,7 @@ def main():
                 })
 
     except Exception as e:
-        log_message(f"Error in main loop: {str(e)}")
+        logging.info(f"Error in main loop: {str(e)}")
         send_message({
             "ok": False,
             "error": f"Host error: {str(e)}"

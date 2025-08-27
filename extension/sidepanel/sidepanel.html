@@ -9,35 +9,43 @@
 
 <h2>Qurʾān Locator</h2>
 
-<!-- Footer Control Button -->
-<div id="footer-controls">
-  <button id="control-panel-toggle" class="footer-button">
-    <span class="controls-icon">⚙️</span>
-    <span class="controls-text">Controls</span>
-  </button>
+<!-- Help Modal -->
+<div id="help" class="modal-backdrop">
+  <div class="modal help-modal">
+    <div class="modal-header">
+      <h3 class="modal-header-text">Keyboard Shortcuts</h3>
+      <button id="help-close" class="close-button" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="help-text">
+      Loading...
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Control Panel Modal -->
 <div id="control-panel" class="modal-backdrop">
-  <div id="control-modal" class="control-modal">
+  <div class="modal control-panel-modal">
     <div class="modal-header">
-      <h3>Control Panel</h3>
+      <h3 class="modal-header-text">Control Panel</h3>
       <button id="control-panel-close" class="close-button">×</button>
     </div>
-    <div id="control-panel">
-      <div class="control-row">
-        <div class="control-section">
-          <h3>Live Audio Capture</h3>
-          <div class="capture-controls">
-            <div id="capture-status" class="capture-status">Ready to capture</div>
-            <button id="toggle-capture" class="capture-button">Start Capture</button>
-            <button id="analyse" disabled>Analyse Audio</button>
+    <div class="modal-body">
+      <div class="control-column">
+        <div class="control-row">
+          <h3 class="control-row-heading">Live Audio Capture</h3>
+          <div class="control-audio">
+            <div id="control-audio-status">Ready to capture</div>
+            <button id="control-audio-capture">Start Capture</button>
+            <button id="control-audio-analyse" disabled>Analyse Audio</button>
           </div>
         </div>
 
-        <div class="control-section">
-          <div class="mode-controls">
-            <select id="mode-select">
+        <div class="control-row">
+          <h3 class="control-row-heading">Mode Select</h3>
+          <div class="control-mode">
+            <select id="control-mode-select">
               <option value="surah">Surah</option>
               <option value="context">Context</option>
               <option value="mushaf">Mushaf</option>
@@ -45,9 +53,9 @@
           </div>
         </div>
 
-        <div class="control-section">
-          <h3>Navigate</h3>
-          <div class="controls">
+        <div class="control-row">
+          <h3 class="control-row-heading">Navigate</h3>
+          <div class="control-navigation">
 
             <!-- <div class="input-group"> -->
             <!--   <label for="key-input">Key:</label> -->
@@ -55,30 +63,30 @@
             <!-- </div> -->
 
             <div class="input-group">
-              <label for="surah-input">Surah:</label>
-              <input type="number" id="surah-input" min="1" max="114" value="1" />
+              <label for="control-surah-input">Surah:</label>
+              <input type="number" id="control-surah-input" min="1" max="114" value="1" />
             </div>
             <div class="input-group">
-              <label for="ayah-input">Ayah:</label>
-              <input type="number" id="ayah-input" min="1" max="286" value="1" />
+              <label for="control-ayah-input">Ayah:</label>
+              <input type="number" id="control-ayah-input" min="1" max="286" value="1" />
             </div>
 
             <div class="input-group">
-              <label for="page-input">Page:</label>
-              <input type="number" id="page-input" min="1" max="604" value="1" />
+              <label for="control-page-input">Page:</label>
+              <input type="number" id="control-page-input" min="1" max="604" value="1" />
             </div>
 
-            <button id="go">Go</button>
+            <button id="control-go">Go</button>
           </div>
         </div>
 
-        <div class="control-section">
-          <h3>Appearance</h3>
-          <div class="theme-controls">
-            <button id="toggle-theme">Toggle Theme</button>
+        <div class="control-row">
+          <h3 class="control-row-heading">Appearance</h3>
+          <div class="control-theme">
+            <button id="control-toggle-theme">Toggle Theme</button>
           </div>
         </div>
-        
+
       </div>
     </div>
   </div>
@@ -86,9 +94,9 @@
 
 <!-- Quick Jump Modal -->
 <div id="quick-jump" class="modal-backdrop">
-  <div class="quick-jump-modal">
+  <div class="modal quick-jump-modal">
     <div class="modal-header">
-      <h3>Quick Jump</h3>
+      <h3 class="modal-header-text">Quick Jump</h3>
       <button id="quick-jump-close" class="close-button" aria-label="Close">&times;</button>
     </div>
     <div class="modal-body">
@@ -97,17 +105,35 @@
   </div>
 </div>
 
+
+<!-- Main View -->
+<!-- Log -->
 <div id="log" class="log-container">
-  <div class="log-status-bar">Ready</div>
-  <div class="log-full-content"></div>
-  <div class="log-toggle">▼</div>
+  <div id="log-status-bar">Ready</div>
+  <div id="log-expanded"></div>
+  <div id="log-toggle">▼</div>
 </div>
 
+<!-- Location Info -->
 <div class="location-info">
   <div id="location-info" class="location-info-content">1:1</div>
 </div>
 
+<!-- Quran -->
 <div id="quran"></div>
+
+<!-- Footer Control Button -->
+<div class="footer">
+  <button id="footer-help" class="footer-button">
+    Help
+  </button>
+  <button id="footer-control-panel" class="footer-button">
+    Control Panel
+  </button>
+  <button id="footer-quick-jump" class="footer-button">
+    Quick Jump
+  </button>
+</div>
 
 <script type="module" src="sidepanel.js"></script>
 </body>
