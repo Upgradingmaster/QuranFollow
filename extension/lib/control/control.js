@@ -1,4 +1,4 @@
-import { getBrowser, browserSupportsAudioCapture } from './browser.js'
+import { getBrowser, browserSupportsAudioCapture } from '../core/browser.js';
 
 export class ControlModule {
     constructor(dependencies, modules) {
@@ -80,13 +80,15 @@ export class ControlModule {
 
     goToKey(key) {
         const parts = key.split(':');
-        if (parts.length === 2) {
-            let surah = parseInt(parts[0]);
-            let ayah  = parseInt(parts[1]);
-            this.goTo(null, surah, ayah, null);
-        } else {
-            this.log(`[X] Invalid key format: ${key}. Use format surah:ayah (e.g., 18:10)`);
-        }
+        let surah, ayah;
+
+        if (parts[0]) surah = parseInt(parts[0]);
+        else return;
+
+        if (parts[1]) ayah = parseInt(parts[1]);
+        else ayah = 1;
+
+        this.goTo(null, surah, ayah, null);
     }
 
     reloadQuranView() {

@@ -1,4 +1,4 @@
-import { getPage, getWords } from './data.js'
+import { getPage, getWords, getSurahLength  } from './data.js'
 
 // TODO: optimize
 function getPageFromKey(surah, ayah) {
@@ -38,7 +38,22 @@ function getKeyFromPage(pageNumber) {
     return { surah, ayah };
 }
 
+function clampAyahToSurahBounds(ayah, surah) {
+    const surahLength = getSurahLength(surah);
+
+    if (ayah < 1) {
+        return 1;
+    }
+
+    if (ayah > surahLength) {
+        return surahLength;
+    }
+
+    return ayah;
+}
+
 export {
     getPageFromKey,
     getKeyFromPage,
+    clampAyahToSurahBounds
 };

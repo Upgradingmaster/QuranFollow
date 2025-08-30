@@ -19,9 +19,6 @@
 - better css styles for disable ASR buttons
 
 # Now
-- Settings
-- quick jump should be flexible with its inputs. ex:
-    - `66<RET>` -> `66:1` 
 - Add quick jump to page 
 - Click to set focusedAyah
 - Performant Backend w/ Browser Agnostic Audio Capture

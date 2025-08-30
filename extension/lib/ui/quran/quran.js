@@ -13,6 +13,7 @@ import {
 import {
     getPageFromKey,
     getKeyFromPage,
+    clampAyahToSurahBounds
 } from './utils.js'
 
 import {
@@ -69,7 +70,7 @@ export class QuranModule {
         // Ayah
         if (ayah === null) {
             if (page) { ayah = getKeyFromPage(page).ayah }
-            else      { ayah = QuranState.getAyah(); }
+            else      { ayah = QuranState.getAyah()      }
         }
         if (!isValidAyah(ayah, surah)) {
             return {ok: false, error: `[X] Invalid key, ${surah}:${ayah}.`};
