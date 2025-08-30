@@ -5,11 +5,14 @@ import { KeybindsModule } from '../control/keybinds.js';
 import { ModalModule }    from '../ui/modal.js';
 import { ControlModule }  from '../control/control.js';
 import { SettingsModule } from './settings.js';
+import * as Log           from './log.js';
+import * as Theme         from '../ui/theme.js';
 
 export class AppModule {
     constructor() {
-        this.log = this.log.bind(this);
         this.initializeElements();
+        Log.initializeLogger(this.elements);
+        this.log = Log.log.bind(this);
         this.bindEvents();
         this.modules = {};
     }
@@ -60,7 +63,7 @@ export class AppModule {
             // UI controls
             toggleControlPanel: () => this.modules.controlModule.toggleControlPanel(),
             toggleHelp: () => this.modules.controlModule.toggleHelp(),
-            toggleTheme: () => this.toggleTheme(),
+            toggleTheme: () => Theme.toggleTheme(),
 
             // Other
             reload: () => this.modules.controlModule.reloadQuranView(),
@@ -105,6 +108,7 @@ export class AppModule {
             pageInput          : document.getElementById('control-page-input'),
             goBtn              : document.getElementById('control-go'),
 
+            // Theme
             toggleThemeBtn     : document.getElementById('control-toggle-theme'),
 
             /* Log */
@@ -133,7 +137,7 @@ export class AppModule {
 
         // Control Panel: Audio
         elements.toggleCaptureBtn.onclick = () => this.modules.controlModule.toggleAudioCapture();
-        elements.toggleThemeBtn.onclick   = () => this.toggleTheme();
+        elements.toggleThemeBtn.onclick   = () => Theme.toggleTheme();
         elements.analyzeBtn.onclick       = () => this.modules.controlModule.predict();
         elements.goBtn.onclick            = () => this.modules.controlModule.controlPanelGoTo();
 
@@ -200,12 +204,16 @@ export class AppModule {
             }
         };
 
+        // Header Log Panel
+        elements.logStatusBar.onclick      = () => this.modules.controlModule.toggleLogPanel();
+        elements.logToggle.onclick         = () => this.modules.controlModule.toggleLogPanel();
+
         // Footer
-        elements.footerHelpBtn.onclick = () => this.modules.controlModule.showHelp();
-        elements.footerCPBtn.onclick   = () => this.modules.controlModule.showControlPanel();
-        elements.footerQJBtn.onclick   = () => this.modules.controlModule.showQuickJump();
+        elements.footerHelpBtn.onclick     = () => this.modules.controlModule.showHelp();
+        elements.footerCPBtn.onclick       = () => this.modules.controlModule.showControlPanel();
+        elements.footerQJBtn.onclick       = () => this.modules.controlModule.showQuickJump();
         elements.footerSettingsBtn.onclick = () => this.modules.controlModule.showSettings();
-        elements.footerQuitBtn.onclick = () => this.modules.controlModule.quit();
+        elements.footerQuitBtn.onclick     = () => this.modules.controlModule.quit();
 
         // Settings
         elements.settingUseASR.addEventListener('change', (e) => {
@@ -221,31 +229,11 @@ export class AppModule {
                 this.modules.controlModule.hideSettings();
             }
         });
-        
-        // Log toggle functionality
-        const { logContainer, logExpanded, logStatusBar, logToggle }      = elements;
-
-        const toggleLog = () => {
-            const isExpanded = logContainer.classList.contains('expanded');
-            if (isExpanded) {
-                logContainer.classList.remove('expanded');
-            } else {
-                logContainer.classList.add('expanded');
-                const history = logContainer.dataset.history || '';
-                logExpanded.textContent = history;
-                setTimeout(() => { // Small delay for the transition finish before scrolling
-                    logExpanded.scrollTop = logExpanded.scrollHeight;
-                }, 50);
-            }
-        };
-        
-        logStatusBar.addEventListener('click', toggleLog);
-        logToggle.addEventListener('click', toggleLog);
     }
 
     async initialize() {
         try {
-            this.setThemeFromLocalStorage('sepia');
+            Theme.setThemeFromLocalStorage('sepia');
             await this.initializeModules();
             this.modules.controlModule.initializeSettingsMenu();
             this.modules.controlModule.setBrowserSpecifics();
@@ -259,70 +247,6 @@ export class AppModule {
             this.log(`[X] Failed to initialize application`, error);
             return false;
         }
-    }
-
-
-    /* Theme */
-    setTheme(theme) {
-        if (!this.isValidTheme(theme)) {
-            this.log(undefined, `Invalid Theme ${theme}`);
-            return;
-        }
-
-        document.body.setAttribute('data-theme' , theme);
-        localStorage.setItem('data-theme'       , theme);
-        this.log(`Set theme to '${theme}'`);
-    }
-
-    setThemeFromLocalStorage(defaultTheme = null) {
-        const themeFromLocalStorage = localStorage.getItem('data-theme');
-        if (!themeFromLocalStorage) {
-            this.setTheme(defaultTheme);
-        } else {
-            this.setTheme(themeFromLocalStorage);
-        }
-    };
-
-    toggleTheme() {
-        let currentTheme = document.body.getAttribute('data-theme');
-        switch (currentTheme) {
-            case 'dark':
-                this.setTheme('sepia');
-                break;
-            case 'sepia':
-                this.setTheme('dark');
-                break;
-            default: this.error(`Invalid Theme ${theme}`);
-        }
-    }
-
-    isValidTheme(theme) {
-        return theme && theme != '' && ['dark', 'sepia'].includes(theme);
-    }
-
-    log(msg, error = null, internal = false) {
-        const { logContainer, logStatusBar, logExpanded } = this.elements;
-        if (msg) console.log(msg);
-        if (msg && logContainer && !internal) {
-            let history = logContainer.dataset.history || '';
-            history += msg + '\n';
-            logContainer.dataset.history = history;
-
-            // Update status bar with latest message
-            if (logStatusBar) {
-                logStatusBar.textContent = msg;
-            }
-
-            // Update the expanded log immediately if it is expanded
-            const isExpanded = logContainer.classList.contains('expanded');
-            if (isExpanded) {
-                logExpanded.textContent = history;
-                logExpanded.scrollTop = logExpanded.scrollHeight;
-            }
-        }
-
-        if (error) { console.error(error); }
-
     }
 
     destroy() {

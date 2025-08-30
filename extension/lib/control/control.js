@@ -275,6 +275,9 @@ export class ControlModule {
         });
     }
 
+    toggleLogPanel() {
+        return this.modules.uiModule.toggleLogPanel();
+    }
 
     setBrowserSpecifics() {
         if (!browserSupportsAudioCapture()) {

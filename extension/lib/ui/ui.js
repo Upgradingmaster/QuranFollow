@@ -4,6 +4,22 @@ export class UIModule {
         this.elements = dependencies.elements;
     }
 
+    // Log Panel
+    toggleLogPanel() {
+        const { logContainer, logExpanded, logStatusBar, logToggle }      = this.elements;
+        const isExpanded = logContainer.classList.contains('expanded');
+        if (isExpanded) {
+            logContainer.classList.remove('expanded');
+        } else {
+            logContainer.classList.add('expanded');
+            const history = logContainer.dataset.history || '';
+            logExpanded.textContent = history;
+            setTimeout(() => { // Small delay for the transition finish before scrolling
+                logExpanded.scrollTop = logExpanded.scrollHeight;
+            }, 50);
+        }
+    };
+
     getSelectedMode() {
        return this.elements.modeSelect.value;
     }
