@@ -270,4 +270,8 @@ export class ControlModule {
     browserSupportsAudioCapture() {
         return this.getBrowser() == 'Chrome';
     }
+
+    quit() {
+        window.close();
+    }
 }

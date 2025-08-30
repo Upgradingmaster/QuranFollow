@@ -58,7 +58,10 @@ export class AppModule {
             toggleControlPanel: () => this.modules.controlModule.toggleControlPanel(),
             toggleHelp: () => this.modules.controlModule.toggleHelp(),
             toggleTheme: () => this.toggleTheme(),
-            reload: () => this.modules.controlModule.reloadQuranView()
+
+            // Other
+            reload: () => this.modules.controlModule.reloadQuranView(),
+            quit: () => this.modules.controlModule.quit()
         };
     }
 
@@ -107,6 +110,7 @@ export class AppModule {
             footerHelpBtn : document.getElementById('footer-help'),
             footerCPBtn : document.getElementById('footer-control-panel'),
             footerQJBtn : document.getElementById('footer-quick-jump'),
+            footerQuitBtn : document.getElementById('footer-quit'),
 
 
             /* Main UI elements */
@@ -157,11 +161,6 @@ export class AppModule {
             this.modules.controlModule.onControlPanelPageInput();
         });
 
-        // Modal: Open
-        elements.footerHelpBtn.onclick = () => this.modules.controlModule.showHelp();
-        elements.footerCPBtn.onclick   = () => this.modules.controlModule.showControlPanel();
-        elements.footerQJBtn.onclick   = () => this.modules.controlModule.showQuickJump();
-
         // Modal: Close
         elements.helpClose.onclick         = () => this.modules.controlModule.hideHelp();
         elements.controlPanelClose.onclick = () => this.modules.controlModule.hideControlPanel();
@@ -184,6 +183,12 @@ export class AppModule {
                 this.modules.controlModule.hideQuickJump();
             }
         };
+
+        // Footer
+        elements.footerHelpBtn.onclick = () => this.modules.controlModule.showHelp();
+        elements.footerCPBtn.onclick   = () => this.modules.controlModule.showControlPanel();
+        elements.footerQJBtn.onclick   = () => this.modules.controlModule.showQuickJump();
+        elements.footerQuitBtn.onclick = () => this.modules.controlModule.quit();
 
         // Escape to hide any modal
         document.addEventListener('keydown', (e) => {

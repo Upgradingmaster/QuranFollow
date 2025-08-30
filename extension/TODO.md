@@ -14,6 +14,7 @@
 - Footnote dropdown
 - Jump list
 - Slow download step on first run for the model 
+- Simplify keybinds
 
 # Now
 - Settings

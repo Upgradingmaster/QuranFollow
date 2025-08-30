@@ -226,6 +226,7 @@ export class KeybindsModule {
         // UI controls
         this.bind('Ctrl+p', 'toggleControlPanel', 'Toggle control panel');
         this.bind('q', 'toggleHelp', 'Toggle keyboard shortcuts');
+        this.bind('Ctrl+q', 'quit', 'Quit the app');
         this.bind('i', 'toggleTheme', 'Toggle theme');
         
         // Quick access
