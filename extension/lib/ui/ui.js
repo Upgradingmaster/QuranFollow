@@ -93,6 +93,11 @@ export class UIModule {
         }
 
         return settingElementMap[setting];
+    }
 
+    // Setting-specific UI states
+    asrDisabled() {
+        this.elements.toggleCaptureBtn.disabled = true;
+        this.elements.settingUseASR.disabled = true;
     }
 }

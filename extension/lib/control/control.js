@@ -1,3 +1,5 @@
+import { getBrowser, browserSupportsAudioCapture } from './browser.js'
+
 export class ControlModule {
     constructor(dependencies, modules) {
         this.log = dependencies.log;
@@ -208,8 +210,8 @@ export class ControlModule {
     }
 
     startAudioCapture() {
-        if (!this.browserSupportsAudioCapture()) {
-            this.log(`Audio Capture is not supported on '${this.getBrowser()}'. You must use the local backend to use this feature.`);
+        if (!browserSupportsAudioCapture()) {
+            this.log(`Audio Capture is not supported on '${getBrowser()}'. You must use the local backend to use this feature.`);
             return;
         }
 
@@ -273,27 +275,12 @@ export class ControlModule {
         });
     }
 
-    getBrowser() {
-        const userAgent = navigator.userAgent;
 
-        if (userAgent.includes('Firefox')) {
-            return 'Firefox';
-        } else if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
-            return 'Chrome';
-        } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
-            return 'Safari';
-        } else if (userAgent.includes('Edg')) {
-            return 'Edge';
-        } else if (userAgent.includes('Opera') || userAgent.includes('OPR')) {
-            return 'Opera';
+    setBrowserSpecifics() {
+        if (!browserSupportsAudioCapture()) {
+            this.modules.uiModule.asrDisabled();
+            this.setSetting('useASR', false);
         }
-
-        return 'Unknown';
-    }
-
-    // TODO: Test with other Chromium browsers
-    browserSupportsAudioCapture() {
-        return this.getBrowser() == 'Chrome';
     }
 
     quit() {

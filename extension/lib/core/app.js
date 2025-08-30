@@ -248,7 +248,7 @@ export class AppModule {
             this.setThemeFromLocalStorage('sepia');
             await this.initializeModules();
             this.modules.controlModule.initializeSettingsMenu();
-            this.setBrowserSpecifics();
+            this.modules.controlModule.setBrowserSpecifics();
 
             this.modules.controlModule.showStartupScreen('surah');
 
@@ -261,13 +261,6 @@ export class AppModule {
         }
     }
 
-    setBrowserSpecifics() {
-        if (!this.modules.controlModule.browserSupportsAudioCapture()) {
-            this.elements.toggleCaptureBtn.disabled = true;
-            this.elements.settingUseASR.disabled = true;
-            this.modules.controlModule.setSetting('useASR', false);
-        }
-    }
 
     /* Theme */
     setTheme(theme) {
