@@ -269,10 +269,83 @@ button:disabled {
     height: 70%;
 }
 
-.settings-content {
-    padding: 1rem;
-    font-size: 1rem;
+.settings-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 0.5rem;
+}
+
+.settings-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-section-heading {
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.5rem;
+    color: var(--theme-accent);
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-bottom: 1px solid var(--theme-border);
+}
+
+.settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(139, 115, 85, 0.1);
+}
+
+.settings-row:last-child {
+    border-bottom: none;
+}
+
+.settings-label {
+    font-size: 0.9rem;
     color: var(--theme-text);
+    font-weight: 500;
+}
+
+.settings-toggle {
+    cursor: pointer;
+    user-select: none;
+}
+
+.settings-toggle-input {
+    display: none;
+}
+
+.settings-toggle-switch {
+    position: relative;
+    width: 48px;
+    height: 24px;
+    background: var(--theme-border);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    display: block;
+}
+
+.settings-toggle-switch::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.settings-toggle-input:checked + .settings-toggle-switch {
+    background: var(--theme-accent);
+}
+
+.settings-toggle-input:checked + .settings-toggle-switch::before {
+    transform: translateX(24px);
 }
 
 /* Control Panel */

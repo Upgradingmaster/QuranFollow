@@ -113,8 +113,34 @@
       <button id="settings-close" class="close-button" aria-label="Close">&times;</button>
     </div>
     <div class="modal-body">
-      <div class="settings-content">
-        <p>Settings will be added here.</p>
+      <div class="settings-container">
+        <div class="settings-section">
+          <h3 class="settings-section-heading">Display Options</h3>
+          <div class="settings-row">
+            <span class="settings-label">Highlight Current Ayah</span>
+            <label class="settings-toggle">
+              <input type="checkbox" id="setting-highlight-ayah" class="settings-toggle-input">
+              <span class="settings-toggle-switch"></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label">Show Line Numbers</span>
+            <label class="settings-toggle">
+              <input type="checkbox" id="setting-show-line-numbers" class="settings-toggle-input">
+              <span class="settings-toggle-switch"></span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h3 class="settings-section-heading">Audio Options</h3>
+          <div class="settings-row">
+            <span class="settings-label">Auto-capture on Page Load</span>
+            <label class="settings-toggle">
+              <input type="checkbox" id="setting-auto-capture" class="settings-toggle-input">
+              <span class="settings-toggle-switch"></span>
+            </label>
+          </div>
+        </div>
       </div>
     </div>
   </div>

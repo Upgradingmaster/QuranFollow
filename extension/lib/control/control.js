@@ -260,6 +260,20 @@ export class ControlModule {
 
     }
 
+    setSetting(setting, value) {
+        this.modules.settingsModule.setSetting(setting, value);
+        this.modules.uiModule.setSetting(setting, value);
+    }
+
+    initializeSettingsMenu() {
+        const settings = this.modules.settingsModule.getSettings();
+
+        Object.entries(settings).forEach(([setting, value]) => {
+            const element = this.modules.uiModule.settingToElement(setting);
+            element.checked = value;
+        });
+    }
+
     getBrowser() {
         const userAgent = navigator.userAgent;
 

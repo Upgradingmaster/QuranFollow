@@ -4,6 +4,7 @@ import { UIModule }       from '../ui/ui.js';
 import { KeybindsModule } from '../control/keybinds.js';
 import { ModalModule }    from '../ui/modal.js';
 import { ControlModule }  from '../control/control.js';
+import { SettingsModule } from './settings.js';
 
 export class AppModule {
     constructor() {
@@ -25,6 +26,8 @@ export class AppModule {
         this.modules.uiModule = new UIModule(dependencies);
 
         this.modules.audioModule = new AudioModule(dependencies);
+
+        this.modules.settingsModule = new SettingsModule(dependencies);
 
         this.keybindsModule = new KeybindsModule(this.makeActionTable(), dependencies);
 
@@ -85,6 +88,9 @@ export class AppModule {
             // Settings
             settings           : document.getElementById('settings'),
             settingsClose      : document.getElementById('settings-close'),
+            settingHighlightAyah : document.getElementById('setting-highlight-ayah'),
+            settingShowLineNumbers : document.getElementById('setting-show-line-numbers'),
+            settingAutoCapture : document.getElementById('setting-auto-capture'),
 
             /* Control Panel*/
             // Audio
@@ -203,6 +209,17 @@ export class AppModule {
         elements.footerSettingsBtn.onclick = () => this.modules.controlModule.showSettings();
         elements.footerQuitBtn.onclick = () => this.modules.controlModule.quit();
 
+        // Settings
+        elements.settingHighlightAyah.addEventListener('change', (e) => {
+            this.modules.settingsModule.setSetting('highlightCurrentAyah', e.target.checked);
+        });
+        elements.settingShowLineNumbers.addEventListener('change', (e) => {
+            this.modules.settingsModule.setSetting('showLineNumbers', e.target.checked);
+        });
+        elements.settingAutoCapture.addEventListener('change', (e) => {
+            this.modules.settingsModule.setSetting('autoCapture', e.target.checked);
+        });
+
         // Escape to hide any modal
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -237,8 +254,8 @@ export class AppModule {
     async initialize() {
         try {
             this.setThemeFromLocalStorage('sepia');
-
             await this.initializeModules();
+            this.modules.controlModule.initializeSettingsMenu();
 
             this.modules.controlModule.showStartupScreen('surah');
 

@@ -76,4 +76,25 @@ export class UIModule {
             toggleCaptureBtn.disabled = false;
         }
     }
+
+    /* Settings */
+    setSetting(setting, value) {
+        const element = settingElementMap[setting]
+        element.checked = value;
+    }
+
+    settingToElement(setting) {
+        const settingElementMap = {
+            'highlightCurrentAyah' : this.elements.settingHighlightAyah,
+            'showLineNumbers'      : this.elements.settingShowLineNumbers,
+            'autoCapture'          : this.elements.settingAutoCapture
+        };
+
+        if (!settingElementMap.hasOwnProperty(setting)) {
+            throw new Error(`Setting '${setting}' not mapped to the UI elements correctly!`);
+        }
+
+        return settingElementMap[setting];
+
+    }
 }
