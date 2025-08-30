@@ -259,10 +259,6 @@ button:disabled {
     border-radius: 4px;
 }
 
-#help-text::-webkit-scrollbar-thumb:hover {
-    background: var(--theme-button);
-}
-
 /* Settings */
 .settings-modal {
     width: 60%;
@@ -546,10 +542,6 @@ button:disabled {
 #log-expanded::-webkit-scrollbar-thumb {
     background: var(--theme-accent);
     border-radius: 4px;
-}
-
-#log-expanded::-webkit-scrollbar-thumb:hover {
-    background: var(--theme-button);
 }
 
 #log-toggle {

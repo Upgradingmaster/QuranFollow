@@ -86,11 +86,9 @@ export class AppModule {
             quickJumpClose     : document.getElementById("quick-jump-close"),
 
             // Settings
-            settings           : document.getElementById('settings'),
-            settingsClose      : document.getElementById('settings-close'),
-            settingHighlightAyah : document.getElementById('setting-highlight-ayah'),
-            settingShowLineNumbers : document.getElementById('setting-show-line-numbers'),
-            settingAutoCapture : document.getElementById('setting-auto-capture'),
+            settings      : document.getElementById('settings'),
+            settingsClose : document.getElementById('settings-close'),
+            settingUseASR : document.getElementById('setting-use-asr'),
 
             /* Control Panel*/
             // Audio
@@ -210,14 +208,8 @@ export class AppModule {
         elements.footerQuitBtn.onclick = () => this.modules.controlModule.quit();
 
         // Settings
-        elements.settingHighlightAyah.addEventListener('change', (e) => {
-            this.modules.settingsModule.setSetting('highlightCurrentAyah', e.target.checked);
-        });
-        elements.settingShowLineNumbers.addEventListener('change', (e) => {
-            this.modules.settingsModule.setSetting('showLineNumbers', e.target.checked);
-        });
-        elements.settingAutoCapture.addEventListener('change', (e) => {
-            this.modules.settingsModule.setSetting('autoCapture', e.target.checked);
+        elements.settingUseASR.addEventListener('change', (e) => {
+            this.modules.controlModule.setSetting('useASR', e.target.checked);
         });
 
         // Escape to hide any modal
@@ -256,6 +248,7 @@ export class AppModule {
             this.setThemeFromLocalStorage('sepia');
             await this.initializeModules();
             this.modules.controlModule.initializeSettingsMenu();
+            this.setBrowserSpecifics();
 
             this.modules.controlModule.showStartupScreen('surah');
 
@@ -265,6 +258,14 @@ export class AppModule {
         } catch (error) {
             this.log(`[X] Failed to initialize application`, error);
             return false;
+        }
+    }
+
+    setBrowserSpecifics() {
+        if (!this.modules.controlModule.browserSupportsAudioCapture()) {
+            this.elements.toggleCaptureBtn.disabled = true;
+            this.elements.settingUseASR.disabled = true;
+            this.modules.controlModule.setSetting('useASR', false);
         }
     }
 

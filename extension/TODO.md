@@ -15,6 +15,7 @@
 - Jump list
 - Slow download step on first run for the model 
 - Simplify keybinds
+- Information about disabled features in the settings, disabled class + info popup on hover
 
 # Now
 - Settings

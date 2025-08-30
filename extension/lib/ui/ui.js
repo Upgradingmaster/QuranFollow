@@ -79,15 +79,13 @@ export class UIModule {
 
     /* Settings */
     setSetting(setting, value) {
-        const element = settingElementMap[setting]
+        const element = this.settingToElement(setting);
         element.checked = value;
     }
 
     settingToElement(setting) {
         const settingElementMap = {
-            'highlightCurrentAyah' : this.elements.settingHighlightAyah,
-            'showLineNumbers'      : this.elements.settingShowLineNumbers,
-            'autoCapture'          : this.elements.settingAutoCapture
+            'useASR' : this.elements.settingUseASR,
         };
 
         if (!settingElementMap.hasOwnProperty(setting)) {

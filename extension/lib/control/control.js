@@ -269,8 +269,7 @@ export class ControlModule {
         const settings = this.modules.settingsModule.getSettings();
 
         Object.entries(settings).forEach(([setting, value]) => {
-            const element = this.modules.uiModule.settingToElement(setting);
-            element.checked = value;
+            this.modules.uiModule.setSetting(setting, value);
         });
     }
 

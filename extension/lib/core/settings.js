@@ -2,9 +2,7 @@ export class SettingsModule {
     constructor(dependencies) {
         this.log = dependencies.log;
         this.defaultSettings = {
-            highlightCurrentAyah: true,
-            showLineNumbers: false,
-            autoCapture: false
+            useASR: true,
         };
         const savedSettings = this.loadSettingsFromLocalStorage();
         this.settings = { ...this.defaultSettings, ...savedSettings };
