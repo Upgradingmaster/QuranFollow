@@ -62,4 +62,21 @@ export class ModalModule {
         }
     }
 
+    /* Settings */
+    showSettings() {
+        this.elements.settings.classList.add('show');
+    }
+
+    hideSettings() {
+        this.elements.settings.classList.remove('show');
+    }
+
+    toggleSettings() {
+        if (this.elements.settings.classList.contains('show')) {
+            this.hideSettings();
+        } else {
+            this.showSettings();
+        }
+    }
+
 }

@@ -263,6 +263,18 @@ button:disabled {
     background: var(--theme-button);
 }
 
+/* Settings */
+.settings-modal {
+    width: 60%;
+    height: 70%;
+}
+
+.settings-content {
+    padding: 1rem;
+    font-size: 1rem;
+    color: var(--theme-text);
+}
+
 /* Control Panel */
 .control-panel-modal {
     height: 80%;

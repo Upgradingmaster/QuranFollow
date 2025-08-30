@@ -187,6 +187,18 @@ export class ControlModule {
         this.modules.modalModule.toggleHelp();
     }
 
+    showSettings() {
+        this.modules.modalModule.showSettings();
+    }
+
+    hideSettings() {
+        this.modules.modalModule.hideSettings();
+    }
+
+    toggleSettings() {
+        this.modules.modalModule.toggleSettings();
+    }
+
     toggleAudioCapture() {
         if (!this.modules.audioModule.isCapturing()) {
             this.startAudioCapture();

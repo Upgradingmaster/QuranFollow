@@ -82,6 +82,10 @@ export class AppModule {
             quickJumpInput     : document.getElementById('quick-jump-input'),
             quickJumpClose     : document.getElementById("quick-jump-close"),
 
+            // Settings
+            settings           : document.getElementById('settings'),
+            settingsClose      : document.getElementById('settings-close'),
+
             /* Control Panel*/
             // Audio
             captureStatus      : document.getElementById('control-audio-status'),
@@ -110,6 +114,7 @@ export class AppModule {
             footerHelpBtn : document.getElementById('footer-help'),
             footerCPBtn : document.getElementById('footer-control-panel'),
             footerQJBtn : document.getElementById('footer-quick-jump'),
+            footerSettingsBtn : document.getElementById('footer-settings'),
             footerQuitBtn : document.getElementById('footer-quit'),
 
 
@@ -165,6 +170,7 @@ export class AppModule {
         elements.helpClose.onclick         = () => this.modules.controlModule.hideHelp();
         elements.controlPanelClose.onclick = () => this.modules.controlModule.hideControlPanel();
         elements.quickJumpClose.onclick    = () => this.modules.controlModule.hideQuickJump();
+        elements.settingsClose.onclick     = () => this.modules.controlModule.hideSettings();
 
         // Modal: Backdrop Click
         elements.help.onclick = (e) => {
@@ -184,10 +190,17 @@ export class AppModule {
             }
         };
 
+        elements.settings.onclick = (e) => {
+            if (e.target === elements.settings) {
+                this.modules.controlModule.hideSettings();
+            }
+        };
+
         // Footer
         elements.footerHelpBtn.onclick = () => this.modules.controlModule.showHelp();
         elements.footerCPBtn.onclick   = () => this.modules.controlModule.showControlPanel();
         elements.footerQJBtn.onclick   = () => this.modules.controlModule.showQuickJump();
+        elements.footerSettingsBtn.onclick = () => this.modules.controlModule.showSettings();
         elements.footerQuitBtn.onclick = () => this.modules.controlModule.quit();
 
         // Escape to hide any modal
@@ -196,6 +209,7 @@ export class AppModule {
                 this.modules.controlModule.hideHelp();
                 this.modules.controlModule.hideControlPanel();
                 this.modules.controlModule.hideQuickJump();
+                this.modules.controlModule.hideSettings();
             }
         });
         
