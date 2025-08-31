@@ -220,6 +220,14 @@ export class AppModule {
             this.modules.controlModule.setSetting('useASR', e.target.checked);
         });
 
+        // Quran: Click to focus
+        elements.quranContainer.addEventListener('click', (event) => {
+            const ayah = event.target.closest('.ayah');
+            if (ayah && elements.quranContainer.contains(ayah)) {
+                this.modules.controlModule.goTo(null, Number(ayah.dataset.surah), Number(ayah.dataset.ayah), null);
+            }
+        });
+
         // Escape to hide any modal
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {

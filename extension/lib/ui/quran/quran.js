@@ -161,7 +161,6 @@ export class QuranModule {
             QuranState.setState('surah', surah, ayah, page);
             this.log(`Loaded  ${locText}`);
             if (opts.highlightCurrentAyah) { scrollToFocusedAyah(this.quranContainer); }
-
         } catch (error) {
             this.log(`[X] Failed to load ${locText}`, error);
         }

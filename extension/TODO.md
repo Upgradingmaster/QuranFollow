@@ -20,5 +20,3 @@
 
 # Now
 - Add quick jump to page 
-- Click to set focusedAyah
-- Performant Backend w/ Browser Agnostic Audio Capture

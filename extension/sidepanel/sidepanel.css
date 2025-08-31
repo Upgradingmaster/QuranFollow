@@ -717,10 +717,6 @@ audio {
     opacity: 1;
 }
 
-.focused-ayah:hover {
-    opacity: 1;
-}
-
 .ayah-metadata {
     display: flex;
     justify-content: center;
@@ -750,6 +746,7 @@ audio {
     background: rgba(139, 115, 85, 0.15);
     border-left: 4px solid var(--theme-accent);
     box-shadow: 0 2px 8px rgba(139, 115, 85, 0.2);
+    opacity: 1;
 }
 
 .word.focused-ayah {

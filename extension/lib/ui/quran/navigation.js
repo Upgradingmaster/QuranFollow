@@ -42,6 +42,7 @@ function setFocusedAyah(quranContainer, surah, ayah, scrollIntoView = true) {
         if (scrollIntoView) {
             scrollToFocusedAyah(quranContainer);
         }
+
         // Update state
         QuranState.setAyah(ayah, surah);
     } catch (error) {
