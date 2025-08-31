@@ -10,7 +10,6 @@
 - Tests
 - Magic numbers -> constants.js (wait for typescript)
 - Fix html and css classes
-- Optimize findKeyFromPage
 - Footnote dropdown
 - Jump list
 - Slow download step on first run for the model 
@@ -20,3 +19,6 @@
 
 # Now
 - Add quick jump to page 
+
+# Optimization
+- findKeyFromPage
